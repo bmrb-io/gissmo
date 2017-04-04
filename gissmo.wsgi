@@ -2,7 +2,7 @@
 
 import os
 import json
-import xml.etree.ElementTree as ET
+import xml.etree.cElementTree as ET
 
 import time
 from io import BytesIO
@@ -26,9 +26,9 @@ def get_tag_value(root, tag, _all=False):
     if _all:
         return [x.text for x in nodes]
     else:
-        if len(nodes) > 0:
-            return nodes[0].text
-        else:
+        try:
+            return nodes.next().text
+        except StopIteration:
             return None
 
 def dict_builder(root, tags):
