@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+        <div class="details_box">
+            <h3>Jump to:
+                {% for letter in entries.keys()|sort %}
+                <a href="#{{ letter }}">{{ letter }}</a>
+                {% endfor %}
+            </h3>
+
+            <table class="alternating sortable">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>Field Strength</th>
+                    </tr>
+                </thead>
+            {% for letter in entries.keys()|sort %}
+            {% for entry in entries[letter] %}
+            {% if loop.first %}
+            <tr id="{{ letter }}">{% else %}
+            <tr>{% endif %}
+               <td><a href="wsgi/entry/{{ entry[0] }}">{{ entry[1] }}</a></td>
+               <td>{{ entry[2] }}</td>
+            </tr>
+            {% endfor %}
+            {% endfor %}
+            </table>
+        </div>
+{% endblock %}

@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+    {% block head %}
+        <title>GISSMO - {{ name }}</title>
+
+        <style>
+
+        /* Center the image in the td */
+        td img{
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Style the left column like the first row */
+        table.matrix tr td:first-child,
+        table.matrix th {
+            font-size: 130%;
+            font-weight: bold;
+            background-color: #CBDBFF;
+        }
+
+        .white {
+            background-color: white !important;
+        }
+
+        /*
+        table.matrix {
+            overflow-x: auto;
+            border-collapse: collapse;
+        }
+
+        td:not(:first-child) {
+            border: 2px solid white;
+        }*/
+
+        /* Allow displaying text in multiple columns */
+        .flex {
+          display: flex;                  /* establish flex container */
+          flex-direction: row;            /* default value; can be omitted */
+          flex-wrap: nowrap;              /* default value; can be omitted */
+          justify-content: space-between; /* switched from default (flex-start, see below) */
+        }
+
+        </style>
+    {% endblock %}
+
+    {% block body %}
+    <div class="details_box">
+        <h1>{{ name }}</h1>
+        <h3>Simulations available:</h3>
+        <div style="text-align: center">
+            {% for exp in experiments -%}
+            <div style="display: inline-block"><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ exp }}">{{ exp }}</a></div>
+            {% endfor %}
+        </div>
+    </div>
+
+    {% endblock %}
