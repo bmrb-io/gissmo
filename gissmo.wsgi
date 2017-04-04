@@ -49,20 +49,28 @@ def reload():
     valid_entries = []
     for entry_id in os.listdir(entry_path):
 
-        # Load the entry XML
-        try:
-            root = ET.parse(os.path.join(entry_path, entry_id, "standard", "spin_simulation.xml")).getroot()
-        except IOError:
-            continue
+        sims = []
+        for sim in os.listdir(os.path.join(entry_path, entry_id)):
 
-        # Check the entry is released
-        status = get_tag_value(root, "status")
-        if status.lower() in ["done", "approximately done"]:
-            valid_entries.append([entry_id, get_tag_value(root, "name").title(),
-                                  get_tag_value(root, "field_strength")])
+            # Load the entry XML
+            try:
+                root = ET.parse(os.path.join(entry_path, entry_id, sim, "spin_simulation.xml")).getroot()
+            except IOError:
+                continue
+
+            # Check the entry is released
+            status = get_tag_value(root, "status")
+            if status.lower() in ["done", "approximately done"]:
+                sims.append([entry_id, get_tag_value(root, "name").title(),
+                            get_tag_value(root, "field_strength"), sim])
+
+        sims = sorted(sims, key=lambda x:x[2])
+
+        if len(sims) > 0:
+            valid_entries.append(sims)
 
     # Sort by protein name
-    valid_entries = sorted(valid_entries, key=lambda x:x[1].lower())
+    valid_entries = sorted(valid_entries, key=lambda x:x[0][1].lower())
     # Write out the results
     open(entries_file, "w").write(json.dumps(valid_entries))
 
@@ -76,31 +84,46 @@ def display_list():
 
     entry_letters = {}
     for item in entry_list:
-        letter = item[1][0].upper()
+        letter = item[0][1][0].upper()
         if letter not in entry_letters:
             entry_letters[letter] = []
         entry_letters[letter].append(item)
 
     return render_template("list_template.html", entries=entry_letters)
 
-def get_entry_info(entry_id, simulation):
-    """ Returns the dictionary of info for an entry. """
-
-    # Add the bmse if needed
-    if not entry_id.startswith("bmse"):
-        entry_id = "bmse" + entry_id
 
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):
     """ Renders the page with a list of simulations available. """
 
-    dic = display_entry(entry_id, "standard", info_only=True)
+    # Add the bmse if needed
+    if not entry_id.startswith("bmse"):
+        entry_id = "bmse" + entry_id
 
-    return render_template("simulations_list.html", **dic)
+    data = []
+
+    # Get the simulations
+    sims = os.listdir(os.path.join(entry_path, entry_id))
+
+    # If only one simulation, send them there
+    if len(sims) == 1:
+        return redirect("/wsgi/entry/%s/%s" % (entry_id, sims[0]), 302)
+
+    # Go through the simulations
+    for sim_dir in sims:
+        root = ET.parse(os.path.join(entry_path, entry_id, sim_dir, "spin_simulation.xml")).getroot()
+        sim_dict = {}
+        sim_dict['field_strength'] = get_tag_value(root, "field_strength")
+        sim_dict['sim'] = sim_dir
+        sim_dict['entry_id'] = entry_id
+        data.append(sim_dict)
+        name = get_tag_value(root, "name")
+
+    return render_template("simulations_list.html", data=data, name=name)
 
 @application.route('/entry/<entry_id>/<simulation>')
 @application.route('/entry/<entry_id>/<simulation>/<some_file>')
-def display_entry(entry_id, simulation=None, some_file=None, info_only=False):
+def display_entry(entry_id, simulation=None, some_file=None):
     """ Renders an entry. If a filename is specified send them that file
     from the entry directory. """
 
@@ -139,8 +162,7 @@ def display_entry(entry_id, simulation=None, some_file=None, info_only=False):
 
     # Load the entry XML
     try:
-        tree = ET.parse(os.path.join(exp_full_path, "spin_simulation.xml"))
-        root = tree.getroot()
+        root = ET.parse(os.path.join(exp_full_path, "spin_simulation.xml")).getroot()
     except IOError:
         return "No such entry exists."
 
@@ -203,10 +225,6 @@ def display_entry(entry_id, simulation=None, some_file=None, info_only=False):
 
     ent_dict['matrix'] = matrix
 
-    if info_only:
-        return ent_dict
-
     # Return the page
     return render_template("entry_template.html", **ent_dict)
-
 
