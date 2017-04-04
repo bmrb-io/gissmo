@@ -83,40 +83,32 @@ def display_list():
 
     return render_template("list_template.html", entries=entry_letters)
 
-def get_entry_unfo(entry_id, simulation):
+def get_entry_info(entry_id, simulation):
     """ Returns the dictionary of info for an entry. """
-
-
-
-@application.route('/entry/<entry_id>')
-def display_summary(entry_id):
-    """ Renders the page with a list of simulations available. """
 
     # Add the bmse if needed
     if not entry_id.startswith("bmse"):
         entry_id = "bmse" + entry_id
 
+@application.route('/entry/<entry_id>')
+def display_summary(entry_id):
+    """ Renders the page with a list of simulations available. """
+
     dic = display_entry(entry_id, "standard", info_only=True)
 
     return render_template("simulations_list.html", **dic)
 
-@application.route('/entry/<entry_id>/<experiment_dir>')
-@application.route('/entry/<entry_id>/<experiment_dir>/<some_file>')
-def display_entry(entry_id, experiment_dir=None, some_file=None, info_only=False):
+@application.route('/entry/<entry_id>/<simulation>')
+@application.route('/entry/<entry_id>/<simulation>/<some_file>')
+def display_entry(entry_id, simulation=None, some_file=None, info_only=False):
     """ Renders an entry. If a filename is specified send them that file
     from the entry directory. """
 
-    # Determine which experiment directory to look in
-    #if experiment is None:
-    #    experiment_dir = "standard"
-    #else:
-    #    experiment_dir = experiment
-
-    exp_full_path = os.path.join(entry_path, entry_id, experiment_dir)
+    exp_full_path = os.path.join(entry_path, entry_id, simulation)
 
     # Make sure the experiment directory exists.
     if not os.path.isdir(exp_full_path):
-        return "Experiment directory '%s' not found." % experiment_dir
+        return "Experiment directory '%s' not found." % simulation
 
     # If they just want a file from the directory
     if some_file:
@@ -134,11 +126,11 @@ def display_entry(entry_id, experiment_dir=None, some_file=None, info_only=False
                     zf.writestr(data, fn)
 
             zf.comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
-                         request.url_root, entry_id.encode('ascii'), experiment_dir.encode('ascii'))
+                         request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
             zf.close()
             memory_file.seek(0)
             return send_file(memory_file,
-                             attachment_filename="%s_%s.zip" % (entry_id, experiment_dir),
+                             attachment_filename="%s_%s.zip" % (entry_id, simulation),
                              as_attachment=True)
 
         # Send individual files from the dir
@@ -163,7 +155,7 @@ def display_entry(entry_id, experiment_dir=None, some_file=None, info_only=False
     ent_dict = dict_builder(root, tags_to_get)
     ent_dict['name'] = ent_dict['name'].title()
     ent_dict['entry_id'] = entry_id
-    ent_dict['experiment_dir'] = experiment_dir
+    ent_dict['simulation'] = simulation
 
     # Make sure the image file exists
     if not os.path.isfile(os.path.join(exp_full_path, ent_dict['path_2D_image'])):

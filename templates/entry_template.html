@@ -56,8 +56,8 @@
         <h1>{{ name }}</h1>
         <h3>Simulations:</h3>
         <div style="text-align: center">
-            {% for exp in experiments -%}
-            <div style="display: inline-block"><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ exp }}">{{ exp }}</a></div>
+            {% for sim in simulations -%}
+            <div style="display: inline-block"><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ sim }}">{{ sim }}</a></div>
             {% endfor %}
         </div>
 
@@ -65,7 +65,7 @@
         <div class="flex">
             <div><p>BMRB <a href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?molName={{ name }}&id={{ entry_id }}" target="_blank">cross link</a></p></div>
             <div><p>ALATIS (unique atom labels) <a href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/index.html"  target="_blank">cross link</a></p></div>
-            <div><p>Download SpinSimulation <a href="/wsgi/entry/{{ entry_id }}/{{ experiment_dir }}/zip">data</a></p></div>
+            <div><p>Download SpinSimulation <a href="/wsgi/entry/{{ entry_id }}/{{ simulation }}/zip">data</a></p></div>
         </div>
     </div>
 
@@ -74,7 +74,7 @@
 
         <table class="alternating">
             <tr>
-                <td rowspan="0" class="white"><img alt="{{ InChI }}" title="{{ InChI }}" src="/wsgi/entry/{{ entry_id }}/{{ experiment_dir }}/{{ path_2D_image }}" style="max-width:400px; max-height:auto;"></td>
+                <td rowspan="0" class="white"><img alt="{{ InChI }}" title="{{ InChI }}" src="/wsgi/entry/{{ entry_id }}/{{ simulation }}/{{ path_2D_image }}" style="max-width:400px; max-height:auto;"></td>
                 <th>Parameter</th>
                 <th>Value</th>
             </tr>
@@ -209,8 +209,8 @@
                     // some other initialising
                 },
                 showGraph : function() {
-                d3.csv("/wsgi/entry/{{ entry_id }}/{{ experiment_dir }}/sim_"+_args[0], function(error1, data1) {
-                    d3.csv("/wsgi/entry/{{ entry_id }}/{{ experiment_dir }}/exp_"+_args[0], function(error2, data2) {
+                d3.csv("/wsgi/entry/{{ entry_id }}/{{ simulation }}/sim_"+_args[0], function(error1, data1) {
+                    d3.csv("/wsgi/entry/{{ entry_id }}/{{ simulation }}/exp_"+_args[0], function(error2, data2) {
                         my_plot(data1,data2, _args[0], function(returned){});
                     });
                 });
