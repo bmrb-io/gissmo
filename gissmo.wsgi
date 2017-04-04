@@ -162,7 +162,7 @@ def display_entry(entry_id, simulation=None, some_file=None, info_only=False):
         ent_dict['path_2D_image'] = entry_id + "_.jpg"
 
     # Get the entry directories
-    ent_dict['experiments'] = os.listdir(os.path.join(entry_path, entry_id))
+    ent_dict['sim_dirs'] = os.listdir(os.path.join(entry_path, entry_id))
 
     # Get the PKAs
     ent_dict['pkas'] = []

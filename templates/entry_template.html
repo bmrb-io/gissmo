@@ -56,7 +56,7 @@
         <h1>{{ name }}</h1>
         <h3>Simulations:</h3>
         <div style="text-align: center">
-            {% for sim in simulations -%}
+            {% for sim in sim_dirs -%}
             <div style="display: inline-block"><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ sim }}">{{ sim }}</a></div>
             {% endfor %}
         </div>
