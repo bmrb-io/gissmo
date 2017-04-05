@@ -5,6 +5,7 @@ import json
 import xml.etree.cElementTree as ET
 
 import time
+import requests
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
@@ -40,6 +41,11 @@ def dict_builder(root, tags):
 
     return res
 
+def get_title(entry_id):
+    """ Fetches the actual compound name from BMRB API. """
+
+    title = requests.get("http://webapi.bmrb.wisc.edu/v1/rest/tag/%s/_Assembly.Name" % entry_id).json()
+    return title[entry_id]['_Assembly.Name'][0].title()
 
 # URI methods
 @application.route('/reload')
@@ -61,8 +67,8 @@ def reload():
             # Check the entry is released
             status = get_tag_value(root, "status")
             if status.lower() in ["done", "approximately done"]:
-                sims.append([entry_id, get_tag_value(root, "name").title(),
-                            get_tag_value(root, "field_strength"), sim])
+                #sims.append([entry_id, get_tag_value(root, "name").title(), get_tag_value(root, "field_strength"), sim])
+                sims.append([entry_id, get_title(entry_id), get_tag_value(root, "field_strength"), sim])
 
         sims = sorted(sims, key=lambda x:x[2])
 
@@ -103,7 +109,10 @@ def display_summary(entry_id):
     data = []
 
     # Get the simulations
-    sims = os.listdir(os.path.join(entry_path, entry_id))
+    try:
+        sims = os.listdir(os.path.join(entry_path, entry_id))
+    except OSError:
+        return "No such entry exists."
 
     # If only one simulation, send them there
     if len(sims) == 1:
@@ -117,7 +126,9 @@ def display_summary(entry_id):
         sim_dict['sim'] = sim_dir
         sim_dict['entry_id'] = entry_id
         data.append(sim_dict)
-        name = get_tag_value(root, "name")
+        #name = get_tag_value(root, "name")
+
+    name = get_title(entry_id)
 
     return render_template("simulations_list.html", data=data, name=name)
 
@@ -128,6 +139,10 @@ def display_entry(entry_id, simulation=None, some_file=None):
     from the entry directory. """
 
     exp_full_path = os.path.join(entry_path, entry_id, simulation)
+
+    # Make sure the entry directory exists
+    if not os.path.isdir(os.path.join(entry_path, entry_id)):
+        return "No such entry exists."
 
     # Make sure the experiment directory exists.
     if not os.path.isdir(exp_full_path):
@@ -164,7 +179,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     try:
         root = ET.parse(os.path.join(exp_full_path, "spin_simulation.xml")).getroot()
     except IOError:
-        return "No such entry exists."
+        return "No XML found."
 
     # Check the entry is released
     status = get_tag_value(root, "status")
@@ -173,9 +188,10 @@ def display_entry(entry_id, simulation=None, some_file=None):
             return "Entry not yet released."
 
     # Get all the values we will need
-    tags_to_get = ["name", "InChI", "path_2D_image", "field_strength", "roi_rmsd"]
+    tags_to_get = ["name", "InChI", "path_2D_image", "field_strength", "roi_rmsd", "note"]
     ent_dict = dict_builder(root, tags_to_get)
-    ent_dict['name'] = ent_dict['name'].title()
+    #ent_dict['name'] = ent_dict['name'].title()
+    ent_dict['name'] = get_title(entry_id)
     ent_dict['entry_id'] = entry_id
     ent_dict['simulation'] = simulation
 

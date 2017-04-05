@@ -21,22 +21,24 @@
                         <th>Data</th>
                     </tr>
                 </thead>
-            {% for letter in entries.keys()|sort %}
-            {% for entry in entries[letter] %}
-            {% set outer_loop = loop -%}
+                <tbody>
+                    {% for letter in entries.keys()|sort %}
+                    {% for entry in entries[letter] %}
+                    {% set outer_loop = loop -%}
 
-            {% for simulation in entry %}
-            {% if outer_loop.first %}
-            <tr id="{{ letter }}">{% else %}
-            <tr>{% endif %}
-               {% if loop.first %}<td rowspan="{{ entry|length }}"><a href="/wsgi/entry/{{ simulation[0] }}">{{ simulation[1] }}</a></td>{% endif %}
-               <td><a href="/wsgi/entry/{{ simulation[0] }}/{{ simulation[3] }}">{{ simulation[3] }}</a></td>
-               <td>{{ simulation[2] }}</td>
-               <td><a class="fake_button" href="/wsgi/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
-            </tr>
-            {% endfor %}
-            {% endfor %}
-            {% endfor %}
+                    {% for simulation in entry %}
+                    {% if outer_loop.first %}
+                    <tr id="{{ letter }}">{% else %}
+                    <tr>{% endif %}
+                       {% if loop.first %}<td rowspan="{{ entry|length }}"><a href="/wsgi/entry/{{ simulation[0] }}">{{ simulation[1] }}</a></td>{% endif %}
+                       <td><a href="/wsgi/entry/{{ simulation[0] }}/{{ simulation[3] }}">{{ simulation[3].title() }}</a></td>
+                       <td>{{ simulation[2] }}</td>
+                       <td><a class="fake_button" href="/wsgi/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
             </table>
         </div>
 {% endblock %}

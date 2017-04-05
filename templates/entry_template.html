@@ -50,8 +50,26 @@
         </style>
     {% endblock %}
 
+    {% block links %}
+
+    {% if  sim_dirs|length > 1 %}
+    <h3>Simulations</h3>
+    <p><a class="fake_button" href="/wsgi/entry/{{ entry_id }}">Simulation overview</a></p>
+    {% for sim in sim_dirs -%}
+    <p><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ sim }}">{{ sim.title() }}</a></p>
+    {% endfor %}
+    {% endif %}
+
+    <h3>Simulation {{ simulation }}</h3>
+    <p><a class="fake_button" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?molName={{ name }}&id={{ entry_id }}" target="_blank">BMRB entry</a></p>
+    <p><a class="fake_button" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/index.html" target="_blank">ALATIS cross link</a></p>
+    <p><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
+    <p><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
+    {% endblock %}
+
     {% block body %}
 
+    <!--
     <div class="details_box">
         <h1>{{ name }}</h1>
         {% if  sim_dirs|length > 1 %}
@@ -71,9 +89,10 @@
             <div><p>ALATIS (unique atom labels) <a href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/index.html"  target="_blank">cross link</a></p></div>
             <div><p>Download SpinSimulation <a href="/wsgi/entry/{{ entry_id }}/{{ simulation }}/zip">data</a></p></div>
         </div>
-    </div>
+    </div>-->
 
     <div class="details_box">
+        <h1>{{ name }}</h1>
         <h2>Simulation outputs:</h2>
 
         <table class="alternating">
@@ -115,11 +134,14 @@
                 <td>7.4 ???</td>
             </tr>
             {% if InChI %}
-            <tr><td>InChI </td><td>{{ InChI[6:] }}</td></tr>
+            <tr><td>InChI</td><td>{{ InChI[6:] }}</td></tr>
             {% endif %}
             {% if pkas %}
             {% for pka in pkas %}<tr><td>pKa</td><td>{{ pka }}</td>
             {% endfor %}
+            {% endif %}
+            {% if note %}
+            <tr><td>Notes</td><td>{{ note }}</td></tr>
             {% endif %}
         </table>
     </div>
