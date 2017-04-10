@@ -110,10 +110,15 @@ def display_list():
 
     entry_letters = {}
     for item in entry_list:
-        letter = item[0][1][0].upper()
-        if letter not in entry_letters:
-            entry_letters[letter] = []
-        entry_letters[letter].append(item)
+        comp = item[0][1]
+        comp = comp.replace("(S)", "").replace("(R)", "")
+        for pos, char in enumerate(comp):
+            if char.isalpha():
+                letter = comp[pos].upper()
+                if letter not in entry_letters:
+                    entry_letters[letter] = []
+                entry_letters[letter].append(item)
+                break
 
     return render_template("list_template.html", entries=entry_letters)
 
