@@ -12,8 +12,8 @@ from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file
 application = Flask(__name__)
 
-pka_path = "/websites/gissmo/clean_pka/"
-entry_path = "/websites/gissmo/BMRB_entries_09_March_2017/"
+aux_info_path = "/websites/gissmo/data_april_06_2017/aux_info/"
+entry_path = "/websites/gissmo/data_april_06_2017/BMRB_entries_05_April_2017/"
 here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
 #entries_file = "/websites/gissmo/entries.json"
@@ -47,6 +47,27 @@ def get_title(entry_id):
     title = requests.get("http://webapi.bmrb.wisc.edu/v1/rest/tag/%s/_Assembly.Name" % entry_id).json()
     return title[entry_id]['_Assembly.Name'][0].title()
 
+def get_aux_info(entry_id, simulation, aux_name):
+
+    results = []
+    try:
+        with open(os.path.join(aux_info_path, aux_name,
+                               "%s_%s" % (entry_id, simulation)), "r") as aux_file:
+            for line in aux_file:
+                line = line.strip()
+                if aux_name == "pka" and line.startswith("pKa="):
+                    line = line[4:]
+                results.append(line)
+    except IOError:
+        pass
+
+    if len(results) == 0:
+        return None
+    elif len(results) == 1:
+        return results[0]
+    else:
+        return results
+
 # URI methods
 @application.route('/reload')
 def reload():
@@ -67,7 +88,6 @@ def reload():
             # Check the entry is released
             status = get_tag_value(root, "status")
             if status.lower() in ["done", "approximately done"]:
-                #sims.append([entry_id, get_tag_value(root, "name").title(), get_tag_value(root, "field_strength"), sim])
                 sims.append([entry_id, get_title(entry_id), get_tag_value(root, "field_strength"), sim])
 
         sims = sorted(sims, key=lambda x:x[2])
@@ -190,8 +210,6 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Get all the values we will need
     tags_to_get = ["name", "InChI", "path_2D_image", "field_strength", "roi_rmsd", "note"]
     ent_dict = dict_builder(root, tags_to_get)
-    #ent_dict['name'] = ent_dict['name'].title()
-    ent_dict['name'] = get_title(entry_id)
     ent_dict['entry_id'] = entry_id
     ent_dict['simulation'] = simulation
 
@@ -202,14 +220,10 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Get the entry directories
     ent_dict['sim_dirs'] = os.listdir(os.path.join(entry_path, entry_id))
 
-    # Get the PKAs
-    ent_dict['pkas'] = []
-    try:
-        with open(os.path.join(pka_path, entry_id), "r") as pk_file:
-            for line in pk_file:
-                ent_dict['pkas'].append(line.split("=")[1])
-    except IOError:
-        pass
+    # Get the auxiliary info
+    for aux_type in ["pka", "buffer", "cytocide", "reference", "solvent", "solvent"]:
+        ent_dict[aux_type] = get_aux_info(entry_id, simulation, aux_type)
+    ent_dict['name'] = get_aux_info(entry_id, simulation, "titles")
 
     # Get the spin matrix data
     column_names = get_tag_value(root, "spin", _all=True)

@@ -61,7 +61,7 @@
     {% endif %}
 
     <h3>Simulation {{ simulation }}</h3>
-    <p><a class="fake_button" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?molName={{ name }}&id={{ entry_id }}" target="_blank">BMRB entry</a></p>
+    <p><a class="fake_button" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}" target="_blank">BMRB entry</a></p>
     <p><a class="fake_button" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/index.html" target="_blank">ALATIS cross link</a></p>
     <p><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
     <p><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
@@ -109,22 +109,30 @@
                 <td>RMSD of the fit</td>
                 <td>{{ roi_rmsd }}</td>
             </tr>
+            {% if solvent -%}
             <tr>
                 <td>Solvent</td>
-                <td>D2O (100%) ???</td>
+                <td>{{ solvent }}</td>
             </tr>
+            {% endif -%}
+            {% if buffer -%}
             <tr>
                 <td>Buffer</td>
-                <td>sodium phosphate (50mM) ???</td>
+                <td>{{ buffer }}</td>
             </tr>
+            {% endif -%}
+            {% if cytocide -%}
             <tr>
                 <td>Cytocide</td>
-                <td>sodium azide (500uM) ???</td>
+                <td>{{ cytocide }}</td>
             </tr>
+            {% endif -%}
+            {% if reference -%}
             <tr>
                 <td>Reference</td>
-                <td>DSS (0.1%) ???</td>
+                <td>{{ reference }}</td>
             </tr>
+            {% endif -%}
             <tr>
                 <td>Temperature</td>
                 <td>298K ???</td>
@@ -136,8 +144,8 @@
             {% if InChI %}
             <tr><td>InChI</td><td>{{ InChI[6:] }}</td></tr>
             {% endif %}
-            {% if pkas %}
-            {% for pka in pkas %}<tr><td>pKa</td><td>{{ pka }}</td>
+            {% if pka %}
+            {% for one_pka in pka %}<tr><td>pKa</td><td>{{ one_pka }}</td>
             {% endfor %}
             {% endif %}
             {% if note %}
