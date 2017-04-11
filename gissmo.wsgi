@@ -147,7 +147,7 @@ def display_summary(entry_id):
 
     # If only one simulation, send them there
     if len(sims) == 1:
-        return redirect("/wsgi/entry/%s/%s" % (entry_id, sims[0]), 302)
+        return redirect("/entry/%s/%s" % (entry_id, sims[0]), 302)
 
     # Go through the simulations
     for sim_dir in sims:
