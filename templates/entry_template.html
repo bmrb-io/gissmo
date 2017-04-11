@@ -98,7 +98,7 @@
 
         <table class="alternating">
             <tr>
-                <td rowspan="0" class="white"><img alt="{{ InChI }}" title="{{ InChI }}" src="/wsgi/entry/{{ entry_id }}/{{ simulation }}/{{ path_2D_image }}" style="max-width:400px; max-height:auto;"></td>
+                <td rowspan="30" class="white"><img alt="{{ InChI }}" title="{{ InChI }}" src="/wsgi/entry/{{ entry_id }}/{{ simulation }}/{{ path_2D_image }}" style="max-width:400px; max-height:auto;"></td>
                 <td class="fake_header">Parameter</td>
                 <td class="fake_header">Value</td>
             </tr>
@@ -134,16 +134,20 @@
                 <td>{{ reference }}</td>
             </tr>
             {% endif -%}
+            {% if temperature -%}
             <tr>
                 <td>Temperature</td>
-                <td>298K ???</td>
+                <td>{{ temperature }}</td>
             </tr>
+            {% endif -%}
+            {% if ph -%}
             <tr>
                 <td>pH</td>
-                <td>7.4 ???</td>
+                <td>{{ ph }}</td>
             </tr>
+            {% endif -%}
             {% if InChI %}
-            <tr><td>InChI</td><td>{{ InChI[6:] }}</td></tr>
+            <tr><td>InChI</td><td>{{ InChI }}</td></tr>
             {% endif %}
             {% if pka %}
             {% for one_pka in pka %}<tr><td>pKa</td><td>{{ one_pka }}</td>

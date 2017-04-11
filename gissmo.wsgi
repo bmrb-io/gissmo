@@ -51,8 +51,11 @@ def get_aux_info(entry_id, simulation, aux_name):
 
     results = []
     try:
-        with open(os.path.join(aux_info_path, aux_name,
-                               "%s_%s" % (entry_id, simulation)), "r") as aux_file:
+        aux_file = os.path.join(aux_info_path, aux_name, "%s_%s" % (entry_id, simulation))
+        # If the files aren't simulation specific try just the entry name
+        if not os.path.isfile(aux_file):
+            aux_file = os.path.join(aux_info_path, aux_name, entry_id)
+        with open(aux_file, "r") as aux_file:
             for line in aux_file:
                 line = line.strip()
                 if aux_name == "pka" and line.startswith("pKa="):
@@ -88,7 +91,10 @@ def reload():
             # Check the entry is released
             status = get_tag_value(root, "status")
             if status.lower() in ["done", "approximately done"]:
-                sims.append([entry_id, get_title(entry_id), get_tag_value(root, "field_strength"), sim])
+                sims.append([entry_id, get_title(entry_id),
+                             get_tag_value(root, "field_strength"), sim,
+                             len(get_tag_value(root, "spin", _all=True)),
+                             get_tag_value(root, "InChI")])
 
         sims = sorted(sims, key=lambda x:x[2])
 
@@ -226,7 +232,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict['sim_dirs'] = os.listdir(os.path.join(entry_path, entry_id))
 
     # Get the auxiliary info
-    for aux_type in ["pka", "buffer", "cytocide", "reference", "solvent", "solvent"]:
+    for aux_type in ["pka", "buffer", "cytocide", "reference", "solvent", "solvent", "ph", "temperature"]:
         ent_dict[aux_type] = get_aux_info(entry_id, simulation, aux_type)
     ent_dict['name'] = get_aux_info(entry_id, simulation, "titles")
 
@@ -237,7 +243,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Build the spin matrix
     size = len(column_names)+1
-    matrix = [["" for x in range(size)] for x in range(size)]
+    matrix = [[0 for x in range(size)] for x in range(size)]
 
     # Add in the labels
     matrix[0] = [""] + column_names
@@ -246,7 +252,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Add the diagonals
     for pos, cs in enumerate(diagonal):
-        matrix[pos+1][pos+1] = cs
+        matrix[pos+1][pos+1] = round(float(cs), 3)
 
     # Add the other values
     for datum in couplings:
@@ -255,8 +261,9 @@ def display_entry(entry_id, simulation=None, some_file=None):
         to_index = int(to_index.split('"')[1])
         value = value.split('"')[1]
         if value == "0.0000000":
-            value = "0"
-        matrix[from_index][to_index] = value
+            value = 0
+        else:
+            matrix[from_index][to_index] = round(float(value), 3)
 
     ent_dict['matrix'] = matrix
 
