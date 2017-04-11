@@ -70,28 +70,6 @@
 
     {% block body %}
 
-    <!--
-    <div class="details_box">
-        <h1>{{ name }}</h1>
-        {% if  sim_dirs|length > 1 %}
-
-        <div style="text-align: center">
-            <h3>Simulations:</h3>
-            <div style="display: inline-block"><a class="fake_button" href="/wsgi/entry/{{ entry_id }}">Simulation overview</a></div>
-            {% for sim in sim_dirs -%}
-            <div style="display: inline-block"><a class="fake_button" href="/wsgi/entry/{{ entry_id }}/{{ sim }}">{{ sim }}</a></div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <h3>Links</h3>
-        <div class="flex">
-            <div><p>BMRB <a href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?molName={{ name }}&id={{ entry_id }}" target="_blank">cross link</a></p></div>
-            <div><p>ALATIS (unique atom labels) <a href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/index.html"  target="_blank">cross link</a></p></div>
-            <div><p>Download SpinSimulation <a href="/wsgi/entry/{{ entry_id }}/{{ simulation }}/zip">data</a></p></div>
-        </div>
-    </div>-->
-
     <div class="details_box">
         <h1>{{ name }}</h1>
         <h2>Simulation outputs:</h2>
