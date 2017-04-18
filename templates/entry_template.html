@@ -74,7 +74,7 @@
         <h1>{{ name }}</h1>
         <h2>Simulation outputs:</h2>
 
-        <table class="alternating">
+        <table class="alternating left_align">
             <tr>
                 <td rowspan="30" class="white"><img alt="{{ InChI }}" title="{{ InChI }}" src="/entry/{{ entry_id }}/{{ simulation }}/{{ path_2D_image }}" style="max-width:400px; max-height:auto;"></td>
                 <td class="fake_header">Parameter</td>
@@ -128,8 +128,12 @@
             <tr><td>InChI</td><td>{{ InChI }}</td></tr>
             {% endif %}
             {% if pka %}
+            {% if pka is string %}
+            <tr><td>pKa</td><td>{{ pka }}</td>
+            {% else %}
             {% for one_pka in pka %}<tr><td>pKa</td><td>{{ one_pka }}</td>
             {% endfor %}
+            {% endif %}
             {% endif %}
             {% if note %}
             <tr><td>Notes</td><td>{{ note }}</td></tr>
@@ -141,7 +145,8 @@
         <h2>Spin Matrix</h2>
         <table class="alternating matrix" style="block">
         {% for item in matrix %}{% set outer_loop = loop -%}
-        <tr>{% for subitem in item %}{% if outer_loop.first %}<th>{{ subitem }}</th>{% else %}<td>{{ subitem }}</td>{% endif %}{% endfor %}</tr>
+        <tr>{% for subitem in item -%}
+            {% if outer_loop.first %}<th>{{ subitem }}</th>{% else %}<td>{% if subitem != 0 %}<strong>{{ subitem }}</strong>{% else %}{{ subitem }}{% endif %}</td>{% endif %}{% endfor %}</tr>
         {% endfor -%}
         </table>
     </div>

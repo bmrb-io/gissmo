@@ -17,7 +17,7 @@
 
             {% for sim in data -%}
             <tr>
-                <td><a href="/entry/{{ sim.entry_id }}/{{ sim.sim }}">{{ sim.sim.title() }}</a></td>
+                <td class="left_align"><a href="/entry/{{ sim.entry_id }}/{{ sim.sim }}">{{ sim.sim.title() }}</a></td>
                 <td>{{ sim.field_strength }}</td>
                 <td><a class="fake_button" href="/entry/{{ sim.entry_id }}/{{ sim.sim }}/zip">Download</a></td>
             </tr>
