@@ -12,8 +12,8 @@ from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file
 application = Flask(__name__)
 
-aux_info_path = "/websites/gissmo/data_april_06_2017/aux_info/"
-entry_path = "/websites/gissmo/data_april_06_2017/BMRB_entries_05_April_2017/"
+aux_info_path = "/websites/gissmo/DB/aux_info/"
+entry_path = "/websites/gissmo/DB/BMRB_DB/"
 here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
 #entries_file = "/websites/gissmo/entries.json"
@@ -86,6 +86,9 @@ def reload():
             try:
                 root = ET.parse(os.path.join(entry_path, entry_id, sim, "spin_simulation.xml")).getroot()
             except IOError:
+                continue
+            except Exception as e:
+                print entry_id, e
                 continue
 
             # Check the entry is released
@@ -194,8 +197,10 @@ def display_entry(entry_id, simulation=None, some_file=None):
                     data.date_time = time.strptime(time.ctime(os.path.getmtime(fn)))
                     zf.writestr(data, fn)
 
-            zf.comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
-                         request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
+            comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+                      request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
+            zf.comment = comment.encode()
+
             zf.close()
             memory_file.seek(0)
             return send_file(memory_file,
@@ -270,3 +275,6 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Return the page
     return render_template("entry_template.html", **ent_dict)
 
+
+if __name__ == "__main__":
+    print "Called main."
