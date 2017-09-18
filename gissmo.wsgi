@@ -193,9 +193,10 @@ def display_entry(entry_id, simulation=None, some_file=None):
                     np = os.path.join(root, _file)
                     np = np[np.index(entry_id):]
                     data = ZipInfo(np)
+                    data.external_attr = 0666 << 16L # Give all relevant permissions to downloaded file
                     data.compress_type = ZIP_DEFLATED
                     data.date_time = time.strptime(time.ctime(os.path.getmtime(fn)))
-                    zf.writestr(data, fn)
+                    zf.writestr(data, open(fn, "r").read())
 
             comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
                       request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
