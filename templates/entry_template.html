@@ -54,18 +54,18 @@
     {% block links %}
 
     {% if  sim_dirs|length > 1 %}
-    <h3>Simulations</h3>
+    <h3>Simulations:</h3>
     <p><a class="fake_button" href="/entry/{{ entry_id }}">Simulation overview</a></p>
     {% for sim in sim_dirs -%}
     <p><a class="fake_button" href="/entry/{{ entry_id }}/{{ sim }}">{{ sim.title() }}</a></p>
     {% endfor %}
     {% endif %}
 
-    <h3>Simulation {{ simulation }}</h3>
-    <p><a class="fake_button" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}" target="_blank">BMRB entry</a></p>
-    <p><a class="fake_button" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/index.html" target="_blank">ALATIS cross link</a></p>
-    <p><a class="fake_button" href="/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
-    <p><a class="fake_button" href="/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
+    <h3>Simulation: {{ simulation }}</h3>
+    <p><a class="fake_button_sim" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}" target="_blank">BMRB entry</a></p>
+    <p><a class="fake_button_sim" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/index.html" target="_blank">ALATIS cross link</a></p>
+    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
+    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
     {% endblock %}
 
     {% block body %}
