@@ -131,6 +131,11 @@ def display_list():
 
     return render_template("list_template.html", entries=entry_letters)
 
+@application.route('/vm')
+def return_vm():
+    """ Renders the downloadable VM page."""
+
+    return render_template("vm.html")
 
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):
