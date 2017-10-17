@@ -12,8 +12,8 @@ from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file
 application = Flask(__name__)
 
-aux_info_path = "/websites/gissmo/data_april_06_2017/aux_info/"
-entry_path = "/websites/gissmo/data_april_06_2017/BMRB_entries_05_April_2017/"
+aux_info_path = "/websites/gissmo/DB/aux_info/"
+entry_path = "/websites/gissmo/DB/BMRB_DB/"
 here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
 #entries_file = "/websites/gissmo/entries.json"
@@ -87,6 +87,9 @@ def reload():
                 root = ET.parse(os.path.join(entry_path, entry_id, sim, "spin_simulation.xml")).getroot()
             except IOError:
                 continue
+            except Exception as e:
+                print entry_id, e
+                continue
 
             # Check the entry is released
             status = get_tag_value(root, "status")
@@ -128,6 +131,11 @@ def display_list():
 
     return render_template("list_template.html", entries=entry_letters)
 
+@application.route('/vm')
+def return_vm():
+    """ Renders the downloadable VM page."""
+
+    return render_template("vm.html")
 
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):
@@ -190,12 +198,15 @@ def display_entry(entry_id, simulation=None, some_file=None):
                     np = os.path.join(root, _file)
                     np = np[np.index(entry_id):]
                     data = ZipInfo(np)
+                    data.external_attr = 0666 << 16L # Give all relevant permissions to downloaded file
                     data.compress_type = ZIP_DEFLATED
                     data.date_time = time.strptime(time.ctime(os.path.getmtime(fn)))
-                    zf.writestr(data, fn)
+                    zf.writestr(data, open(fn, "r").read())
 
-            zf.comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
-                         request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
+            comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+                      request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
+            zf.comment = comment.encode()
+
             zf.close()
             memory_file.seek(0)
             return send_file(memory_file,
@@ -270,3 +281,6 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Return the page
     return render_template("entry_template.html", **ent_dict)
 
+
+if __name__ == "__main__":
+    print "Called main."
