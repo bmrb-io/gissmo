@@ -3,10 +3,6 @@
         <title>GISSMO - {{ name }}</title>
         <!-- Plotly.js -->
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
-        <script src="https://d3js.org/d3-collection.v1.min.js"></script>
-        <script src="https://d3js.org/d3-dispatch.v1.min.js"></script>
-        <script src="https://d3js.org/d3-dsv.v1.min.js"></script>
-        <script src="https://d3js.org/d3-request.v1.min.js"></script>
 
         <style>
 
@@ -153,38 +149,34 @@
 
     <div class="details_box">
         <h2>Spectra</h2>
-        <div class="tooltip">Help
-            <span class="tooltiptext">To zoom into a region, draw a box around it.<br>
-                        Hover over the x/y-axis and use mouse-wheel to zoom in/out.<br>
-                        Hover over the x/y-axis hold down left-button to move around the spectra.<br>
-                        (De)activate a spectrum by clicking on its legend.<br></span>
+        <div>
+            <p>Select simulated field strength to view:
+            <select id="fieldstrength" onchange="load_spectra()">
+                    <option value="default" selected="selected">Default</option>
+                {% for sim in simulated_fields -%}
+                     <option value="{{sim}}MHz">{{sim}}</option>
+                {% endfor %}
+            </select>
+            </p>
+
+            <div class="tooltip">
+                <h3>Help</h3>
+                <span class="tooltiptext">To zoom into a region, draw a box around it.<br>
+                            Hover over the x/y-axis and use mouse-wheel to zoom in/out.<br>
+                            Hover over the x/y-axis hold down left-button to move around the spectra.<br>
+                            (De)activate a spectrum by clicking on its legend.<br></span>
+            </div>
         </div>
-        <div id="myDiv0"><!-- Plotly chart will be drawn inside this DIV --></div>
+        <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
     </div>
 
     <script type="text/javascript">
-        function my_plot(data1, data2, arg, callback){
-
-            var sim_ppm = [];
-            var sim_fid = [];
-            for (var i=0; i<data1.length; i++) {
-                row = data1[i];
-                sim_ppm.push( row['ppm'] );
-                sim_fid.push( row['val'] );
-            }
-
-            var exp_ppm = [];
-            var exp_fid = [];
-            for (var i=0; i<data2.length; i++) {
-                row = data2[i];
-                exp_ppm.push( row['ppm'] );
-                exp_fid.push( row['val'] );
-            }
+        function my_plot(data1, data2, fs){
 
             var trace1 = {
-                x: sim_ppm,
-                y: sim_fid,
-                name: 'Simulated',
+                x: data1[0],
+                y: data1[1],
+                name: 'Simulated ' + fs,
                 marker: {
                     color: 'rgb(256, 0, 0)',
                     size: 12
@@ -192,8 +184,8 @@
                 type: 'lines'
             };
             var trace2 = {
-                x: exp_ppm,
-                y: exp_fid,
+                x: data2[0],
+                y: data2[1],
                 name: 'Experimental data',
                 marker: {
                     color: 'rgb(0, 255, 0)',
@@ -218,31 +210,46 @@
                     fixedrange: false
                 }
             };
-            Plotly.newPlot('myDiv'+arg, data, layout, {scrollZoom: true});
-            callback(0)
+            Plotly.newPlot('myDiv', data, layout, {scrollZoom: true});
         };
 
-        var showGraph_call = showGraph_call || (function(callback){
-            var _args = {}; // private
-
-            return {
-                init : function(Args) {
-                    _args = Args;
-                    // some other initialising
-                },
-                showGraph : function() {
-                d3.csv("/entry/{{ entry_id }}/{{ simulation }}/sim_"+_args[0], function(error1, data1) {
-                    d3.csv("/entry/{{ entry_id }}/{{ simulation }}/exp_"+_args[0], function(error2, data2) {
-                        my_plot(data1,data2, _args[0], function(returned){});
-                    });
-                });
-
-                }
+        var getJSON = function(url, callback) {
+            var xhr = new XMLHttpRequest();
+            xhr.open('GET', url, true);
+            xhr.responseType = 'json';
+            xhr.onload = function() {
+              var status = xhr.status;
+              if (status === 200) {
+                callback(null, xhr.response);
+              } else {
+                callback(status, xhr.response);
+              }
             };
-            callback(1);
-        }());
+            xhr.send();
+        };
 
-        showGraph_call.init(["0", 1, "controlId"]);
-        showGraph_call.showGraph();
+        // Default experiment data and initial load
+        getJSON("/entry/{{ entry_id }}/{{ simulation }}/experimental.json", function(err, data) {
+            if (err !== null) {
+                alert('Something went wrong: ' + err);
+            } else {
+                experiment_data = data;
+                load_spectra("default");
+            }
+        });
+
+        function load_spectra(){
+
+            var field_strength = document.getElementById("fieldstrength").value;
+
+            getJSON("/entry/{{ entry_id }}/{{ simulation }}/sim_" + field_strength + ".json", function(err, data) {
+                if (err !== null) {
+                    alert('Something went wrong: ' + err);
+                } else {
+                    my_plot(experiment_data, data, field_strength);
+                }
+            });
+        }
+
     </script>
     {% endblock %}

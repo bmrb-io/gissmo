@@ -215,12 +215,15 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
         # Send individual files from the dir
         else:
-            return send_from_directory(exp_full_path, some_file)
+            if some_file.endswith(".json"):
+                return send_from_directory(os.path.join(exp_full_path, "spectral_data"), some_file)
+            else:
+                return send_from_directory(exp_full_path, some_file)
 
     # Load the entry XML
     try:
         root = ET.parse(os.path.join(exp_full_path, "spin_simulation.xml")).getroot()
-    except IOError:
+    except IOError as e:
         return "No XML found."
 
     # Check the entry is released
@@ -234,6 +237,10 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict = dict_builder(root, tags_to_get)
     ent_dict['entry_id'] = entry_id
     ent_dict['simulation'] = simulation
+
+    # Look up what simulated field strengths are available
+    field_strengths = sorted([int(x[4:].replace("MHz","")) for x in os.listdir(os.path.join(exp_full_path, "B0s"))])
+    ent_dict['simulated_fields'] = field_strengths
 
     # Make sure the image file exists
     if not os.path.isfile(os.path.join(exp_full_path, ent_dict['path_2D_image'])):
