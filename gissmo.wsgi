@@ -44,7 +44,7 @@ def dict_builder(root, tags):
 def get_title(entry_id):
     """ Fetches the actual compound name from BMRB API. """
 
-    title = requests.get("http://webapi.bmrb.wisc.edu/v1/rest/tag/%s/_Assembly.Name" % entry_id).json()
+    title = requests.get("http://webapi.bmrb.wisc.edu/v2/entry/%s?tag=_Assembly.Name" % entry_id, headers={"Application":"GISSMO"}).json()
     return title[entry_id]['_Assembly.Name'][0].title()
 
 def get_aux_info(entry_id, simulation, aux_name):
