@@ -194,7 +194,12 @@
                 type: 'lines'
             };
 
-            var data = [trace1, trace2];
+            var data = [];
+            if (fs == "default"){
+                var data = [trace1, trace2];
+            } else {
+                var data = [trace1];
+            }
 
             var layout = {
                 xaxis: {
@@ -208,7 +213,8 @@
                 },
                 yaxis: {
                     fixedrange: false
-                }
+                },
+                showlegend: true
             };
             Plotly.newPlot('myDiv', data, layout, {scrollZoom: true});
         };
@@ -229,7 +235,7 @@
         };
 
         // Default experiment data and initial load
-        getJSON("/entry/{{ entry_id }}/{{ simulation }}/experimental.json", function(err, data) {
+        getJSON("/static/DB/BMRB_DB/{{ entry_id }}/{{ simulation }}/spectral_data/experimental.json", function(err, data) {
             if (err !== null) {
                 alert('Something went wrong: ' + err);
             } else {
@@ -242,11 +248,11 @@
 
             var field_strength = document.getElementById("fieldstrength").value;
 
-            getJSON("/entry/{{ entry_id }}/{{ simulation }}/sim_" + field_strength + ".json", function(err, data) {
+            getJSON("/static/DB/BMRB_DB/{{ entry_id }}/{{ simulation }}/spectral_data/sim_" + field_strength + ".json", function(err, data) {
                 if (err !== null) {
                     alert('Something went wrong: ' + err);
                 } else {
-                    my_plot(experiment_data, data, field_strength);
+                    my_plot(data, experiment_data, field_strength);
                 }
             });
         }
