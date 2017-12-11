@@ -1,15 +1,19 @@
 #!/usr/bin/env python
 
 import os
+import re
 import json
 import xml.etree.cElementTree as ET
 
 import time
 import requests
+from decimal import Decimal
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
-from flask import Flask, render_template, send_from_directory, request, redirect, send_file
+import psycopg2
+
+from flask import Flask, render_template, send_from_directory, request, redirect, send_file, jsonify
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
@@ -46,6 +50,18 @@ def get_title(entry_id):
 
     title = requests.get("http://webapi.bmrb.wisc.edu/v2/entry/%s?tag=_Assembly.Name" % entry_id, headers={"Application":"GISSMO"}).json()
     return title[entry_id]['_Assembly.Name'][0].title()
+
+def get_postgres_connection(user='web', database='gissmo',
+                            dictionary_cursor=False):
+    """ Returns a connection to postgres and a cursor."""
+
+    if dictionary_cursor:
+        conn = psycopg2.connect(user=user, database=database, cursor_factory=DictCursor)
+    else:
+        conn = psycopg2.connect(user=user, database=database)
+    cur = conn.cursor()
+
+    return conn, cur
 
 def get_aux_info(entry_id, simulation, aux_name):
 
@@ -131,11 +147,124 @@ def display_list():
 
     return render_template("list_template.html", entries=entry_letters)
 
+@application.route('/peak_search')
+def peak_search():
+    """ Returns a page with compounds that match the provided peaks. """
+
+    raw_shift = request.args.get('rs', "")
+    peaks = re.split('[\s\n\t,;]+', raw_shift)
+    frequency = request.args.get('frequency', "800")
+    peak_type = request.args.get('peak_type', "standard")
+    cur = get_postgres_connection()[1]
+
+    sql = '''
+SELECT bmrb_id,simulation_id,array_agg(DISTINCT ppm)
+FROM chemical_shifts
+WHERE '''
+    terms = []
+
+    fpeaks = []
+    try:
+        for peak in peaks:
+            fpeaks.append(Decimal(peak))
+    except ValueError:
+        raise RequestError("Invalid peak specified. All peaks must be numbers. Invalid peak: '%s'" % peak)
+    except:
+        pass
+
+    peaks = sorted(fpeaks)
+
+    for peak in peaks:
+        sql += '''
+(ppm < %s  AND ppm > %s) OR '''
+        terms.append(peak + Decimal(".01"))
+        terms.append(peak - Decimal(".01"))
+
+    # End the OR
+    sql += '''
+1=2 AND
+frequency=%s AND peak_type=%s
+GROUP BY bmrb_id, simulation_id
+ORDER BY count(DISTINCT ppm) DESC;
+'''
+    terms.extend([frequency, peak_type])
+
+    # Do the query
+    cur.execute(sql, terms)
+    #return str(cur.query)
+
+    result = []
+
+    for entry in cur:
+        result.append({'Entry_ID':entry[0],
+                       'Simulation_ID': entry[1],
+                       'Val': entry[2]})
+
+    # Convert the search to decimal
+    peaks = [Decimal(x) for x in peaks]
+
+    def get_closest(collection, number):
+        """ Returns the closest number from a list of numbers. """
+        return min(collection, key=lambda x: abs(x-number))
+
+    def get_sort_key(res):
+        """ Returns the sort key. """
+
+        key = 0
+        o_one = Decimal(".01")
+
+        # Determine how many of the queried peaks were matched
+        num_match = 0
+        matched_peaks = []
+        for peak in peaks:
+            closest = get_closest(res['Val'], peak)
+            if abs(peak-closest) < o_one:
+                num_match += 1
+                matched_peaks.append(closest)
+
+                # Add the difference of all the matched shifts
+                key += abs(get_closest(matched_peaks, peak) - peak)
+
+        # Set the calculated values
+        res['Peaks_matched'] = num_match
+        res['Combined_offset'] = round(key, 3)
+        # Only return the closest matches
+        res['Val'] = matched_peaks
+
+        return (-num_match, key, res['Entry_ID'])
+
+    result = sorted(result, key=get_sort_key)
+
+    # Determine actual entry list
+    entry_list = json.loads(open(entries_file, "r").read())
+
+    mentry_list = []
+    for row in result:
+        for entry in entry_list:
+            m = []
+            for sim in entry:
+                if row['Entry_ID'] == sim[0] and row['Simulation_ID'] == sim[3]:
+                    sim.append([str(x) for x in row['Val']])
+                    sim.append(row['Peaks_matched'])
+                    sim.append(row['Combined_offset'])
+                    m.append(sim)
+            mentry_list.append(m)
+
+    return render_template("search_result.html", entries={1:mentry_list},
+                           base_url=request.path, frequency=frequency,
+                           peak_type=peak_type, raw_shift=raw_shift )
+
 @application.route('/vm')
 def return_vm():
     """ Renders the downloadable VM page."""
 
     return render_template("vm.html")
+
+@application.route("/mixture")
+def get_mixture():
+    """ Allow the user to specify a mixture. """
+
+    return render_template("mixture.html")
 
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):
