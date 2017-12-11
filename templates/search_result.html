@@ -1,0 +1,103 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+{% endblock %}
+
+{% block body %}
+        <div class="details_box">
+            <h2>Peak Search</h2>
+
+            <form method="get" id="search_form" action="" onsubmit="event.preventDefault(); return false;">
+                <p>Select the peak type
+                <select name="peak_type">
+                  <option value="standard"{% if peak_type=="standard" %} selected="selected"{% endif %}>Standard</option>
+                  <option value="GSD" {% if peak_type==40 %} selected="selected"{% endif %}>Deconvoluted</option>
+                </select>
+                Select the frequency:
+                <select name="frequency">
+                  <option value="40"{% if frequency=="40" %} selected="selected"{% endif %}>40 Mhz</option>
+                  <option value="100"{% if frequency=="100" %} selected="selected"{% endif %}>100 Mhz</option>
+                  <option value="200"{% if frequency=="200" %} selected="selected"{% endif %}>200 Mhz</option>
+                  <option value="300"{% if frequency=="300" %} selected="selected"{% endif %}>300 Mhz</option>
+                  <option value="400"{% if frequency=="400" %} selected="selected"{% endif %}>400 Mhz</option>
+                  <option value="500"{% if frequency=="500" %} selected="selected"{% endif %}>500 Mhz</option>
+                  <option value="600"{% if frequency=="600" %} selected="selected"{% endif %}>600 Mhz</option>
+                  <option value="700"{% if frequency=="700" %} selected="selected"{% endif %}>700 Mhz</option>
+                  <option value="750"{% if frequency=="750" %} selected="selected"{% endif %}>750 Mhz</option>
+                  <option value="800"{% if frequency=="800" %} selected="selected"{% endif %}>800 Mhz</option>
+                  <option value="900"{% if frequency=="900" %} selected="selected"{% endif %}>900 Mhz</option>
+                  <option value="950"{% if frequency=="950" %} selected="selected"{% endif %}>950 Mhz</option>
+                  <option value="1000"{% if frequency=="1000" %} selected="selected"{% endif %}>1000 Mhz</option>
+                  <option value="1300"{% if frequency=="1300" %} selected="selected"{% endif %}>1300 Mhz</option>
+                </select></p>
+
+                <p><p>Enter a list of H peak values separated by spaces, commas, or newlines. Specify only the peak value and not the atom type. The search prioritizes entries that match the largest number of peaks first and the closeness of the matches second. Therefore you will get the best results by searching for several characteristic peaks.</p>
+                <textarea COLS="40" ROWS="20" WRAP="hard" id="rs" name="rs">{{ raw_shift }}</textarea><br>
+                <p>Peaks are counted as a match if they are within .01 ppm.</p>
+
+                <input type="submit" id="submit" value="Query">
+                <br>
+                <br>
+            </form>
+
+            <script>
+            $("#submit").click(function(){
+
+                // Clean up the shifts
+                var shifts = $('#rs').val().split(/[ \t,\n\r;]+/);
+                shifts = shifts.filter(function(n){ return n != "" });
+
+                if (shifts.join("").length > 1900){
+                    alert("Too many peaks specified. Please search for fewer peaks.");
+                    return;
+                }
+
+                $("#rs").val(shifts.join(" "));
+
+                window.location.replace('{{ base_url }}?' + $("#search_form").serialize());
+            });
+
+
+
+</script>
+
+            <table class="alternating">
+                <thead>
+                    <tr>
+                        <th class="left_align">Compound Name</th>
+                        <th>BMRB ID</th>
+                        <th>Simulation Name</th>
+                        <th>Number of Spins</th>
+                        <th>Data</th>
+                        <th>Number of Matching Peaks</th>
+                        <th>Combined Peak Offset</th>
+                        <th>Matching Peaks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for letter in entries.keys()|sort %}
+                    {% for entry in entries[letter] %}
+                    {% set outer_loop = loop -%}
+
+                    {% for simulation in entry %}
+                    {% if outer_loop.first %}
+                    <tr id="{{ letter }}">{% else %}
+                    <tr>{% endif %}
+                       {% if loop.first %}<td rowspan="{{ entry|length }}" class="left_align"><a href="/entry/{{ simulation[0] }}" alt="{{ simulation[5] }}" title="{{ simulation[5] }}">{{ simulation[1] }}</a></td>{% endif %}
+                       {% if loop.first %}<td rowspan="{{ entry|length }}"><a href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}" target="_blank">{{ simulation[0] }}</a></td>{% endif %}
+                       <td><a href="/entry/{{ simulation[0] }}/{{ simulation[3] }}">{{ simulation[3].title() }}</a></td>
+                       <td>{{ simulation[4] }}</td>
+                       <td><a class="fake_button" href="/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
+                       <td>{{ simulation[7] }}</td>
+                       <td>{{ simulation[8] }}</td>
+                       <td>{{ simulation[6]|join(", ") }}</td>
+                    </tr>
+                    {% endfor %}
+                    {% endfor %}
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+{% endblock %}
