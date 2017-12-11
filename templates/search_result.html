@@ -85,9 +85,9 @@
                     {% if outer_loop.first %}
                     <tr id="{{ letter }}">{% else %}
                     <tr>{% endif %}
-                       {% if loop.first %}<td rowspan="{{ entry|length }}" class="left_align"><a href="/entry/{{ simulation[0] }}" alt="{{ simulation[5] }}" title="{{ simulation[5] }}">{{ simulation[1] }}</a></td>{% endif %}
+                       {% if loop.first %}<td rowspan="{{ entry|length }}" class="left_align"><a href="/entry/{{ simulation[0] }}" alt="{{ simulation[5] }}" title="{{ simulation[5] }}" target="_blank">{{ simulation[1] }}</a></td>{% endif %}
                        {% if loop.first %}<td rowspan="{{ entry|length }}"><a href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}" target="_blank">{{ simulation[0] }}</a></td>{% endif %}
-                       <td><a href="/entry/{{ simulation[0] }}/{{ simulation[3] }}">{{ simulation[3].title() }}</a></td>
+                       <td><a href="/entry/{{ simulation[0] }}/{{ simulation[3] }}" target="_blank">{{ simulation[3].title() }}</a></td>
                        <td>{{ simulation[4] }}</td>
                        <td><a class="fake_button" href="/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
                        <td>{{ simulation[7] }}</td>
