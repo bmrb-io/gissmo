@@ -13,7 +13,14 @@
                 <p>Select the peak type
                 <select name="peak_type">
                   <option value="standard"{% if peak_type=="standard" %} selected="selected"{% endif %}>Standard</option>
-                  <option value="GSD" {% if peak_type==40 %} selected="selected"{% endif %}>Deconvoluted</option>
+                  <option value="GSD" {% if peak_type=="GSD" %} selected="selected"{% endif %}>Deconvoluted</option>
+                </select>
+                Select the matching threshold
+                <select name="threshold">
+                  <option value=".001"{% if threshold==".001" %} selected="selected"{% endif %}>.001</option>
+                  <option value=".005"{% if threshold==".005" %} selected="selected"{% endif %}>.005</option>
+                  <option value=".01"{% if threshold==".01" %} selected="selected"{% endif %}>.01</option>
+                  <option value=".03" {% if threshold==".03" %} selected="selected"{% endif %}>.03</option>
                 </select>
                 Select the frequency:
                 <select name="frequency">

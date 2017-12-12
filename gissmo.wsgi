@@ -155,12 +155,14 @@ def peak_search():
     peaks = re.split('[\s\n\t,;]+', raw_shift)
     frequency = request.args.get('frequency', "800")
     peak_type = request.args.get('peak_type', "standard")
+    threshold = request.args.get('threshold', ".01")
+    threshold_dec = Decimal(threshold)
     cur = get_postgres_connection()[1]
 
     sql = '''
 SELECT bmrb_id,simulation_id,array_agg(DISTINCT ppm)
 FROM chemical_shifts
-WHERE '''
+WHERE ('''
     terms = []
 
     fpeaks = []
@@ -177,12 +179,12 @@ WHERE '''
     for peak in peaks:
         sql += '''
 (ppm < %s  AND ppm > %s) OR '''
-        terms.append(peak + Decimal(".01"))
-        terms.append(peak - Decimal(".01"))
+        terms.append(peak + threshold_dec)
+        terms.append(peak - threshold_dec)
 
     # End the OR
     sql += '''
-1=2 AND
+1=2 ) AND
 frequency=%s AND peak_type=%s
 GROUP BY bmrb_id, simulation_id
 ORDER BY count(DISTINCT ppm) DESC;
@@ -191,7 +193,6 @@ ORDER BY count(DISTINCT ppm) DESC;
 
     # Do the query
     cur.execute(sql, terms)
-    #return str(cur.query)
 
     result = []
 
@@ -211,14 +212,13 @@ ORDER BY count(DISTINCT ppm) DESC;
         """ Returns the sort key. """
 
         key = 0
-        o_one = Decimal(".01")
 
         # Determine how many of the queried peaks were matched
         num_match = 0
         matched_peaks = []
         for peak in peaks:
             closest = get_closest(res['Val'], peak)
-            if abs(peak-closest) < o_one:
+            if abs(peak-closest) < threshold_dec:
                 num_match += 1
                 matched_peaks.append(closest)
 
@@ -252,7 +252,8 @@ ORDER BY count(DISTINCT ppm) DESC;
 
     return render_template("search_result.html", entries={1:mentry_list},
                            base_url=request.path, frequency=frequency,
-                           peak_type=peak_type, raw_shift=raw_shift )
+                           peak_type=peak_type, raw_shift=raw_shift,
+                           threshold=threshold )
 
 @application.route('/vm')
 def return_vm():
