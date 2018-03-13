@@ -20,7 +20,6 @@ aux_info_path = "/websites/gissmo/DB/aux_info/"
 entry_path = "/websites/gissmo/DB/BMRB_DB/"
 here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
-#entries_file = "/websites/gissmo/entries.json"
 
 # Helper methods
 def get_tag_value(root, tag, _all=False):
@@ -260,6 +259,11 @@ def return_vm():
     """ Renders the downloadable VM page."""
 
     return render_template("vm.html")
+
+@application.route('/js')
+def js():
+    """ Send the JS"""
+    return send_file("jquery.csv.min.js")
 
 @application.route("/mixture")
 def get_mixture():

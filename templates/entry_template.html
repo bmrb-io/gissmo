@@ -2,7 +2,7 @@
     {% block head %}
         <title>GISSMO - {{ name }}</title>
         <!-- Plotly.js -->
-        <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-1.35.2.min.js"></script>
 
         <style>
 
@@ -171,7 +171,7 @@
     </div>
 
     <script type="text/javascript">
-        function my_plot(data1, data2, fs){
+        function my_plot(data1, data2, fs, xrange, yrange){
 
             var trace1 = {
                 x: data1[0],
@@ -216,6 +216,16 @@
                 },
                 showlegend: true
             };
+
+            if (xrange){
+                layout.xaxis.range = xrange;
+                delete layout.xaxis.autorange;
+            }
+            if (yrange){
+                layout.yaxis.range = yrange;
+                delete layout.xaxis.autorange;
+            }
+
             Plotly.newPlot('myDiv', data, layout, {scrollZoom: true});
         };
 
@@ -235,7 +245,7 @@
         };
 
         // Default experiment data and initial load
-        getJSON("/static/DB/BMRB_DB/{{ entry_id }}/{{ simulation }}/spectral_data/experimental.json", function(err, data) {
+        getJSON("/entry/{{ entry_id }}/{{ simulation }}/experimental.json", function(err, data) {
             if (err !== null) {
                 alert('Something went wrong: ' + err);
             } else {
@@ -248,11 +258,17 @@
 
             var field_strength = document.getElementById("fieldstrength").value;
 
-            getJSON("/static/DB/BMRB_DB/{{ entry_id }}/{{ simulation }}/spectral_data/sim_" + field_strength + ".json", function(err, data) {
+            getJSON("/entry/{{ entry_id }}/{{ simulation }}/sim_" + field_strength + ".json", function(err, data) {
                 if (err !== null) {
                     alert('Something went wrong: ' + err);
                 } else {
-                    my_plot(data, experiment_data, field_strength);
+                    var plot = document.getElementById('myDiv');
+                    if (plot.layout) {
+                        my_plot(data, experiment_data, field_strength, plot.layout.xaxis.range, plot.layout.yaxis.range);
+                    } else {
+                        my_plot(data, experiment_data, field_strength);
+                    };
+
                 }
             });
         }
