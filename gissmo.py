@@ -419,6 +419,11 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     ent_dict['matrix'] = matrix
 
+    # Get the chemical shifts from postgres
+    conn, cur = get_postgres_connection()
+    cur.execute('''SELECT frequency, ppm, amplitude FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s AND peak_type='standard' ''', [entry_id, simulation])
+    ent_dict['shifts'] = cur.fetchall()
+
     # Return the page
     return render_template("entry_template.html", **ent_dict)
 

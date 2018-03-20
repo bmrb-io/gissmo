@@ -32,16 +32,39 @@
             border-collapse: collapse;
         }
 
-        td:not(:first-child) {
+        td.matrix:not(:first-child) {
             border: 2px solid white;
         }*/
 
         /* Allow displaying text in multiple columns */
         .flex {
-          display: flex;                  /* establish flex container */
-          flex-direction: row;            /* default value; can be omitted */
-          flex-wrap: nowrap;              /* default value; can be omitted */
-          justify-content: space-between; /* switched from default (flex-start, see below) */
+            display: flex;                  /* establish flex container */
+            flex-direction: row;            /* default value; can be omitted */
+            flex-wrap: nowrap;              /* default value; can be omitted */
+            justify-content: space-between; /* switched from default (flex-start, see below) */
+        }
+
+        .container {
+            width: 100%;
+            margin: auto;
+            padding: 10px;
+        }
+        .shift_graph {
+            width: 80%;
+            height: 500px;
+            float: left;
+        }
+        .shift_list {
+            margin-left: 80%;
+            height: 500px;
+        }
+        .shift td:first-child, fake_link {
+             cursor:pointer;
+             color:blue;
+        }
+        .shift td:first-child:hover, fake_link:hover {
+             text-decoration:none;
+             text-shadow: 1px 1px 1px #555;
         }
 
         </style>
@@ -157,6 +180,7 @@
                      <option value="{{sim}}MHz">{{sim}} MHz</option>
                 {% endfor %}
             </select>
+            <a class="fake_button" onclick="autoscale()">Autoscale</a>
             </p>
 
             <div class="tooltip">
@@ -167,7 +191,25 @@
                             (De)activate a spectrum by clicking on its legend.<br></span>
             </div>
         </div>
-        <div id="myDiv"><!-- Plotly chart will be drawn inside this DIV --></div>
+        <div class="container">
+            <div id="myDiv" class="shift_graph"><!-- Plotly chart will be drawn inside this DIV --></div>
+            <div id="content" class="shift_list" style="overflow: scroll">
+                <table class="alternating left_align">
+                    <thead>
+                        <tr>
+                            <th>PPM</th>
+                            <th>Amplitude</th>
+                        </tr>
+                    </thead>
+                    {% for cs in shifts %}
+                    <tr class="shift {{ cs[0]}}">
+                        <td onclick="load_shift({{cs[1]}},{{cs[2]}})">{{ cs[1] }}</td>
+                        <td>{{ cs[2] }}</td>
+                    </tr>
+                    {% endfor %}
+                </table>
+            </div>
+        </div>
     </div>
 
     <script type="text/javascript">
@@ -254,6 +296,21 @@
             }
         });
 
+        function autoscale() {
+            Plotly.relayout(document.getElementById('myDiv'), {
+                'xaxis.autorange': true,
+                'yaxis.autorange': true
+            });
+        }
+
+        function load_shift(ppm, amplitude) {
+            var update = {
+                'xaxis.range': [ppm - .1, ppm + .1],
+                'yaxis.range': [0, amplitude * 1.3]
+            };
+            Plotly.relayout(document.getElementById('myDiv'), update);
+        }
+
         function load_spectra(){
 
             var field_strength = document.getElementById("fieldstrength").value;
@@ -271,6 +328,23 @@
 
                 }
             });
+
+            // Show the right shifts
+            var shifts = document.getElementsByClassName("shift");
+            for (var i = 0; i < shifts.length; i++) {
+                if (shifts[i].classList.contains(field_strength.slice(0, -3))){
+                    shifts[i].style.display = "";
+                } else {
+                    shifts[i].style.display = "none";
+                }
+            }
+
+            // Hide the table if default
+            if (field_strength === 'default'){
+                document.getElementsByClassName("shift_list")[0].style.display = "none";
+            } else {
+                document.getElementsByClassName("shift_list")[0].style.display = "block";
+            }
         }
 
     </script>
