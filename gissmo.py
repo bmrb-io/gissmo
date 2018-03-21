@@ -265,9 +265,12 @@ def js():
     """ Send the JS"""
     return send_file("jquery.csv.min.js")
 
-@application.route("/mixture")
+@application.route("/mixture", methods=['GET', 'POST'])
 def get_mixture():
     """ Allow the user to specify a mixture. """
+
+    if request.method == "POST":
+        return str(request.form)
 
     return render_template("mixture.html")
 

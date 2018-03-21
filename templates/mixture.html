@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+    {% block head %}
+        <title>Mixture Spectra Simulation</title>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+        <script src="/js"></script>
+
+    {% endblock %}
+
+    {% block body %}
+    <div class="details_box">
+        <h1>Mixture Spectra Simulation</h1>
+
+        <form method="post" action="test" id="upload" enctype="multipart/form-data">
+            <P>Load a compound list from a file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()">
+
+            <table class="alternating">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Compound Name / ID</th>
+                        <th>Compound Concentration</th>
+                        <th>Reference Compound</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="compound_anchor">
+                        <td><input type="button" value="Add compound" onclick="addCompound()"/></td>
+                        <td><input type="text" id="compound_new"><input type="hidden" id="id_new"></td>
+                        <td><input type="type" id="concentration_new"></td>
+                        <td><input type="checkbox" id="reference_new"></td>
+                    </tr>
+                </tbody>
+            </table>
+            <input type="submit">
+        </form>
+        <div id="results">
+        </div>
+    </div>
+
+    <script>
+
+        $( "form" ).submit(function( event ) {
+            var serialized = $( this ).serializeObject();
+          console.log( serialized );
+          event.preventDefault();
+
+          $.post( "", serialized)
+            .done(function( data ) {
+              $("#results").html(data);
+            });
+        });
+
+        row_id = 0;
+
+        function interpretCSV(csvArray) {
+            return 1;
+        }
+
+        function openFile() {
+            var input = document.getElementById("experiment_file");
+            var reader = new FileReader();
+            reader.onload = function(){
+                csvArray = $.csv.toArrays(reader.result);
+            };
+
+            reader.readAsText(input.files[0]);
+        };
+
+        function addCompound() {
+            var compound = $("#compound_new").val();
+            var id = $("#id_new").val();
+            if (!compound){
+                alert("Please select a compound from one of the suggestions that will appear as you type.");
+                return null;
+            }
+            var concentration = $("#concentration_new").val();
+            var reference = $("#reference_new").is(':checked');
+
+            var row = $("<tr></tr>");
+            var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { var item = event.data.row.remove();}));
+            compound = $("<td></td>").append($('<input type="text" name="mixture[' + row_id + '][compound]" disabled>').val(compound))
+                                     .append($('<input type="hidden" name="mixture[' + row_id + '][id]">').val(id));
+            concentration = $("<td></td>").append($('<input type="text" name="mixture[' + row_id + '][concentration]">').val(concentration));
+            reference = $("<td></td>").append($('<input type="checkbox" name="mixture[' + row_id + '][reference]">').prop('checked', reference));
+            row.append(control, compound, concentration, reference).insertBefore("#compound_anchor");
+            row_id ++;
+
+            // Reset the values
+            $("#compound_new").val('');
+            $("#concentration_new").val('');
+            $("#reference_new").prop('checked', false);
+        }
+
+        function escape_regexp(text) {
+          return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+        }
+
+        $.expr[':'].textEquals = function (a, i, m) {
+          return $(a).text().match("^" + escape_regexp(m[3]) + "$");
+        };
+
+
+        $( "#compound_new" ).autocomplete({
+            minLength: 2,
+            delay: 0,
+            source: function(request, response) {
+                $.getJSON("http://webapi.bmrb.wisc.edu/v2/instant", { database: "metabolomics", term : request.term },
+                response);
+            },
+            change: function (event, ui) {
+                if(!ui.item){
+                    //http://api.jqueryui.com/autocomplete/#event-change -
+                    // The item selected from the menu, if any. Otherwise the property is null
+                    //so clear the item for force selection
+                    $("#compound_new").val("");
+                }
+
+            }, select: function(event, ui) {
+                $("#id_new").val(ui.item.value);
+                $("#compound_new").val(ui.item.label);
+                return false;
+            }
+        }).data("ui-autocomplete")._renderItem = function (ul, item) {
+             return add_color_span_instant(ul, item, "compound_new");
+        };
+
+        // Use this to highlight the query words in a given text
+        function highlight_words(words, text){
+            regex = new RegExp("(" + words.join("|") + ")", "ig");
+            return text.replace(regex, '<strong>$1</strong>');
+        }
+
+        function add_color_span_instant(ul, item, id) {
+
+            var terms = document.getElementById(id).value.split(/[ ,]+/);
+            var display = highlight_words(terms, item.value + ": " + item.label);
+
+            var hidden_div = $('<div style="display: none" class="instant_search_extras"></div>');
+
+            // Only show authors or citations if there are any...
+            if (item.authors.length > 0){
+                hidden_div.append($("<span><b>BMRB ID</b>: " + item.inchi + "</span><br>"));
+            }
+
+            if ("extra" in item){
+                hidden_div.append($("<span><b>" + item.extra.termname + "</b>: " + highlight_words(terms, item.extra.term) + "</span><br>"));
+            }
+
+            return $("<li></li>")
+                .mouseenter(function(e){ hidden_div.show(0); })
+                .mouseleave(function(e){ hidden_div.hide(0); })
+                .data("item.autocomplete", item)
+                .append("<a><span style='cursor:pointer;'>" + display + "</span></a>").append(hidden_div)
+                .appendTo(ul);
+        }
+
+        /**
+         * jQuery serializeObject
+         * @copyright 2014, macek <paulmacek@gmail.com>
+         * @link https://github.com/macek/jquery-serialize-object
+         * @license BSD
+         * @version 2.5.0
+         */
+        !function(e,i){if("function"==typeof define&&define.amd)define(["exports","jquery"],function(e,r){return i(e,r)});else if("undefined"!=typeof exports){var r=require("jquery");i(exports,r)}else i(e,e.jQuery||e.Zepto||e.ender||e.$)}(this,function(e,i){function r(e,r){function n(e,i,r){return e[i]=r,e}function a(e,i){for(var r,a=e.match(t.key);void 0!==(r=a.pop());)if(t.push.test(r)){var u=s(e.replace(/\[\]$/,""));i=n([],u,i)}else t.fixed.test(r)?i=n([],r,i):t.named.test(r)&&(i=n({},r,i));return i}function s(e){return void 0===h[e]&&(h[e]=0),h[e]++}function u(e){switch(i('[name="'+e.name+'"]',r).attr("type")){case"checkbox":return"on"===e.value?!0:e.value;default:return e.value}}function f(i){if(!t.validate.test(i.name))return this;var r=a(i.name,u(i));return l=e.extend(!0,l,r),this}function d(i){if(!e.isArray(i))throw new Error("formSerializer.addPairs expects an Array");for(var r=0,t=i.length;t>r;r++)this.addPair(i[r]);return this}function o(){return l}function c(){return JSON.stringify(o())}var l={},h={};this.addPair=f,this.addPairs=d,this.serialize=o,this.serializeJSON=c}var t={validate:/^[a-z_][a-z0-9_]*(?:\[(?:\d*|[a-z0-9_]+)\])*$/i,key:/[a-z0-9_]+|(?=\[\])/gi,push:/^$/,fixed:/^\d+$/,named:/^[a-z0-9_]+$/i};return r.patterns=t,r.serializeObject=function(){return new r(i,this).addPairs(this.serializeArray()).serialize()},r.serializeJSON=function(){return new r(i,this).addPairs(this.serializeArray()).serializeJSON()},"undefined"!=typeof i.fn&&(i.fn.serializeObject=r.serializeObject,i.fn.serializeJSON=r.serializeJSON),e.FormSerializer=r,r});
+
+    </script>
+    {% endblock %}
