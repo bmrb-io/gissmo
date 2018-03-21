@@ -12,7 +12,7 @@
     <div class="details_box">
         <h1>Mixture Spectra Simulation</h1>
 
-        <form method="post" action="test" id="upload" enctype="multipart/form-data">
+        <form method="post" action="" id="upload" enctype="multipart/form-data">
             <P>Load a compound list from a file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()">
 
             <table class="alternating">
@@ -42,14 +42,24 @@
     <script>
 
         $( "form" ).submit(function( event ) {
-            var serialized = $( this ).serializeObject();
-          console.log( serialized );
+            console.log($( this ).serializeObject());
+
+        var serialized = $( this ).serializeJSON();
           event.preventDefault();
 
-          $.post( "", serialized)
-            .done(function( data ) {
-              $("#results").html(data);
+            $.ajax({
+                type: "POST",
+                url: "",
+                // The key needs to match your method's input parameter (case-sensitive).
+                data: serialized,
+                contentType: "application/json; charset=utf-8",
+                //dataType: "json",
+                success: function(data){$("#results").html(data);},
+                failure: function(errMsg) {
+                    alert(errMsg);
+                }
             });
+
         });
 
         row_id = 0;
@@ -80,10 +90,10 @@
 
             var row = $("<tr></tr>");
             var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { var item = event.data.row.remove();}));
-            compound = $("<td></td>").append($('<input type="text" name="mixture[' + row_id + '][compound]" disabled>').val(compound))
-                                     .append($('<input type="hidden" name="mixture[' + row_id + '][id]">').val(id));
-            concentration = $("<td></td>").append($('<input type="text" name="mixture[' + row_id + '][concentration]">').val(concentration));
-            reference = $("<td></td>").append($('<input type="checkbox" name="mixture[' + row_id + '][reference]">').prop('checked', reference));
+            compound = $("<td></td>").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(compound))
+                                     .append($('<input type="hidden" name="mixture[][id]">').val(id));
+            concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">').val(concentration));
+            reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">').prop('checked', reference));
             row.append(control, compound, concentration, reference).insertBefore("#compound_anchor");
             row_id ++;
 

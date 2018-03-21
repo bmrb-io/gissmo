@@ -269,9 +269,13 @@ def js():
 def get_mixture():
     """ Allow the user to specify a mixture. """
 
+    # They sent a mixture, send them the spectra
     if request.method == "POST":
-        return str(request.form)
+        mixture = request.get_json()['mixture']
+        # TODO: Do some work to make something more interesting...
+        return render_template("mixture_render.html", mixture=mixture)
 
+    # Send them the page to enter a mixture
     return render_template("mixture.html")
 
 @application.route('/entry/<entry_id>')
