@@ -421,7 +421,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Get the chemical shifts from postgres
     conn, cur = get_postgres_connection()
-    cur.execute('''SELECT frequency, ppm, amplitude FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s AND peak_type='standard' ''', [entry_id, simulation])
+    cur.execute('''SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s ORDER BY peak_type='standard' DESC, frequency ASC, ppm ASC''', [entry_id, simulation])
     ent_dict['shifts'] = cur.fetchall()
 
     # Return the page

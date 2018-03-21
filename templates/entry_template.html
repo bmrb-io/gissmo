@@ -58,11 +58,11 @@
             margin-left: 80%;
             height: 500px;
         }
-        .shift td:first-child, fake_link {
+        .fake_link {
              cursor:pointer;
              color:blue;
         }
-        .shift td:first-child:hover, fake_link:hover {
+        .fake_link:hover {
              text-decoration:none;
              text-shadow: 1px 1px 1px #555;
         }
@@ -199,12 +199,14 @@
                         <tr>
                             <th>PPM</th>
                             <th>Amplitude</th>
+                            <th>Peak Type</th>
                         </tr>
                     </thead>
                     {% for cs in shifts %}
                     <tr class="shift {{ cs[0]}}">
-                        <td onclick="load_shift({{cs[1]}},{{cs[2]}})">{{ cs[1] }}</td>
+                        <td {% if cs[3] == 'standard' %}class="fake_link" onclick="load_shift({{cs[1]}},{{cs[2]}})"{% endif %}>{{ cs[1] }}</td>
                         <td>{{ cs[2] }}</td>
+                        <td>{{ cs[3] }}</td>
                     </tr>
                     {% endfor %}
                 </table>
@@ -305,8 +307,21 @@
 
         function load_shift(ppm, amplitude) {
             var update = {
-                'xaxis.range': [ppm - .1, ppm + .1],
-                'yaxis.range': [0, amplitude * 1.3]
+                xaxis: {range: [ppm + .1, ppm - .1]},
+                yaxis: {range: [0, amplitude * 1.3]},
+                annotations: [
+                {
+                  x: ppm,
+                  y: amplitude,
+                  xref: 'x',
+                  yref: 'y',
+                  text: 'Selected Peak',
+                  showarrow: true,
+                  arrowhead: 7,
+                  ax: 0,
+                  ay: -40
+                }
+              ]
             };
             Plotly.relayout(document.getElementById('myDiv'), update);
         }
