@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        {% block head %}
+        <title>GISSMO Server</title>
+        {% endblock %}
+
+        <style>
+            /* Use these to style tables nicely */
+            table.alternating tr:nth-child(odd) {
+                background-color: #CBDBFF;
+            }
+
+            table.alternating tr:nth-child(even) {
+                background-color: #FFFFFF;
+            }
+
+            table.alternating td{
+                padding-top: 0.25em;
+                padding: 0.25em;
+                vertical-align: top;
+            }
+
+            table.alternating {
+                width: 100%;
+            }
+
+            table.alternating th {
+                padding-top: 0.25em;
+                padding: 0.25em;
+                font-size: 130%;
+                background-color: #CBDBFF;
+            }
+
+            table.alternating tfoot {
+                font-size: 110%;
+                background-color: #CBDBFF;
+            }
+
+            table.alternating tr:hover {
+                border: 1px solid #C8C8C8;
+                background: #EDEDED;
+            }
+        </style>
+    </head>
+
+    <body>
+        <table class="alternating left_align">
+            <thead>
+                <tr>
+                    <th>PPM</th>
+                    <th>Amplitude</th>
+                    <th>Type</th>
+                </tr>
+            </thead>
+            {% for cs in shifts %}
+            <tr class="shift {{ cs[0]}}">
+                <td>{{ cs[1] }}</td>
+                <td>{{ cs[2] }}</td>
+                <td>GSD</td>
+            </tr>
+            {% endfor %}
+        </table>
+    </body>
+
+</html>

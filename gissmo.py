@@ -312,6 +312,15 @@ def display_summary(entry_id):
 
     return render_template("simulations_list.html", data=data, name=name)
 
+@application.route('/entry/<entry_id>/<simulation>/peaks/<frequency>')
+def display_peaks(entry_id, simulation, frequency):
+
+    # Get the chemical shifts from postgres
+    conn, cur = get_postgres_connection()
+    cur.execute('''SELECT frequency, ppm, amplitude FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
+
+    return render_template("gsd_peaks.html", shifts=cur.fetchall())
+
 @application.route('/entry/<entry_id>/<simulation>')
 @application.route('/entry/<entry_id>/<simulation>/<some_file>')
 def display_entry(entry_id, simulation=None, some_file=None):
@@ -428,7 +437,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Get the chemical shifts from postgres
     conn, cur = get_postgres_connection()
-    cur.execute('''SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s ORDER BY peak_type='standard' DESC, frequency ASC, ppm ASC''', [entry_id, simulation])
+    cur.execute('''SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s and peak_type='standard' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation])
     ent_dict['shifts'] = cur.fetchall()
 
     # Return the page
