@@ -260,10 +260,10 @@ def return_vm():
 
     return render_template("vm.html")
 
-@application.route('/js')
-def js():
+@application.route('/js/<fname>')
+def js(fname):
     """ Send the JS"""
-    return send_file("jquery.csv.min.js")
+    return send_from_directory("javascript", fname)
 
 @application.route("/mixture", methods=['GET', 'POST'])
 def get_mixture():
