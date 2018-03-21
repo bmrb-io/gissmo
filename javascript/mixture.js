@@ -1,8 +1,8 @@
 $( "form" ).submit(function( event ) {
-    console.log($( this ).serializeObject());
+    //console.log($( this ).serializeObject());
 
-var serialized = $( this ).serializeJSON();
-  event.preventDefault();
+    var serialized = $( this ).serializeJSON();
+    event.preventDefault();
 
     $.ajax({
         type: "POST",
@@ -11,13 +11,24 @@ var serialized = $( this ).serializeJSON();
         data: serialized,
         contentType: "application/json; charset=utf-8",
         //dataType: "json",
-        success: function(data){$("#results").html(data);},
+        success: function(data){
+            // Set the results div to what the server sends
+            $("#results").html(data);
+        },
         failure: function(errMsg) {
             alert(errMsg);
         }
     });
 
 });
+
+function addLoadedCompound(compound_name){
+    $.getJSON("http://webapi.bmrb.wisc.edu/v2/instant",
+              { database: "metabolomics", term : compound_name },
+              function(success) {
+                  console.log(success);
+              })
+}
 
 function parseCSV(csvArray){
     var compound_pos = csvArray[0].indexOf('Compound Name');
@@ -35,7 +46,7 @@ function openFile() {
     var reader = new FileReader();
     reader.onload = function(){
         parseCSV($.csv.toArrays(reader.result));
-    }
+    };
     reader.readAsText(input.files[0]);
 }
 
@@ -92,13 +103,13 @@ $( "#compound_new" ).autocomplete({
         $("#compound_new").val(ui.item.label);
         return false;
     }
-}).data("ui-autocomplete")._renderItem = function (ul, item) {
+})/*.data("ui-autocomplete")._renderItem = function (ul, item) {
      return add_color_span_instant(ul, item, "compound_new");
-};
+};*/
 
 // Use this to highlight the query words in a given text
 function highlight_words(words, text){
-    regex = new RegExp("(" + words.join("|") + ")", "ig");
+    var regex = new RegExp("(" + words.join("|") + ")", "ig");
     return text.replace(regex, '<strong>$1</strong>');
 }
 
@@ -108,11 +119,6 @@ function add_color_span_instant(ul, item, id) {
     var display = highlight_words(terms, item.value + ": " + item.label);
 
     var hidden_div = $('<div style="display: none" class="instant_search_extras"></div>');
-
-    // Only show authors or citations if there are any...
-    if (item.authors.length > 0){
-        hidden_div.append($("<span><b>BMRB ID</b>: " + item.inchi + "</span><br>"));
-    }
 
     if ("extra" in item){
         hidden_div.append($("<span><b>" + item.extra.termname + "</b>: " + highlight_words(terms, item.extra.term) + "</span><br>"));
