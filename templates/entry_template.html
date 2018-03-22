@@ -203,15 +203,16 @@
                         </tr>
                     </thead>
                     {% for cs in shifts %}
-                    <tr class="shift {{ cs[0]}}">
+                    <tr class="shift {{cs[0]}}">
                         <td class="fake_link" onclick="load_shift({{cs[1]}},{{cs[2]}})">{{ cs[1] }}</td>
                         <td>{{ cs[2] }}</td>
                         <td>{{ cs[3] }}</td>
                     </tr>
                     {% endfor %}
                 </table>
-                <a class="fake_button" onclick="window.open('{{simulation}}/peaks/' + document.getElementById('fieldstrength').value.slice(0, -3),'targetWindow',
-                                    'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View GSD Peaks</a>
+                {% for sim in simulated_fields -%}
+                    <a class="fake_button {{sim}} shift" href="{{simulation}}/peaks/{{sim}}" onclick="window.open('{{simulation}}/peaks/{{sim}}','GSD_{{sim}}', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View GSD Peaks</a>
+                {% endfor %}
             </div>
         </div>
     </div>

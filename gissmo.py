@@ -319,7 +319,12 @@ def display_peaks(entry_id, simulation, frequency):
     conn, cur = get_postgres_connection()
     cur.execute('''SELECT frequency, ppm, amplitude FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
 
-    return render_template("gsd_peaks.html", shifts=cur.fetchall())
+    res_dict = {'frequency': frequency,
+                'entry_id': entry_id,
+                'simulation': simulation,
+                'shifts': cur.fetchall()}
+
+    return render_template("gsd_peaks.html", **res_dict)
 
 @application.route('/entry/<entry_id>/<simulation>')
 @application.route('/entry/<entry_id>/<simulation>/<some_file>')
