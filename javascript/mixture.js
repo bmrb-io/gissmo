@@ -22,21 +22,81 @@ $( "form" ).submit(function( event ) {
 
 });
 
-function addLoadedCompound(compound_name){
+
+function addLoadedCompound(compound_name, concentration){
+
+    // Skip compounds without concentration
+    if ((!concentration) || (concentration === '--')){
+        return;
+    }
+
+    // Query the API
     $.getJSON("http://webapi.bmrb.wisc.edu/v2/instant",
-              { database: "metabolomics", term : compound_name },
-              function(success) {
-                  console.log(success);
-              })
+      { database: "metabolomics", term : compound_name },
+      function(compound_list) {
+        console.log(compound_name, compound_list);
+
+        // Insert error on no match
+        if (compound_list.length == 0){
+            var row = $("<tr><td colspan='4'>No match</td></tr>").addClass('compound').insertBefore("#compound_anchor");;
+            return;
+        }
+
+        var row = $("<tr></tr>").addClass('compound');
+        var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
+        var sel_td = $("<td></td>").addClass("left_align");
+        var sel = $("<select name='mixture[][id]'>");
+        var compound = $('<input type="hidden" name="mixture[][compound]">').val(compound_list[0].label);
+        $(compound_list).each(function() {
+          sel.append($("<option>").attr('value', this.value).text(this.label + ' (' + this.value + ')').data('compound',this.label));
+        });
+        sel.change(function () {
+            compound.val($("option:selected", this).data('compound'));
+        });
+        sel_td.append(sel, compound);
+
+
+        var conc = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">').val(concentration));
+        var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
+        row.append(control, sel_td, conc, reference).insertBefore("#compound_anchor");
+      })
+}
+
+function addCompound(compound, compound_id) {
+    if (!compound){
+        alert("Please select a compound from one of the suggestions that will appear as you type.");
+        return null;
+    }
+
+    var row = $("<tr></tr>").addClass('compound');
+    var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
+    var compound = $("<td></td>").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(compound + ' (' + compound_id + ')'))
+                             .append($('<input type="hidden" name="mixture[][id]">').val(compound_id));
+    var concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">'));
+    var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
+    row.append(control, compound, concentration, reference).insertBefore("#compound_anchor");
+
+    // Reset the values
+    $("#compound_search").val('');
+}
+
+function findLowercaseArray(item, array) {
+    var lc_ray = array[0].map(x=>x.toLowerCase());
+    for (var i=0; i < lc_ray.length; i++){
+        if (lc_ray[i].indexOf(item) >= 0){
+            return i;
+        }
+    }
 }
 
 function parseCSV(csvArray){
-    var compound_pos = csvArray[0].indexOf('Compound Name');
-    var concentration_pos = csvArray[0].indexOf('Concentration (mM)');
+
+    var compound_pos = findLowercaseArray('name', csvArray);
+    var concentration_pos = findLowercaseArray('concentration', csvArray);
 
     for (var i=1; i<csvArray.length; i++){
         if (csvArray[i][concentration_pos]){
-            console.log("Found compound with name " + csvArray[i][compound_pos]);
+            addLoadedCompound(csvArray[i][compound_pos], csvArray[i][concentration_pos]);
         }
     }
 }
@@ -56,24 +116,6 @@ function openFile() {
         parseCSV($.csv.toArrays(reader.result));
     };
     reader.readAsText(input.files[0]);
-}
-
-function addCompound(compound, compound_id) {
-    if (!compound){
-        alert("Please select a compound from one of the suggestions that will appear as you type.");
-        return null;
-    }
-
-    var row = $("<tr></tr>").addClass('compound');
-    var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
-    compound = $("<td></td>").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(compound))
-                             .append($('<input type="hidden" name="mixture[][id]">').val(compound_id));
-    concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">'));
-    reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
-    row.append(control, compound, concentration, reference).insertBefore("#compound_anchor");
-
-    // Reset the values
-    $("#compound_search").val('');
 }
 
 function escape_regexp(text) {
