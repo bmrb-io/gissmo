@@ -14,7 +14,11 @@
     <div class="details_box">
         <h1>Mixture Spectra Simulation</h1>
 
-        <P>Load a compound list from a file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()"><button id="reprocess" style="display:none" onclick="openFile()">Reprocess File</button>
+        <P>Load a compound list from a file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()">
+            <button id="reprocess" style="display:none" onclick="openFile()">Reprocess File</button>
+            <button onclick="clearCompounds(); return false;">Clear Compounds</button>
+        </p>
+
         <form method="post" action="" id="upload" enctype="multipart/form-data">
             <table class="alternating">
                 <thead>

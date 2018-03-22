@@ -41,8 +41,15 @@ function parseCSV(csvArray){
     }
 }
 
+function clearCompounds() {
+    // Remove any existing compounds before re-adding
+    $('.compound').remove();
+}
+
 function openFile() {
+    // Show the reprocess button
     $("#reprocess").show();
+
     var input = document.getElementById("experiment_file");
     var reader = new FileReader();
     reader.onload = function(){
