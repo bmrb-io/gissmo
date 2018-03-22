@@ -42,6 +42,7 @@ function parseCSV(csvArray){
 }
 
 function openFile() {
+    $("#reprocess").show();
     var input = document.getElementById("experiment_file");
     var reader = new FileReader();
     reader.onload = function(){
@@ -50,28 +51,22 @@ function openFile() {
     reader.readAsText(input.files[0]);
 }
 
-function addCompound() {
-    var compound = $("#compound_new").val();
-    var id = $("#id_new").val();
+function addCompound(compound, compound_id) {
     if (!compound){
         alert("Please select a compound from one of the suggestions that will appear as you type.");
         return null;
     }
-    var concentration = $("#concentration_new").val();
-    var reference = $("#reference_new").is(':checked');
 
-    var row = $("<tr></tr>");
+    var row = $("<tr></tr>").addClass('compound');
     var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
     compound = $("<td></td>").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(compound))
-                             .append($('<input type="hidden" name="mixture[][id]">').val(id));
-    concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">').val(concentration));
-    reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">').prop('checked', reference));
+                             .append($('<input type="hidden" name="mixture[][id]">').val(compound_id));
+    concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">'));
+    reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
     row.append(control, compound, concentration, reference).insertBefore("#compound_anchor");
 
     // Reset the values
-    $("#compound_new").val('');
-    $("#concentration_new").val('');
-    $("#reference_new").prop('checked', false);
+    $("#compound_search").val('');
 }
 
 function escape_regexp(text) {
@@ -83,7 +78,7 @@ $.expr[':'].textEquals = function (a, i, m) {
 };
 
 
-$( "#compound_new" ).autocomplete({
+$( "#compound_search" ).autocomplete({
     minLength: 2,
     delay: 0,
     source: function(request, response) {
@@ -95,16 +90,15 @@ $( "#compound_new" ).autocomplete({
             //http://api.jqueryui.com/autocomplete/#event-change -
             // The item selected from the menu, if any. Otherwise the property is null
             //so clear the item for force selection
-            $("#compound_new").val("");
+            $("#compound_search").val("");
         }
 
     }, select: function(event, ui) {
-        $("#id_new").val(ui.item.value);
-        $("#compound_new").val(ui.item.label);
+        addCompound(ui.item.label, ui.item.value);
         return false;
     }
 })/*.data("ui-autocomplete")._renderItem = function (ul, item) {
-     return add_color_span_instant(ul, item, "compound_new");
+     return add_color_span_instant(ul, item, "compound_search");
 };*/
 
 // Use this to highlight the query words in a given text

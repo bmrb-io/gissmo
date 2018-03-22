@@ -14,9 +14,8 @@
     <div class="details_box">
         <h1>Mixture Spectra Simulation</h1>
 
+        <P>Load a compound list from a file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()"><button id="reprocess" style="display:none" onclick="openFile()">Reprocess File</button>
         <form method="post" action="" id="upload" enctype="multipart/form-data">
-            <P>Load a compound list from a file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()">
-
             <table class="alternating">
                 <thead>
                     <tr>
@@ -27,15 +26,11 @@
                     </tr>
                 </thead>
                 <tbody>
-                    <tr id="compound_anchor">
-                        <td><input type="button" value="Add compound" onclick="addCompound()"/></td>
-                        <td><input type="text" id="compound_new"><input type="hidden" id="id_new"></td>
-                        <td><input type="type" id="concentration_new"></td>
-                        <td><input type="checkbox" id="reference_new"></td>
-                    </tr>
+                    <tr id="compound_anchor"></tr>
                 </tbody>
             </table>
-            <input type="submit">
+            <p>Add compound: <input type="text" id="compound_search"></p>
+            <input type="submit" value="Generate Spectra">
         </form>
         <div id="results">
         </div>
