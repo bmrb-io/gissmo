@@ -10,12 +10,12 @@
             <h2>Peak Search</h2>
 
             <form method="get" id="search_form" action="" onsubmit="event.preventDefault(); return false;">
-                <p>Select the peak type
+                <p>Select the peak type:
                 <select name="peak_type">
                   <option value="standard"{% if peak_type=="standard" %} selected="selected"{% endif %}>Standard</option>
                   <option value="GSD" {% if peak_type=="GSD" %} selected="selected"{% endif %}>Deconvoluted</option>
                 </select>
-                Select the matching threshold
+                Select the matching threshold (ppm):
                 <input name="threshold" list="thresholds" placeholder="{{threshold}}" value="{{threshold}}"/>
                 <datalist id="thresholds">
                     {% for thresh in [".1", ".03", ".01", ".005", ".001"] %}
