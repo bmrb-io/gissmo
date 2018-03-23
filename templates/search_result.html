@@ -16,12 +16,13 @@
                   <option value="GSD" {% if peak_type=="GSD" %} selected="selected"{% endif %}>Deconvoluted</option>
                 </select>
                 Select the matching threshold
-                <select name="threshold">
-                  <option value=".001"{% if threshold==".001" %} selected="selected"{% endif %}>.001</option>
-                  <option value=".005"{% if threshold==".005" %} selected="selected"{% endif %}>.005</option>
-                  <option value=".01"{% if threshold==".01" %} selected="selected"{% endif %}>.01</option>
-                  <option value=".03" {% if threshold==".03" %} selected="selected"{% endif %}>.03</option>
-                </select>
+                <input name="threshold" list="thresholds" placeholder="{{threshold}}" value="{{threshold}}"/>
+                <datalist id="thresholds">
+                    {% for thresh in [".001", ".005", ".01", ".03"] %}
+                    <option value="{{thresh}}">
+                    {% endfor %}
+                </datalist>
+
                 Select the frequency:
                 <select name="frequency">
                   <option value="40"{% if frequency=="40" %} selected="selected"{% endif %}>40 Mhz</option>
@@ -42,7 +43,6 @@
 
                 <p><p>Enter a list of H peak values separated by spaces, commas, or newlines. Specify only the peak value and not the atom type. The search prioritizes entries that match the largest number of peaks first and the closeness of the matches second. Therefore you will get the best results by searching for several characteristic peaks.</p>
                 <textarea COLS="40" ROWS="20" WRAP="hard" id="rs" name="rs">{{ raw_shift }}</textarea><br>
-                <p>Peaks are counted as a match if they are within .01 ppm.</p>
 
                 <input type="submit" id="submit" value="Query">
                 <br>
