@@ -41,30 +41,44 @@ function addLoadedCompound(compound_name, concentration){
         success: function(compound_list) {
             console.log(compound_name, compound_list);
 
-            // Insert error on no match
-            if (compound_list.length === 0){
-                var control = $("<tr></tr>").addClass('compound').addClass('left_align').insertBefore("#compound_anchor");
-                control.append($('<td><input type="button" value="Delete"></td>').bind('click', { row: row }, function(event) { event.data.row.remove();}));
-                control.append($("<td colspan=4>" + compound_name + ": No match</td>"));
-                return;
-            }
-
             var row = $("<tr></tr>").addClass('compound');
             var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
-            var compound_id = $('<input type="text" readonly="true" name="mixture[][id]">').val(compound_list[0].value);
+            var compound_id = $('<input type="text" readonly="true" name="mixture[][id]">');
             var compound_id_td = $("<td></td>").append(compound_id);
+            var inchi = $('<input type="hidden" name="mixture[][inchi]">');
 
-            var sel_td = $("<td></td>").addClass("left_align");
-            sel_td.append($("<span></span>").html(compound_name + ": "));
+            var sel_td = $("<td><span>" + compound_name + ": </span></td>").addClass("left_align");
+
+            var one_valid = false;
+            var first = true;
             var sel = $("<select name='mixture[][compound]'>"); //.css('width', '100%');
             $(compound_list).each(function() {
-              sel.append($("<option>").attr('value', this.label).text(this.label + ' (' + this.value + ')').data('compound_id',this.value));
+                if (first){
+                    compound_id.val(this.value);
+                    inchi.val(this.inchi);
+                    first = false;
+                }
+                if (valid_entries.indexOf(this.value) >= 0){
+                    var option = $("<option>").attr('value', this.label).text(this.label + ' (' + this.value + ')').data('compound_id',this.value).data('inchi_string',this.inchi);
+                    one_valid = true;
+                    sel.append(option);
+                }
+
             });
             sel.change(function () {
                 compound_id.val($("option:selected", this).data('compound_id'));
+                inchi.val($("option:selected", this).data('inchi_string'));
             });
             sel_td.append(sel);
+            sel_td.append(inchi);
 
+            // Insert error on no match
+            if ((compound_list.length === 0) || (!one_valid)){
+                var control = $("<tr></tr>").addClass('compound').insertBefore("#compound_anchor");
+                control.append($('<td><input type="button" value="Delete"></td>').bind('click', { row: row }, function(event) { event.data.row.remove();}));
+                control.append($("<td colspan=4>" + compound_name + ": No match</td>").addClass('left_align'));
+                return;
+            }
 
             var conc = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">').val(concentration));
             var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
@@ -98,6 +112,7 @@ function findLowercaseArray(item, array) {
             return i;
         }
     }
+    return -1;
 }
 
 function parseCSV(csvArray){
@@ -105,11 +120,17 @@ function parseCSV(csvArray){
     var compound_pos = findLowercaseArray('name', csvArray);
     var concentration_pos = findLowercaseArray('concentration', csvArray);
 
+    if ((compound_pos < 0) || (concentration_pos < 0)){
+        $("#message").html('The first row of the spreadsheet must have a column with the word "name" and a column with the word "concentration" in the cell in order to be properly detected.');
+        return;
+    }
+
     for (var i=1; i<csvArray.length; i++){
         if (csvArray[i][concentration_pos]){
             addLoadedCompound(csvArray[i][compound_pos], csvArray[i][concentration_pos]);
         }
     }
+    $("#message").html('');
 }
 
 function clearCompounds() {

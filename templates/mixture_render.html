@@ -1,5 +1,5 @@
 <div class="details_box">
     {% for compound in mixture %}
-    <p>{{ compound.compound }} ({{ compound.id }}): {{ compound.concentration }} {{ compound.reference }}</p>
+    <p>{{ compound.inchi }}: {{ compound.compound }} ({{ compound.id }}): {{ compound.concentration }} {{ compound.reference }}</p>
     {% endfor %}
 </div>
