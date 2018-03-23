@@ -74,9 +74,12 @@ function addLoadedCompound(compound_name, concentration){
 
             // Insert error on no match
             if ((compound_list.length === 0) || (!one_valid)){
-                var control = $("<tr></tr>").addClass('compound').insertBefore("#compound_anchor");
-                control.append($('<td><input type="button" value="Delete"></td>').bind('click', { row: row }, function(event) { event.data.row.remove();}));
-                control.append($("<td colspan=4>" + compound_name + ": No match</td>").addClass('left_align'));
+                var control_nomatch = $("<tr></tr>").addClass('compound').insertBefore("#compound_anchor");
+                control_nomatch.append($('<td><input type="button" value="Delete"></td>').bind('click', { row: row }, function(event) { event.data.row.remove();}));
+                control_nomatch.append($("<td>" + compound_name + "</td>").addClass('left_align'));
+                control_nomatch.append($("<td></td>").html('No match'));
+                control_nomatch.append($("<td></td>").html(concentration));
+                control_nomatch.append($("<td></td>"));
                 return;
             }
 
@@ -87,16 +90,18 @@ function addLoadedCompound(compound_name, concentration){
     });
 }
 
-function addCompound(compound, compound_id) {
-    if (!compound){
+function addCompound(selection) {
+    if (!selection){
         alert("Please select a compound from one of the suggestions that will appear as you type.");
         return null;
     }
 
     var row = $("<tr></tr>").addClass('compound');
     var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
-    var compound_td = $("<td></td>").addClass("left_align").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(compound));
-    var comp_id =  $("<td></td>").append($('<input type="text" name="mixture[][id]" readonly="true">').val(compound_id));
+    var compound_td = $("<td></td>").addClass("left_align").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(selection.label));
+    var comp_id =  $("<td></td>").append($('<input type="text" name="mixture[][id]" readonly="true">').val(selection.value));
+    var inchi = $('<input type="hidden" name="mixture[][inchi]">').val(selection.inchi);
+    compound_td.append(inchi);
     var concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">'));
     var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
     row.append(control, compound_td, comp_id, concentration, reference).insertBefore("#compound_anchor");
@@ -162,20 +167,24 @@ $.expr[':'].textEquals = function (a, i, m) {
 $( "#compound_search" ).autocomplete({
     minLength: 2,
     delay: 0,
-    source: function(request, response) {
+    source: function(request, response_callback) {
+        // Filter the results based on what GISSMO has available
         $.getJSON("http://webapi.bmrb.wisc.edu/v2/instant", { database: "metabolomics", term : request.term },
-        response);
-    },
-    change: function (event, ui) {
-        if(!ui.item){
-            //http://api.jqueryui.com/autocomplete/#event-change -
-            // The item selected from the menu, if any. Otherwise the property is null
-            //so clear the item for force selection
-            $("#compound_search").val("");
-        }
+            function (response_original) {
+                response = [];
+                for (i=0; i<response_original.length; i++){
+                    if (valid_entries.indexOf(response_original[i].value) >= 0){
+                        response.push(response_original[i]);
+                    }
+                }
+                response_callback(response);
+            }
+        );
 
-    }, select: function(event, ui) {
-        addCompound(ui.item.label, ui.item.value);
+
+    },
+    select: function(event, ui) {
+        addCompound(ui.item);
         return false;
     }
 });/*.data("ui-autocomplete")._renderItem = function (ul, item) {
