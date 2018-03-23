@@ -95,7 +95,11 @@ def reload():
     for entry_id in os.listdir(entry_path):
 
         sims = []
-        for sim in os.listdir(os.path.join(entry_path, entry_id)):
+        dir_path = os.path.join(entry_path, entry_id)
+        if not os.path.isdir(dir_path):
+            continue
+
+        for sim in os.listdir(dir_path):
 
             # Load the entry XML
             try:
@@ -269,6 +273,10 @@ def js(fname):
 def get_mixture():
     """ Allow the user to specify a mixture. """
 
+    # Get the list of valid entries
+    entry_list = [x[0][0] for x in json.loads(open(entries_file, "r").read())]
+    entry_list = "var valid_entries = " + json.dumps(entry_list) + ";"
+
     # They sent a mixture, send them the spectra
     if request.method == "POST":
         try:
@@ -281,7 +289,7 @@ def get_mixture():
         return render_template("mixture_render.html", mixture=mixture)
 
     # Send them the page to enter a mixture
-    return render_template("mixture.html")
+    return render_template("mixture.html", entry_list=entry_list)
 
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):
