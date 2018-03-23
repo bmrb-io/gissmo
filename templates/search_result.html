@@ -18,7 +18,7 @@
                 Select the matching threshold
                 <input name="threshold" list="thresholds" placeholder="{{threshold}}" value="{{threshold}}"/>
                 <datalist id="thresholds">
-                    {% for thresh in [".001", ".005", ".01", ".03"] %}
+                    {% for thresh in [".1", ".03", ".01", ".005", ".001"] %}
                     <option value="{{thresh}}">
                     {% endfor %}
                 </datalist>
