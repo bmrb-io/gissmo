@@ -31,35 +31,46 @@ function addLoadedCompound(compound_name, concentration){
     }
 
     // Query the API
-    $.getJSON("http://webapi.bmrb.wisc.edu/v2/instant",
-      { database: "metabolomics", term : compound_name },
-      function(compound_list) {
-        console.log(compound_name, compound_list);
+    $.ajax({
+        dataType: "json",
+        url: "http://webapi.bmrb.wisc.edu/v2/instant",
+        data: { database: "metabolomics", term : compound_name },
+        beforeSend: function(request) {
+            request.setRequestHeader("Application", 'GISSMO Mixtures');
+        },
+        success: function(compound_list) {
+            console.log(compound_name, compound_list);
 
-        // Insert error on no match
-        if (compound_list.length == 0){
-            var row = $("<tr><td colspan='4'>No match</td></tr>").addClass('compound').insertBefore("#compound_anchor");;
-            return;
-        }
+            // Insert error on no match
+            if (compound_list.length === 0){
+                var control = $("<tr></tr>").addClass('compound').addClass('left_align').insertBefore("#compound_anchor");
+                control.append($('<td><input type="button" value="Delete"></td>').bind('click', { row: row }, function(event) { event.data.row.remove();}));
+                control.append($("<td colspan=4>" + compound_name + ": No match</td>"));
+                return;
+            }
 
-        var row = $("<tr></tr>").addClass('compound');
-        var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
-        var sel_td = $("<td></td>").addClass("left_align");
-        var sel = $("<select name='mixture[][id]'>");
-        var compound = $('<input type="hidden" name="mixture[][compound]">').val(compound_list[0].label);
-        $(compound_list).each(function() {
-          sel.append($("<option>").attr('value', this.value).text(this.label + ' (' + this.value + ')').data('compound',this.label));
-        });
-        sel.change(function () {
-            compound.val($("option:selected", this).data('compound'));
-        });
-        sel_td.append(sel, compound);
+            var row = $("<tr></tr>").addClass('compound');
+            var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
+            var compound_id = $('<input type="text" readonly="true" name="mixture[][id]">').val(compound_list[0].value);
+            var compound_id_td = $("<td></td>").append(compound_id);
+
+            var sel_td = $("<td></td>").addClass("left_align");
+            sel_td.append($("<span></span>").html(compound_name + ": "));
+            var sel = $("<select name='mixture[][compound]'>"); //.css('width', '100%');
+            $(compound_list).each(function() {
+              sel.append($("<option>").attr('value', this.label).text(this.label + ' (' + this.value + ')').data('compound_id',this.value));
+            });
+            sel.change(function () {
+                compound_id.val($("option:selected", this).data('compound_id'));
+            });
+            sel_td.append(sel);
 
 
-        var conc = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">').val(concentration));
-        var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
-        row.append(control, sel_td, conc, reference).insertBefore("#compound_anchor");
-      })
+            var conc = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">').val(concentration));
+            var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
+            row.append(control, sel_td, compound_id_td, conc, reference).insertBefore("#compound_anchor");
+      }
+    });
 }
 
 function addCompound(compound, compound_id) {
@@ -70,18 +81,18 @@ function addCompound(compound, compound_id) {
 
     var row = $("<tr></tr>").addClass('compound');
     var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
-    var compound = $("<td></td>").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(compound + ' (' + compound_id + ')'))
-                             .append($('<input type="hidden" name="mixture[][id]">').val(compound_id));
+    var compound_td = $("<td></td>").addClass("left_align").append($('<input type="text" name="mixture[][compound]" readonly="true">').val(compound));
+    var comp_id =  $("<td></td>").append($('<input type="text" name="mixture[][id]" readonly="true">').val(compound_id));
     var concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">'));
     var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
-    row.append(control, compound, concentration, reference).insertBefore("#compound_anchor");
+    row.append(control, compound_td, comp_id, concentration, reference).insertBefore("#compound_anchor");
 
     // Reset the values
     $("#compound_search").val('');
 }
 
 function findLowercaseArray(item, array) {
-    var lc_ray = array[0].map(x=>x.toLowerCase());
+    var lc_ray = array[0].map(function (x){return x.toLowerCase();});
     for (var i=0; i < lc_ray.length; i++){
         if (lc_ray[i].indexOf(item) >= 0){
             return i;
@@ -146,7 +157,7 @@ $( "#compound_search" ).autocomplete({
         addCompound(ui.item.label, ui.item.value);
         return false;
     }
-})/*.data("ui-autocomplete")._renderItem = function (ul, item) {
+});/*.data("ui-autocomplete")._renderItem = function (ul, item) {
      return add_color_span_instant(ul, item, "compound_search");
 };*/
 

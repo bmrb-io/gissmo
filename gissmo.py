@@ -271,7 +271,12 @@ def get_mixture():
 
     # They sent a mixture, send them the spectra
     if request.method == "POST":
-        mixture = request.get_json()['mixture']
+        try:
+            mixture = request.get_json()['mixture']
+        except KeyError:
+            # No compounds specified
+            return ""
+
         # TODO: Do some work to make something more interesting...
         return render_template("mixture_render.html", mixture=mixture)
 
