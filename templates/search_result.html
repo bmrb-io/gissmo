@@ -41,7 +41,7 @@
                   <option value="1300"{% if frequency=="1300" %} selected="selected"{% endif %}>1300 Mhz</option>
                 </select></p>
 
-                <p><p>Enter a list of H peak values separated by spaces, commas, or newlines. Specify only the peak value and not the atom type. The search prioritizes entries that match the largest number of peaks first and the closeness of the matches second. Therefore you will get the best results by searching for several characteristic peaks.</p>
+                <p><p>Enter a list of picked proton peaks from an 1D-<sup>1</sup>H spectrum in PPM. Peaks must be separated by spaces, commas, or newlines. Specify only the peak value and not the atom type. The search prioritizes entries that match the largest number of peaks first and the closeness of the matches second. Therefore you will get the best results by searching for several characteristic peaks.</p>
                 <textarea COLS="40" ROWS="20" WRAP="hard" id="rs" name="rs">{{ raw_shift }}</textarea><br>
 
                 <input type="submit" id="submit" value="Query">
