@@ -1,6 +1,4 @@
 $( "form" ).submit(function( event ) {
-    //console.log($( this ).serializeObject());
-
     var serialized = $( this ).serializeJSON();
     event.preventDefault();
 
@@ -39,8 +37,6 @@ function addLoadedCompound(compound_name, concentration){
             request.setRequestHeader("Application", 'GISSMO Mixtures');
         },
         success: function(compound_list) {
-            console.log(compound_name, compound_list);
-
             var row = $("<tr></tr>").addClass('compound');
             var control = $("<td></td>").append($('<input type="button" value="Delete">').bind('click', { row: row }, function(event) { event.data.row.remove();}));
             var compound_id = $('<input type="text" readonly="true" name="mixture[][id]">');
