@@ -3,6 +3,7 @@
         <title>GISSMO - {{ name }}</title>
         <!-- Plotly.js -->
         <script src="https://cdn.plot.ly/plotly-1.35.2.min.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
         <style>
 
@@ -158,11 +159,15 @@
             <tr><td>Notes</td><td>{{ note }}</td></tr>
             {% endif %}
         </table>
+        <a class="fake_button" onclick="$('#spin_matrix').toggle()" style="margin-top: 1em">Show/Hide Spin System Matrix</a>
     </div>
 
-    <div class="details_box">
+    <style>.nojsonly { display: none }</style>
+    <noscript><style>.nojsonly { display: block }</style></noscript>
+
+    <div id="spin_matrix" class="details_box nojsonly">
         <h2>Spin System Matrix</h2>
-        <table class="alternating matrix" style="block">
+        <table class="alternating matrix">
         {% for item in matrix %}{% set outer_loop = loop -%}
         <tr>{% for subitem in item -%}
             {% if outer_loop.first %}<th>{{ subitem }}</th>{% else %}<td>{% if subitem != 0 %}<strong>{{ subitem }}</strong>{% else %}{{ subitem }}{% endif %}</td>{% endif %}{% endfor %}</tr>
@@ -331,7 +336,7 @@
 
         function load_spectra(){
 
-            var field_strength = document.getElementById("fieldstrength").value;
+            var field_strength = $("#fieldstrength").val();
 
             getJSON("/entry/{{ entry_id }}/{{ simulation }}/sim_" + field_strength + ".json", function(err, data) {
                 if (err !== null) {
@@ -359,9 +364,9 @@
 
             // Hide the table if default
             if (field_strength === 'default'){
-                document.getElementsByClassName("shift_list")[0].style.display = "none";
+                $(".shift_list").hide();
             } else {
-                document.getElementsByClassName("shift_list")[0].style.display = "block";
+                $(".shift_list").show();
             }
         }
 
