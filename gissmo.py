@@ -18,7 +18,7 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
-entry_path = "/websites/gissmo/DB/BMRB_DB/"
+entry_path = "/websites/gissmo/DB/BMRB_DB_release_1/"
 here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
 
@@ -114,7 +114,8 @@ def reload_db():
             # Check the entry is released
             status = get_tag_value(root, "status")
             if status.lower() in ["done", "approximately done"]:
-                sims.append([entry_id, get_title(entry_id),
+                #sims.append([entry_id, get_title(entry_id),
+                sims.append([entry_id, get_tag_value(root, "name"),
                              get_tag_value(root, "field_strength"), sim,
                              len(get_tag_value(root, "spin", _all=True)),
                              get_tag_value(root, "InChI")])
@@ -297,7 +298,7 @@ def display_summary(entry_id):
         entry_id = "bmse" + entry_id
 
     data = []
-
+ 
     # Get the simulations
     try:
         sims = os.listdir(os.path.join(entry_path, entry_id))
@@ -316,9 +317,10 @@ def display_summary(entry_id):
         sim_dict['sim'] = sim_dir
         sim_dict['entry_id'] = entry_id
         data.append(sim_dict)
+	name = get_tag_value(root, "name")
         #name = get_tag_value(root, "name")
 
-    name = get_title(entry_id)
+    #name = get_title(entry_id)
 
     return render_template("simulations_list.html", data=data, name=name)
 
