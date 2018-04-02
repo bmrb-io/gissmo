@@ -6,12 +6,13 @@ import json
 import xml.etree.cElementTree as ET
 
 import time
-import requests
 from decimal import Decimal
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
+import requests
 import psycopg2
+from psycopg2.extras import DictCursor
 
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file, jsonify
 application = Flask(__name__)
@@ -25,7 +26,7 @@ entries_file = os.path.join(here, "entries.json")
 def get_tag_value(root, tag, _all=False):
     """ Returns the value of the specified tag(s)."""
 
-    nodes =  root.getiterator(tag)
+    nodes = root.getiterator(tag)
 
     if _all:
         return [x.text for x in nodes]
@@ -79,7 +80,7 @@ def get_aux_info(entry_id, simulation, aux_name):
     except IOError:
         pass
 
-    if len(results) == 0:
+    if not results:
         return None
     elif len(results) == 1:
         return results[0]
@@ -88,7 +89,7 @@ def get_aux_info(entry_id, simulation, aux_name):
 
 # URI methods
 @application.route('/reload')
-def reload():
+def reload_db():
     """ Regenerate the released entry list. """
 
     valid_entries = []
@@ -118,13 +119,11 @@ def reload():
                              len(get_tag_value(root, "spin", _all=True)),
                              get_tag_value(root, "InChI")])
 
-        sims = sorted(sims, key=lambda x:x[2])
-
-        if len(sims) > 0:
-            valid_entries.append(sims)
+        if sims:
+            valid_entries.append(sorted(sims, key=lambda x: x[2]))
 
     # Sort by protein name
-    valid_entries = sorted(valid_entries, key=lambda x:x[0][1].lower())
+    valid_entries = sorted(valid_entries, key=lambda x: x[0][1].lower())
     # Write out the results
     open(entries_file, "w").write(json.dumps(valid_entries))
 
@@ -169,13 +168,12 @@ WHERE ('''
     terms = []
 
     fpeaks = []
-    try:
-        for peak in peaks:
+
+    for peak in peaks:
+        try:
             fpeaks.append(Decimal(peak))
-    except ValueError:
-        raise RequestError("Invalid peak specified. All peaks must be numbers. Invalid peak: '%s'" % peak)
-    except:
-        pass
+        except Exception:
+            pass
 
     peaks = sorted(fpeaks)
 
@@ -256,7 +254,7 @@ ORDER BY count(DISTINCT ppm) DESC;
     return render_template("search_result.html", entries={1:mentry_list},
                            base_url=request.path, frequency=frequency,
                            peak_type=peak_type, raw_shift=raw_shift,
-                           threshold=threshold )
+                           threshold=threshold)
 
 @application.route('/vm')
 def return_vm():
@@ -285,7 +283,6 @@ def get_mixture():
             # No compounds specified
             return ""
 
-        # TODO: Do some work to make something more interesting...
         return render_template("mixture_render.html", mixture=mixture)
 
     # Send them the page to enter a mixture
@@ -329,7 +326,7 @@ def display_summary(entry_id):
 def display_peaks(entry_id, simulation, frequency):
 
     # Get the chemical shifts from postgres
-    conn, cur = get_postgres_connection()
+    cur = get_postgres_connection()[1]
     cur.execute('''SELECT frequency, ppm, amplitude FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
 
     res_dict = {'frequency': frequency,
@@ -391,7 +388,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Load the entry XML
     try:
         root = ET.parse(os.path.join(exp_full_path, "spin_simulation.xml")).getroot()
-    except IOError as e:
+    except IOError:
         return "No XML found."
 
     # Check the entry is released
@@ -407,7 +404,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict['simulation'] = simulation
 
     # Look up what simulated field strengths are available
-    field_strengths = sorted([int(x[4:].replace("MHz","")) for x in os.listdir(os.path.join(exp_full_path, "B0s"))])
+    field_strengths = sorted([int(x[4:].replace("MHz", "")) for x in os.listdir(os.path.join(exp_full_path, "B0s"))])
     ent_dict['simulated_fields'] = field_strengths
 
     # Make sure the image file exists
@@ -454,7 +451,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict['matrix'] = matrix
 
     # Get the chemical shifts from postgres
-    conn, cur = get_postgres_connection()
+    cur = get_postgres_connection()[1]
     cur.execute('''SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s and peak_type='standard' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation])
     ent_dict['shifts'] = cur.fetchall()
 
