@@ -401,7 +401,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Look up what simulated field strengths are available
     field_strengths = sorted([int(x[4:].replace("MHz", "")) for x in os.listdir(os.path.join(exp_full_path, "B0s"))])
-    ent_dict['simulated_fields'] = ['0'] + field_strengths
+    ent_dict['simulated_fields'] = field_strengths
 
     # Make sure the image file exists
     if not os.path.isfile(os.path.join(exp_full_path, ent_dict['path_2D_image'])):
