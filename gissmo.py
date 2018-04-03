@@ -18,7 +18,7 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
-entry_path = "/websites/gissmo/DB/BMRB_DB_release_1/"
+entry_path = "/websites/gissmo/DB/BMRB_DB/"
 here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
 
@@ -294,8 +294,8 @@ def display_summary(entry_id):
     """ Renders the page with a list of simulations available. """
 
     # Add the bmse if needed
-    if not entry_id.startswith("bmse"):
-        entry_id = "bmse" + entry_id
+    #if not entry_id.startswith("bmse"):
+    #    entry_id = "bmse" + entry_id
 
     data = []
  
