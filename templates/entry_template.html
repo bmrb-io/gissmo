@@ -354,19 +354,18 @@
 
             // Show the right shifts
             var shifts = document.getElementsByClassName("shift");
+            var clean_fs;
+            if (field_strength === 'default'){
+                clean_fs = '0';
+            } else {
+                clean_fs = field_strength.slice(0, -3);
+            }
             for (var i = 0; i < shifts.length; i++) {
-                if (shifts[i].classList.contains(field_strength.slice(0, -3))){
+                if (shifts[i].classList.contains(clean_fs)){
                     shifts[i].style.display = "";
                 } else {
                     shifts[i].style.display = "none";
                 }
-            }
-
-            // Hide the table if default
-            if (field_strength === 'default'){
-                $(".shift_list").hide();
-            } else {
-                $(".shift_list").show();
             }
         }
 

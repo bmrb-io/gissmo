@@ -114,7 +114,6 @@ def reload_db():
             # Check the entry is released
             status = get_tag_value(root, "status")
             if status.lower() in ["done", "approximately done"]:
-                #sims.append([entry_id, get_title(entry_id),
                 sims.append([entry_id, get_tag_value(root, "name"),
                              get_tag_value(root, "field_strength"), sim,
                              len(get_tag_value(root, "spin", _all=True)),
@@ -293,12 +292,8 @@ def get_mixture():
 def display_summary(entry_id):
     """ Renders the page with a list of simulations available. """
 
-    # Add the bmse if needed
-    #if not entry_id.startswith("bmse"):
-    #    entry_id = "bmse" + entry_id
-
     data = []
- 
+
     # Get the simulations
     try:
         sims = os.listdir(os.path.join(entry_path, entry_id))
@@ -317,10 +312,7 @@ def display_summary(entry_id):
         sim_dict['sim'] = sim_dir
         sim_dict['entry_id'] = entry_id
         data.append(sim_dict)
-	name = get_tag_value(root, "name")
-        #name = get_tag_value(root, "name")
-
-    #name = get_title(entry_id)
+        name = get_tag_value(root, "name")
 
     return render_template("simulations_list.html", data=data, name=name)
 
@@ -331,6 +323,8 @@ def display_peaks(entry_id, simulation, frequency):
     cur = get_postgres_connection()[1]
     cur.execute('''SELECT frequency, ppm, amplitude FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
 
+    if frequency == '0':
+        frequency = 'Default'
     res_dict = {'frequency': frequency,
                 'entry_id': entry_id,
                 'simulation': simulation,
@@ -407,7 +401,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Look up what simulated field strengths are available
     field_strengths = sorted([int(x[4:].replace("MHz", "")) for x in os.listdir(os.path.join(exp_full_path, "B0s"))])
-    ent_dict['simulated_fields'] = field_strengths
+    ent_dict['simulated_fields'] = ['0'] + field_strengths
 
     # Make sure the image file exists
     if not os.path.isfile(os.path.join(exp_full_path, ent_dict['path_2D_image'])):
@@ -419,7 +413,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Get the auxiliary info
     for aux_type in ["pka", "buffer", "cytocide", "reference", "solvent", "solvent", "ph", "temperature"]:
         ent_dict[aux_type] = get_aux_info(entry_id, simulation, aux_type)
-    ent_dict['name'] = get_aux_info(entry_id, simulation, "titles")
+    ent_dict['name'] = get_tag_value(root, "name")
 
     # Get the spin matrix data
     column_names = get_tag_value(root, "spin", _all=True)
