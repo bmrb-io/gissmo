@@ -17,33 +17,50 @@
 
         <noscript><h2>This page requires JavaScript.</h2><style>.jsonly { display: none }</style></noscript>
         <div class="jsonly">
+            <form method="post" action="" id="upload" enctype="multipart/form-data">
             <P>Load a compound list from a CSV file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()" accept="text/csv">
                 <button id="reprocess" style="display:none" onclick="openFile()">Reprocess File</button>
                 <button onclick="clearCompounds(); return false;">Clear Compounds</button>
+                <select name="fieldstrength">
+                    <option value="40">40 MHz</option>
+                    <option value="100">100 MHz</option>
+                    <option value="200">200 MHz</option>
+                    <option value="300">300 MHz</option>
+                    <option value="400">400 MHz</option>
+                    <option value="500">500 MHz</option>
+                    <option value="600">600 MHz</option>
+                    <option value="700">700 MHz</option>
+                    <option value="750">750 MHz</option>
+                    <option value="800">800 MHz</option>
+                    <option value="900">900 MHz</option>
+                    <option value="950">950 MHz</option>
+                    <option value="1000">1000 MHz</option>
+                    <option value="1300">1300 MHz</option>
+                </select>
             </p>
             <div id="message" style="color: red"></div>
 
-            <form method="post" action="" id="upload" enctype="multipart/form-data">
-                <table class="alternating">
-                    <thead>
-                        <tr>
-                            <th></th>
-                            <th>Compound Name</th>
-                            <th>Compound ID</th>
-                            <th>Compound Concentration</th>
-                            <th>Reference Compound</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr id="compound_anchor"></tr>
-                    </tbody>
-                </table>
-                <p>Add compound: <input type="text" id="compound_search"></p>
-                <input type="submit" value="Generate Spectra">
-            </form>
-            <div id="results">
-            </div>
+
+            <table class="alternating">
+                <thead>
+                    <tr>
+                        <th></th>
+                        <th>Compound Name</th>
+                        <th>Compound ID</th>
+                        <th>Compound Concentration</th>
+                        <th>Reference Compound</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr id="compound_anchor"></tr>
+                </tbody>
+            </table>
+            <p>Add compound: <input type="text" id="compound_search"></p>
+            <input type="submit" value="Generate Spectra">
+        </form>
+        <div id="results">
         </div>
     </div>
+</div>
 
     {% endblock %}

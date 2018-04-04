@@ -23,12 +23,12 @@ here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
 
 # Helper methods
-def get_tag_value(root, tag, _all=False):
+def get_tag_value(root, tag, all_=False):
     """ Returns the value of the specified tag(s)."""
 
     nodes = root.getiterator(tag)
 
-    if _all:
+    if all_:
         return [x.text for x in nodes]
     else:
         try:
@@ -116,7 +116,7 @@ def reload_db():
             if status.lower() in ["done", "approximately done"]:
                 sims.append([entry_id, get_tag_value(root, "name"),
                              get_tag_value(root, "field_strength"), sim,
-                             len(get_tag_value(root, "spin", _all=True)),
+                             len(get_tag_value(root, "spin", all_=True)),
                              get_tag_value(root, "InChI")])
 
         if sims:
@@ -278,11 +278,16 @@ def get_mixture():
     # They sent a mixture, send them the spectra
     if request.method == "POST":
         try:
-            mixture = request.get_json()['mixture']
+            data = request.get_json()
+            mixture = data['mixture']
+            fieldstrength = data['fieldstrength']
         except KeyError:
             # No compounds specified
             return ""
 
+        # TODO: HESAM
+        # mixture is dictionary with compound information
+        # fieldstrength is fieldstrength in mhz
         return render_template("mixture_render.html", mixture=mixture)
 
     # Send them the page to enter a mixture
@@ -394,8 +399,9 @@ def display_entry(entry_id, simulation=None, some_file=None):
             return "Entry not yet released."
 
     # Get all the values we will need
-    tags_to_get = ["name", "InChI", "path_2D_image", "field_strength", "roi_rmsd", "note"]
+    tags_to_get = ["name", "InChI", "path_2D_image", "field_strength", "roi_rmsd"]
     ent_dict = dict_builder(root, tags_to_get)
+    ent_dict['note'] = get_tag_value(root, 'note', all_=True)
     ent_dict['entry_id'] = entry_id
     ent_dict['simulation'] = simulation
 
@@ -416,9 +422,9 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict['name'] = get_tag_value(root, "name")
 
     # Get the spin matrix data
-    column_names = get_tag_value(root, "spin", _all=True)
-    diagonal = get_tag_value(root, "cs", _all=True)
-    couplings = get_tag_value(root, "coupling", _all=True)
+    column_names = get_tag_value(root, "spin", all_=True)
+    diagonal = get_tag_value(root, "cs", all_=True)
+    couplings = get_tag_value(root, "coupling", all_=True)
 
     # Build the spin matrix
     size = len(column_names)+1

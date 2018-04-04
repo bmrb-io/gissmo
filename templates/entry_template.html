@@ -83,7 +83,7 @@
 
     <h3>Simulation: {{ simulation }}</h3>
     <p><a class="fake_button_sim" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}" target="_blank">BMRB entry</a></p>
-    <p><a class="fake_button_sim" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/" target="_blank">ALATIS cross link</a></p>
+    {% if "bmse" in entry_id %}<p><a class="fake_button_sim" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/" target="_blank">ALATIS cross link</a></p>{% endif %}
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
     {% endblock %}
@@ -156,7 +156,9 @@
             {% endif %}
             {% endif %}
             {% if note %}
-            <tr><td>Notes</td><td>{{ note }}</td></tr>
+            {% for n in note %}
+            <tr><td>Note {{loop.index}}</td><td>{{ n }}</td></tr>
+            {% endfor %}
             {% endif %}
         </table>
         <a class="fake_button" onclick="$('#spin_matrix').toggle()" style="margin-top: 1em">Show/Hide Spin System Matrix</a>
