@@ -50,61 +50,139 @@
             </form>
 
             <script>
-            $("#submit").click(function(){
+$("#submit").click(function(){
 
-                // Clean up the shifts
-                var shifts = $('#rs').val().split(/[ \t,\n\r;]+/);
-                shifts = shifts.filter(function(n){ return n != "" });
+    // Clean up the shifts
+    var shifts = $('#rs').val().split(/[ \t,\n\r;]+/);
+    shifts = shifts.filter(function(n){ return n != "" });
 
-                if (shifts.join("").length > 1900){
-                    alert("Too many peaks specified. Please search for fewer peaks.");
-                    return;
-                }
+    if (shifts.join("").length > 1900){
+        alert("Too many peaks specified. Please search for fewer peaks.");
+        return;
+    }
 
-                $("#rs").val(shifts.join(" "));
+    $("#rs").val(shifts.join(" "));
 
-                window.location.replace('{{ base_url }}?' + $("#search_form").serialize());
+    window.location.replace('{{ base_url }}?' + $("#search_form").serialize());
+});
+
+// This CSV code has a MIT license
+// Sourced from: http://bl.ocks.org/kalebdf/ee7a5e7f44416b2116c0
+$(document).ready(function () {
+    function exportTableToCSV($table, filename) {
+        var $headers = $table.find('tr:has(th):not(.download)')
+            ,$rows = $table.find('tr:has(td):not(.download)')
+
+            // Temporary delimiter characters unlikely to be typed by keyboard
+            // This is to avoid accidentally splitting the actual contents
+            ,tmpColDelim = String.fromCharCode(11) // vertical tab character
+            ,tmpRowDelim = String.fromCharCode(0) // null character
+
+            // actual delimiter characters for CSV format
+            ,colDelim = '","'
+            ,rowDelim = '"\r\n"';
+
+            // Grab text from table into CSV formatted string
+            var csv = '"';
+            csv += formatRows($headers.map(grabRow));
+            csv += rowDelim;
+            csv += formatRows($rows.map(grabRow)) + '"';
+
+            // Data URI
+            var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+        // For IE (tested 10+)
+        if (window.navigator.msSaveOrOpenBlob) {
+            var blob = new Blob([decodeURIComponent(encodeURI(csv))], {
+                type: "text/csv;charset=utf-8;"
             });
+            navigator.msSaveBlob(blob, filename);
+        } else {
+            $(this)
+                .attr({
+                    'download': filename
+                    ,'href': csvData
+            });
+        }
 
+        //------------------------------------------------------------
+        // Helper Functions
+        //------------------------------------------------------------
+        // Format the output so it has the appropriate delimiters
+        function formatRows(rows){
+            return rows.get().join(tmpRowDelim)
+                .split(tmpRowDelim).join(rowDelim)
+                .split(tmpColDelim).join(colDelim);
+        }
+        // Grab and format a row from the table
+        function grabRow(i,row){
 
+            var $row = $(row);
+            //for some reason $cols = $row.find('td') || $row.find('th') won't work...
+            var $cols = $row.find('td:not(.download)');
+            if(!$cols.length) $cols = $row.find('th:not(.download)');
 
-</script>
+            return $cols.map(grabCol)
+                        .get().join(tmpColDelim);
+        }
+        // Grab and format a column from the table
+        function grabCol(j,col){
+            var $col = $(col),
+                $text = $col.text();
 
-            <table class="alternating">
+            return $text.replace('"', '""'); // escape double quotes
+
+        }
+    }
+
+    // This must be a hyperlink
+    $("#export").click(function (event) {
+        var outputFile = 'peak_search_results.csv';
+
+        // CSV
+        exportTableToCSV.apply(this, [$('#results_table'), outputFile]);
+    });
+});
+            </script>
+            {% if entries[1]|length > 0 %}
+            <a href="#" id ="export" role='button' class="fake_button">Download current results as CSV</a>
+            <table class="alternating" id="results_table">
                 <thead>
                     <tr>
                         <th class="left_align">Compound Name</th>
                         <th>BMRB ID</th>
                         <th>Simulation Name</th>
                         <th>Number of Spins</th>
-                        <th>Data</th>
+                        <th class="download">Data</th>
                         <th>Number of Matching Peaks</th>
                         <th>Combined Peak Offset</th>
                         <th>Matching Peaks</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for letter in entries.keys()|sort %}
-                    {% for entry in entries[letter] %}
+                    {% for letter in entries.keys()|sort -%}
+                    {% for entry in entries[letter] -%}
                     {% set outer_loop = loop -%}
-
-                    {% for simulation in entry %}
-                    {% if outer_loop.first %}
+                    {% for simulation in entry -%}
+                    {% if outer_loop.first -%}
                     <tr id="{{ letter }}">{% else %}
-                    <tr>{% endif %}
+                    <tr>{%- endif -%}
                        {% if loop.first %}<td rowspan="{{ entry|length }}" class="left_align"><a href="/entry/{{ simulation[0] }}" alt="{{ simulation[5] }}" title="{{ simulation[5] }}" target="_blank">{{ simulation[1] }}</a></td>{% endif %}
                        {% if loop.first %}<td rowspan="{{ entry|length }}"><a href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}" target="_blank">{{ simulation[0] }}</a></td>{% endif %}
                        <td><a href="/entry/{{ simulation[0] }}/{{ simulation[3] }}" target="_blank">{{ simulation[3].title() }}</a></td>
                        <td>{{ simulation[4] }}</td>
-                       <td><a class="fake_button" href="/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
+                       <td class="download"><a class="fake_button" href="/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
                        <td>{{ simulation[7] }}</td>
                        <td>{{ simulation[8] }}</td>
                        <td>{{ simulation[6]|join(", ") }}</td>
                     </tr>
-                    {% endfor %}
-                    {% endfor %}
-                    {% endfor %}
+                    {%- endfor -%}
+                    {%- endfor -%}
+                    {%- endfor -%}
                 </tbody>
             </table>
+            {% else %}
+            <h3>No matching peaks found.</h3>
+            {% endif %}
         </div>
 {% endblock %}

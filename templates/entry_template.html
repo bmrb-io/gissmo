@@ -160,6 +160,19 @@
             <tr><td>Note {{loop.index}}</td><td>{{ n }}</td></tr>
             {% endfor %}
             {% endif %}
+            {% if additional_cc %}
+            <tr>
+                <td>Additional coupling constants</td>
+                <td>
+                    <table>
+                        <tr><td>Spin index</td><td>Coupling constant</td></tr>
+                        {% for acc in additional_cc %}
+                        <tr><td>{{acc.index}}</td><td>{{acc.coupling_constant}}</td></tr>
+                        {% endfor %}
+                    </table>
+                </td>
+            </tr>
+            {% endif %}
         </table>
         <a class="fake_button" onclick="$('#spin_matrix').toggle()" style="margin-top: 1em">Show/Hide Spin System Matrix</a>
     </div>
