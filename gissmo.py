@@ -161,6 +161,8 @@ def peak_search():
     threshold_dec = Decimal(threshold)
     cur = get_postgres_connection()[1]
 
+    # For endogenous organism search http://webapi.bmrb.wisc.edu/v2/search/get_id_by_tag_value/_Entity_natural_src.Organism_name_scientific/*?database=metabolomics
+
     sql = '''
 SELECT bmrb_id,simulation_id,array_agg(DISTINCT ppm)
 FROM chemical_shifts
