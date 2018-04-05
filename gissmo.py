@@ -435,6 +435,10 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict['acc'] = []
     for item in get_tag_value(coupling_matrix, "acc", all_=True):
         spin_index, coupling, spin_group_index, coupling_group_index = map(extract, item.split())
+        try:
+            spin_index = column_names[int(spin_index)-1]
+        except ValueError, IndexError:
+            spin_index = "???"
         ent_dict['acc'].append({'spin_index': spin_index,
                                 'coupling': coupling,
                                 'spin_group_index': spin_group_index,
