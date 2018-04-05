@@ -421,10 +421,22 @@ def display_entry(entry_id, simulation=None, some_file=None):
         ent_dict[aux_type] = get_aux_info(entry_id, simulation, aux_type)
     ent_dict['name'] = get_tag_value(root, "name")
 
-    # Get the spin matrix data
-    column_names = get_tag_value(root, "spin", all_=True)
-    diagonal = get_tag_value(root, "cs", all_=True)
-    couplings = get_tag_value(root, "coupling", all_=True)
+    # Get the spin matrix data only for the first coupling matrix
+    coupling_matrix = root.getiterator("coupling_matrix").next()
+    column_names = get_tag_value(coupling_matrix, "spin", all_=True)
+    diagonal = get_tag_value(coupling_matrix, "cs", all_=True)
+    couplings = get_tag_value(coupling_matrix, "coupling", all_=True)
+
+    def extract(attribute):
+        return attribute.split('"')[1]
+
+    ent_dict['acc'] = []
+    for item in get_tag_value(coupling_matrix, "acc", all_=True):
+        spin_index, coupling, spin_group_index, coupling_group_index = map(extract, item.split())
+        ent_dict['acc'].append({'spin_index': spin_index,
+                                'coupling': coupling,
+                                'spin_group_index': spin_group_index,
+                                'coupling_group_index': coupling_group_index})
 
     # Build the spin matrix
     size = len(column_names)+1
@@ -441,10 +453,9 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Add the other values
     for datum in couplings:
-        from_index, to_index, value = datum.split()
-        from_index = int(from_index.split('"')[1])
-        to_index = int(to_index.split('"')[1])
-        value = value.split('"')[1]
+        from_index, to_index, value = map(extract, datum.split())
+        from_index = int(from_index)
+        to_index = int(to_index)
         if value == "0.0000000":
             value = 0
         else:

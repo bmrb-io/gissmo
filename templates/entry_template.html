@@ -160,14 +160,14 @@
             <tr><td>Note {{loop.index}}</td><td>{{ n }}</td></tr>
             {% endfor %}
             {% endif %}
-            {% if additional_cc %}
-            <tr>
+            {% if acc and acc|length > 0 %}
+            <tr style="background-color: transparent !important">
                 <td>Additional coupling constants</td>
                 <td>
                     <table>
                         <tr><td>Spin index</td><td>Coupling constant</td></tr>
-                        {% for acc in additional_cc %}
-                        <tr><td>{{acc.index}}</td><td>{{acc.coupling_constant}}</td></tr>
+                        {% for ac in acc %}
+                        <tr><td>{{ac.spin_index}}</td><td>{{ac.coupling}}</td></tr>
                         {% endfor %}
                     </table>
                 </td>
