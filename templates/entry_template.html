@@ -82,7 +82,7 @@
     {% endif %}
 
     <h3>Simulation: {{ simulation }}</h3>
-    <p><a class="fake_button_sim" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}" target="_blank">BMRB entry</a></p>
+    {% if "bmse" in entry_id %}<p><a class="fake_button_sim" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}" target="_blank">BMRB entry</a></p>{% endif %}
     {% if "bmse" in entry_id %}<p><a class="fake_button_sim" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/" target="_blank">ALATIS cross link</a></p>{% endif %}
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
