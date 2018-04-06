@@ -18,7 +18,6 @@
                         <th class="left_align">Compound Name</th>
                         <th>Entry ID</th>
                         <th>Simulation Name</th>
-                        <th>Number of Spins</th>
                         <th>Field Strength</th>
                         <th>Data</th>
                     </tr>
@@ -32,10 +31,9 @@
                     {% if outer_loop.first %}
                     <tr id="{{ letter }}">{% else %}
                     <tr>{% endif %}
-                       {% if loop.first %}<td rowspan="{{ entry|length }}" class="left_align"><a href="/entry/{{ simulation[0] }}" alt="{{ simulation[5] }}" title="{{ simulation[5] }}">{{ simulation[1] }}</a></td>{% endif %}
+                       {% if loop.first %}<td rowspan="{{ entry|length }}" class="left_align"><a href="/entry/{{ simulation[0] }}" alt="{{ simulation[4] }}" title="{{ simulation[4] }}">{{ simulation[1] }}</a></td>{% endif %}
                        {% if loop.first %}<td rowspan="{{ entry|length }}"><a {% if 'bmse' in simulation[0] %}href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}" target="_blank"{% endif %}>{% if 'bmse' in simulation[0] %}BMRB {% endif %}{{ simulation[0] }}</a></td>{% endif %}
                        <td><a href="/entry/{{ simulation[0] }}/{{ simulation[3] }}">{{ simulation[3].title() }}</a></td>
-                       <td>{{ simulation[4] }}</td>
                        <td>{{ simulation[2] }}</td>
                        <td><a class="fake_button" href="/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
                     </tr>

@@ -116,7 +116,6 @@ def reload_db():
             if status.lower() in ["done", "approximately done"]:
                 sims.append([entry_id, get_tag_value(root, "name"),
                              get_tag_value(root, "field_strength"), sim,
-                             len(get_tag_value(root, "spin", all_=True)),
                              get_tag_value(root, "InChI")])
 
         if sims:
