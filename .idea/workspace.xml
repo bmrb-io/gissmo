@@ -2,11 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ca255dbe-41f5-42a6-b8f0-0432bb35f85b" name="Default" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/dictionaries/wedell.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/sqlDataSources.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/sqldialects.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/utilities/gissmo.ddl" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/gissmo.py" beforeDir="false" afterPath="$PROJECT_DIR$/gissmo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/templates/mixture_render.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/mixture_render.html" afterDir="false" />
     </list>
@@ -33,20 +29,38 @@
   </component>
   <component name="FileEditorManager">
     <leaf>
-      <file leaf-file-name="gissmo.py" pinned="false" current-in-tab="true">
+      <file leaf-file-name="gissmo.py" pinned="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/gissmo.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="248">
-              <caret line="506" column="22" lean-forward="true" selection-start-line="506" selection-start-column="22" selection-end-line="506" selection-end-column="22" />
+            <state relative-caret-position="463">
+              <caret line="346" column="63" selection-start-line="346" selection-start-column="48" selection-end-line="346" selection-end-column="63" />
             </state>
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="mixture_render.html" pinned="false" current-in-tab="false">
+      <file leaf-file-name="mixture_render.html" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/templates/mixture_render.html">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="401">
-              <caret line="64" column="77" selection-start-line="64" selection-start-column="72" selection-end-line="64" selection-end-column="77" />
+            <state relative-caret-position="390">
+              <caret line="95" column="64" selection-start-line="95" selection-start-column="64" selection-end-line="95" selection-end-column="64" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="search_result.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/templates/search_result.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="146">
+              <caret line="162" column="39" lean-forward="true" selection-start-line="162" selection-start-column="39" selection-end-line="162" selection-end-column="39" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="entry_template.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/templates/entry_template.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="435">
+              <caret line="359" column="24" lean-forward="true" selection-start-line="359" selection-start-column="24" selection-end-line="359" selection-end-column="24" />
             </state>
           </provider>
         </entry>
@@ -56,6 +70,9 @@
   <component name="FindInProjectRecents">
     <findStrings>
       <find>field</find>
+      <find>cmp_</find>
+      <find>to_json</find>
+      <find>entry_path</find>
     </findStrings>
   </component>
   <component name="Git.Settings">
@@ -64,8 +81,9 @@
   <component name="IdeDocumentHistory">
     <option name="CHANGED_PATHS">
       <list>
-        <option value="$PROJECT_DIR$/templates/mixture_render.html" />
+        <option value="$PROJECT_DIR$/templates/search_result.html" />
         <option value="$PROJECT_DIR$/gissmo.py" />
+        <option value="$PROJECT_DIR$/templates/mixture_render.html" />
       </list>
     </option>
   </component>
@@ -96,6 +114,11 @@
             <path>
               <item name="gissmo" type="b2602c69:ProjectViewProjectNode" />
               <item name="gissmo" type="462c0819:PsiDirectoryNode" />
+            </path>
+            <path>
+              <item name="gissmo" type="b2602c69:ProjectViewProjectNode" />
+              <item name="gissmo" type="462c0819:PsiDirectoryNode" />
+              <item name="templates" type="462c0819:PsiDirectoryNode" />
             </path>
             <path>
               <item name="gissmo" type="b2602c69:ProjectViewProjectNode" />
@@ -166,8 +189,8 @@
       <window_info anchor="bottom" id="Version Control" />
       <window_info anchor="bottom" id="Python Console" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Terminal" visible="true" weight="0.30136988" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.18036287" />
+      <window_info active="true" anchor="bottom" id="Terminal" visible="true" weight="0.30136988" />
+      <window_info content_ui="combo" id="Project" order="0" visible="true" weight="0.18036287" />
       <window_info anchor="bottom" id="Docker" show_stripe_button="false" />
       <window_info anchor="right" id="Database" weight="0.32977587" />
       <window_info anchor="right" id="SciView" />
@@ -190,24 +213,45 @@
     <option name="myLimit" value="2678400000" />
   </component>
   <component name="editorHistoryManager">
-    <entry file="file://$PROJECT_DIR$/templates/search_result.html">
+    <entry file="file://$PROJECT_DIR$/entries.json">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="210">
-          <caret line="137" column="31" lean-forward="true" selection-start-line="137" selection-start-column="22" selection-end-line="137" selection-end-column="31" />
+        <state>
+          <caret selection-end-column="1" />
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/templates/mixture_render.html">
+    <entry file="file://$PROJECT_DIR$/test.csv">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="401">
-          <caret line="64" column="77" selection-start-line="64" selection-start-column="72" selection-end-line="64" selection-end-column="77" />
+        <state relative-caret-position="60">
+          <caret line="4" column="31" selection-start-line="4" selection-start-column="31" selection-end-line="4" selection-end-column="31" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/entry_template.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="435">
+          <caret line="359" column="24" lean-forward="true" selection-start-line="359" selection-start-column="24" selection-end-line="359" selection-end-column="24" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/search_result.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="146">
+          <caret line="162" column="39" lean-forward="true" selection-start-line="162" selection-start-column="39" selection-end-line="162" selection-end-column="39" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/gissmo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="248">
-          <caret line="506" column="22" lean-forward="true" selection-start-line="506" selection-start-column="22" selection-end-line="506" selection-end-column="22" />
+        <state relative-caret-position="463">
+          <caret line="346" column="63" selection-start-line="346" selection-start-column="48" selection-end-line="346" selection-end-column="63" />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/templates/mixture_render.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="390">
+          <caret line="95" column="64" selection-start-line="95" selection-start-column="64" selection-end-line="95" selection-end-column="64" />
         </state>
       </provider>
     </entry>

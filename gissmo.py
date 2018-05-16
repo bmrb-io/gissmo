@@ -320,8 +320,8 @@ def get_mixture():
             con_coefficient[iter_] = con_coefficient[iter_]/con_coefficient[ref_index]
         """ convert input spectra to float and apply the coefficient """
         """ Note that the length of the simulated spectra are/must be identical """
-        cmp_spectra = []
-        cmp_names = []
+        compounds = []
+        names = []
         mixture_ppm = []
         mixture_fid = []
         for iter_ in range(len(mixture)):
@@ -334,8 +334,9 @@ def get_mixture():
             data = json.load(fin)
             data[0] = [float(x) for x in data[0]]
             data[1] = [con_coefficient[iter_]*float(x) for x in data[1]]
-            cmp_spectra.append([data[0], data[1]])
-            cmp_names.append(str(mixture[iter_]['compound']))
+
+            compounds.append(mixture[iter_])
+            names.append(mixture[iter_]['compound'])
             if not mixture_ppm:
                 mixture_ppm = data[0]
             if not mixture_fid:
@@ -344,8 +345,8 @@ def get_mixture():
                 mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
             fin.close()
         args = {'input_mixture_info': mixture, 'mixture_spectra': [mixture_ppm, mixture_fid],
-                'field_strength': field_strength, 'cmp_spectra': cmp_spectra, 'cmp_names': cmp_names}
-        return json.dumps(args)
+                'field_strength': field_strength, 'compounds': compounds, 'names': names}
+
         # field_strength is field_strength in mhz
         return render_template("mixture_render.html", **args)
 
