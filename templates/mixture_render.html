@@ -64,13 +64,19 @@
 
     {%  for cmp in compounds %}
          getJSON("/entry/{{ cmp['id'] }}/simulation_1/sim_{{field_strength}}MHz.json", function(err, data) {
-            add_spectra(data, '{{ cmp['compound'] }}');
+            add_spectra(data, '{{ cmp['compound'] }}', '{{ cmp['coefficient'] }}');
         });
     {% endfor %}
 
-    function add_spectra(data, name) {
+    function add_spectra(data, name, coefficient) {
 
         var plot = document.getElementById('myDiv');
+
+        // Scale based on the coefficient
+        for (var i=0; i<data[1].length; i++){
+            data[1][i] = data[1][i] * coefficient;
+        }
+
         var new_trace = {
             x: data[0],
             y: data[1],
