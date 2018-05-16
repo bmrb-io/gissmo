@@ -326,7 +326,7 @@ def get_mixture():
         mixture_fid = []
         for iter_ in range(len(mixture)):
             cmp_id = mixture[iter_]['id']
-            path = os.path.join(entry_path, cmp_id, "simulation_1/spectral_data/sim_", str(field_strength), "MHz.json")
+            path = os.path.join(entry_path, cmp_id, "simulation_1/spectral_data/sim_%sMHz.json" % field_strength)
             # we need some sort of indication that the file doesnt exit!
             if not os.path.exists(path):
                 continue
@@ -345,6 +345,7 @@ def get_mixture():
             fin.close()
         args = {'input_mixture_info': mixture, 'mixture_spectra': [mixture_ppm, mixture_fid],
                 'field_strength': field_strength, 'cmp_spectra': cmp_spectra, 'cmp_names': cmp_names}
+        return json.dumps(args)
         # field_strength is field_strength in mhz
         return render_template("mixture_render.html", **args)
 
