@@ -146,7 +146,7 @@ $(document).ready(function () {
             </script>
             {% if entries[1]|length > 0 %}
             <a href="#" id ="export" role='button' class="fake_button">Download current results as CSV</a>
-            <table class="alternating" id="results_table">
+            <table class="alternating" id="results_table" style="width: 100%">
                 <thead>
                     <tr>
                         <th class="left_align">Compound Name</th>
@@ -172,9 +172,9 @@ $(document).ready(function () {
                        <td><a href="/entry/{{ simulation[0] }}/{{ simulation[3] }}" target="_blank">{{ simulation[3].title() }}</a></td>
                        <td>{{ simulation[4] }}</td>
                        <td class="download"><a class="fake_button" href="/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
+                       <td>{{ simulation[6] }}</td>
                        <td>{{ simulation[7] }}</td>
-                       <td>{{ simulation[8] }}</td>
-                       <td>{{ simulation[6]|join(", ") }}</td>
+                       <td>{{ simulation[5]|join(", ") }}</td>
                     </tr>
                     {%- endfor -%}
                     {%- endfor -%}
@@ -186,3 +186,4 @@ $(document).ready(function () {
             {% endif %}
         </div>
 {% endblock %}
+<!-- Jon's line: <td>{{ simulation[6]|join(", ") }}</td> -->

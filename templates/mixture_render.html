@@ -1,5 +1,70 @@
 <div class="details_box">
-    {% for compound in mixture %}
+    <!--{% for compound in input_mixture_info %}
     <p>{{ compound.inchi }}: {{ compound.compound }} ({{ compound.id }}): {{ compound.concentration }} {{ compound.reference }}</p>
     {% endfor %}
-</div>
+{{cmp_names}}
+    -->
+    <script type="text/javascript">
+        function my_plot(data1, data2, names, fs){
+
+            var trace1 = {
+                x: data1[0],
+                y: data1[1],
+                name: 'mixture',
+                marker: {
+                    color: 'rgb(256, 0, 0)',
+                    size: 12
+                },
+                type: 'lines'
+            };
+            var data = [];
+            var data = [trace1];
+
+	    for (var i=0; i< data2.length; i++){
+		    var trace2 = {
+		        x: data2[i][0],
+		        y: data2[i][1],
+		        name: names[i],
+		        marker: {
+		            color: 'rgb(0, 255, 0)',
+		            size: 12
+		        },
+		        type: 'lines'
+		    };	
+		data.push(trace2);	
+	    }
+
+            var layout = {
+                xaxis: {
+                    title: 'PPM',
+                    autorange: 'reversed',
+                    titlefont: {
+                        family: 'Arial, sans-serif',
+                        size: 18,
+                        color: 'black'
+                    }
+                },
+                yaxis: {
+                    fixedrange: false
+                },
+                showlegend: true
+            };
+/*
+            if (xrange){
+                layout.xaxis.range = xrange;
+                delete layout.xaxis.autorange;
+            }
+            if (yrange){
+                layout.yaxis.range = yrange;
+                delete layout.xaxis.autorange;
+            }
+*/
+            Plotly.newPlot('myDiv', data, layout, {scrollZoom: true});
+        };
+	var names = {{cmp_names | tojson }};
+	my_plot({{ mixture_spectra }}, {{ cmp_spectra | tojson }}, names, {{fieldstrength}});
+    </script>
+    {% if mixture_spectra is defined %}
+    	<div id="myDiv" class="shift_graph">
+    {% endif %}
+</div> 

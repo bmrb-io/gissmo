@@ -257,7 +257,7 @@ ORDER BY count(DISTINCT ppm) DESC;
                            peak_type=peak_type, raw_shift=raw_shift,
                            threshold=threshold)
 
-@application.route('/vm')
+@application.route('/gui')
 def return_vm():
     """ Renders the downloadable VM page."""
 
@@ -287,12 +287,56 @@ def get_mixture():
             return ""
 
         # TODO: HESAM
-        # mixture is dictionary with compound information
+        # mixture is dictionary with compound information 
+        """ get coeff for fid's from concentration of the reference compound """
+        con_coeff = []
+        ref_index = 0
+        for iter_ in range(len(mixture)):
+        	a_cmp = mixture[iter_]
+        	if 'concentration' not in a_cmp:
+        		a_cmp['concentration'] = '0'
+        	con_coeff.append(float(a_cmp['concentration']))
+        	if 'reference' in a_cmp and a_cmp['reference']:
+        		ref_index = iter_
+        for iter_ in range(len(con_coeff)):
+        	con_coeff[iter_] = con_coeff[iter_]/con_coeff[ref_index]
+        """ convert input spectra to float and apply the coeff """
+        """ Note that the length of the simulated spectra are/must be identical """
+        cmp_spectra = []
+        cmp_names = []
+        mixture_ppm = []
+        mixture_fid = []
+        for iter_ in range(len(mixture)):
+        	cmp_id = mixture[iter_]['id']
+        	path = entry_path+"/"+cmp_id+"/simulation_1/spectral_data/sim_" + str(fieldstrength) + "MHz.json" 
+		if not os.path.exists(path): # we need some sort of indication that the file doesnt exit!
+			continue
+        	fin = open(path, 'r')
+        	data = json.load(fin)
+        	data[0] = [float(x) for x in data[0]]
+        	data[1] = [con_coeff[iter_]*float(x) for x in data[1]]
+        	cmp_spectra.append([data[0], data[1]])
+        	cmp_names.append(str(mixture[iter_]['compound']))
+        	if mixture_ppm == []:
+        		mixture_ppm = data[0]
+        	if mixture_fid == []:
+        		mixture_fid = data[1]
+        	else: 
+        		mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
+        	fin.close()
+        	#data = requests.get(path)
+        args = {}
+        args['input_mixture_info'] = mixture
+        args['mixture_spectra'] = [mixture_ppm, mixture_fid]
+        args['fieldstrength'] = fieldstrength
+        args['cmp_spectra'] = cmp_spectra
+        args['cmp_names'] = cmp_names
         # fieldstrength is fieldstrength in mhz
-        return render_template("mixture_render.html", mixture=mixture)
+        return render_template("mixture_render.html", **args)
 
     # Send them the page to enter a mixture
     return render_template("mixture.html", entry_list=entry_list)
+
 
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):
