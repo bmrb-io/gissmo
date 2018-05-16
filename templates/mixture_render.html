@@ -64,7 +64,7 @@
 
     {%  for cmp in compounds %}
          getJSON("/entry/{{ cmp['id'] }}/simulation_1/sim_{{field_strength}}MHz.json", function(err, data) {
-            add_spectra(data, '{{ cmp['id'] }}');
+            add_spectra(data, '{{ cmp['compound'] }}');
         });
     {% endfor %}
 
