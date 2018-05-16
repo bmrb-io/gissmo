@@ -335,6 +335,7 @@ def get_mixture():
             data[0] = [float(x) for x in data[0]]
             data[1] = [con_coefficient[iter_]*float(x) for x in data[1]]
 
+            mixture[iter_]['coefficient'] = con_coefficient[iter_];
             compounds.append(mixture[iter_])
             names.append(mixture[iter_]['compound'])
             if not mixture_ppm:
