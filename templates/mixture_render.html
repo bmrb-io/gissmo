@@ -7,34 +7,19 @@
     {% endfor %}
     -->
     <script type="text/javascript">
-        function my_plot(data1, data2, names, fs){
+        function my_plot(data){
 
             var trace1 = {
-                x: data1[0],
-                y: data1[1],
-                name: 'mixture',
+                x: data[0],
+                y: data[1],
+                name: 'Mixture',
                 marker: {
-                    color: 'rgb(256, 0, 0)',
+                    color: 'rgb(255, 0, 0)',
                     size: 12
                 },
                 type: 'lines'
             };
-            var data = [];
             var data = [trace1];
-
-	    for (var i=0; i< data2.length; i++){
-		    var trace2 = {
-		        x: data2[i][0],
-		        y: data2[i][1],
-		        name: names[i],
-		        marker: {
-		            color: 'rgb(0, 255, 0)',
-		            size: 12
-		        },
-		        type: 'lines'
-		    };	
-		data.push(trace2);	
-	    }
 
             var layout = {
                 xaxis: {
@@ -51,16 +36,7 @@
                 },
                 showlegend: true
             };
-/*
-            if (xrange){
-                layout.xaxis.range = xrange;
-                delete layout.xaxis.autorange;
-            }
-            if (yrange){
-                layout.yaxis.range = yrange;
-                delete layout.xaxis.autorange;
-            }
-*/
+
             Plotly.newPlot('myDiv', data, layout, {scrollZoom: true});
         };
 
@@ -83,71 +59,29 @@
         xhr.send();
     };
 
-    var names = [];
-	var mixture = {{ mixture_spectra | tojson }};
-    var spectra = [];
+    var mixture = {{ mixture_spectra | tojson }};
+    my_plot(mixture);
+
     {%  for cmp in compounds %}
          getJSON("/entry/{{ cmp['id'] }}/simulation_1/sim_{{field_strength}}MHz.json", function(err, data) {
-            spectra.push(data);
-            names.push({{ cmp['id'] }});
+            add_spectra(data, '{{ cmp['id'] }}');
         });
     {% endfor %}
 
-        // my_plot(mixture, spectra, names, {{field_strength}});
-    function load_shift(ppm, amplitude) {
-        var update = {
-            xaxis: {range: [ppm + .1, ppm - .1]},
-            yaxis: {range: [0, amplitude * 1.3]},
-            annotations: [
-            {
-              x: ppm,
-              y: amplitude,
-              xref: 'x',
-              yref: 'y',
-              text: 'Selected Peak',
-              showarrow: true,
-              arrowhead: 7,
-              ax: 0,
-              ay: -40
-            }
-          ]
+    function add_spectra(data, name) {
+
+        var plot = document.getElementById('myDiv');
+        var new_trace = {
+            x: data[0],
+            y: data[1],
+            name: name,
+            marker: {
+                color: 'rgb(0, 255, 0)',
+                size: 12
+            },
+            type: 'lines'
         };
-        Plotly.relayout(document.getElementById('myDiv'), update);
-    }
-
-    function load_spectra(){
-
-        var field_strength = $("#fieldstrength").val();
-
-        getJSON("/entry/{{ entry_id }}/{{ simulation }}/sim_" + field_strength + ".json", function(err, data) {
-            if (err !== null) {
-                alert('Something went wrong: ' + err);
-            } else {
-                var plot = document.getElementById('myDiv');
-                if (plot.layout) {
-                    my_plot(data, experiment_data, field_strength, plot.layout.xaxis.range, plot.layout.yaxis.range);
-                } else {
-                    my_plot(data, experiment_data, field_strength);
-                };
-
-            }
-        });
-
-        // Show the right shifts
-        var shifts = document.getElementsByClassName("shift");
-        var clean_fs;
-        if (field_strength === 'default'){
-            clean_fs = '0';
-        } else {
-            clean_fs = field_strength.slice(0, -3);
-        }
-        for (var i = 0; i < shifts.length; i++) {
-            if (shifts[i].classList.contains(clean_fs)){
-                shifts[i].style.display = "";
-            } else {
-                shifts[i].style.display = "none";
-            }
-        }
+        Plotly.addTraces(plot, new_trace);
     }
 
     </script>
