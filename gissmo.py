@@ -2,7 +2,10 @@
 
 import os
 import re
-import json
+try:
+    import simplejson as json
+except ImportError:
+    import json
 import xml.etree.cElementTree as ET
 
 import time
