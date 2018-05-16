@@ -6,10 +6,10 @@ try:
     import simplejson as json
 except ImportError:
     import json
-import xml.etree.cElementTree as ET
+import xml.etree.cElementTree as ElementTree
 
 import time
-from decimal import Decimal
+from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
@@ -17,13 +17,14 @@ import requests
 import psycopg2
 from psycopg2.extras import DictCursor
 
-from flask import Flask, render_template, send_from_directory, request, redirect, send_file, jsonify
+from flask import Flask, render_template, send_from_directory, request, redirect, send_file
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
 entry_path = "/websites/gissmo/DB/BMRB_DB/"
 here = os.path.dirname(__file__)
 entries_file = os.path.join(here, "entries.json")
+
 
 # Helper methods
 def get_tag_value(root, tag, all_=False):
@@ -39,6 +40,7 @@ def get_tag_value(root, tag, all_=False):
         except StopIteration:
             return None
 
+
 def dict_builder(root, tags):
     """ Gets all of the tags from the XML and builds a dictionary. """
 
@@ -48,11 +50,14 @@ def dict_builder(root, tags):
 
     return res
 
+
 def get_title(entry_id):
     """ Fetches the actual compound name from BMRB API. """
 
-    title = requests.get("http://webapi.bmrb.wisc.edu/v2/entry/%s?tag=_Assembly.Name" % entry_id, headers={"Application":"GISSMO"}).json()
+    title = requests.get("http://webapi.bmrb.wisc.edu/v2/entry/%s?tag=_Assembly.Name" % entry_id,
+                         headers={"Application": "GISSMO"}).json()
     return title[entry_id]['_Assembly.Name'][0].title()
+
 
 def get_postgres_connection(user='web', database='gissmo',
                             dictionary_cursor=False):
@@ -65,6 +70,7 @@ def get_postgres_connection(user='web', database='gissmo',
     cur = conn.cursor()
 
     return conn, cur
+
 
 def get_aux_info(entry_id, simulation, aux_name):
 
@@ -90,6 +96,7 @@ def get_aux_info(entry_id, simulation, aux_name):
     else:
         return results
 
+
 # URI methods
 @application.route('/reload')
 def reload_db():
@@ -107,7 +114,7 @@ def reload_db():
 
             # Load the entry XML
             try:
-                root = ET.parse(os.path.join(entry_path, entry_id, sim, "spin_simulation.xml")).getroot()
+                root = ElementTree.parse(os.path.join(entry_path, entry_id, sim, "spin_simulation.xml")).getroot()
             except IOError:
                 continue
             except Exception as e:
@@ -131,6 +138,7 @@ def reload_db():
 
     return redirect("", code=302)
 
+
 @application.route('/')
 def display_list():
     """ Display the list of possible entries. """
@@ -151,6 +159,7 @@ def display_list():
 
     return render_template("list_template.html", entries=entry_letters)
 
+
 @application.route('/peak_search')
 def peak_search():
     """ Returns a page with compounds that match the provided peaks. """
@@ -163,12 +172,13 @@ def peak_search():
     threshold_dec = Decimal(threshold)
     cur = get_postgres_connection()[1]
 
-    # For endogenous organism search http://webapi.bmrb.wisc.edu/v2/search/get_id_by_tag_value/_Entity_natural_src.Organism_name_scientific/*?database=metabolomics
+    # For endogenous organism search
+    # http://www.bmrb.wisc.edu/metabolomics/metabolomics_standards_false.shtml
 
     sql = '''
 SELECT bmrb_id,simulation_id,array_agg(DISTINCT ppm)
-FROM chemical_shifts
-WHERE ('''
+FROM chemical_shifts'''
+    sql += ' WHERE ('
     terms = []
 
     fpeaks = []
@@ -176,7 +186,7 @@ WHERE ('''
     for peak in peaks:
         try:
             fpeaks.append(Decimal(peak))
-        except Exception:
+        except InvalidOperation:
             pass
 
     peaks = sorted(fpeaks)
@@ -202,7 +212,7 @@ ORDER BY count(DISTINCT ppm) DESC;
     result = []
 
     for entry in cur:
-        result.append({'Entry_ID':entry[0],
+        result.append({'Entry_ID': entry[0],
                        'Simulation_ID': entry[1],
                        'Val': entry[2]})
 
@@ -211,7 +221,7 @@ ORDER BY count(DISTINCT ppm) DESC;
 
     def get_closest(collection, number):
         """ Returns the closest number from a list of numbers. """
-        return min(collection, key=lambda x: abs(x-number))
+        return min(collection, key=lambda _: abs(_-number))
 
     def get_sort_key(res):
         """ Returns the sort key. """
@@ -221,14 +231,14 @@ ORDER BY count(DISTINCT ppm) DESC;
         # Determine how many of the queried peaks were matched
         num_match = 0
         matched_peaks = []
-        for peak in peaks:
-            closest = get_closest(res['Val'], peak)
-            if abs(peak-closest) < threshold_dec:
+        for tmp_peak in peaks:
+            closest = get_closest(res['Val'], tmp_peak)
+            if abs(tmp_peak - closest) < threshold_dec:
                 num_match += 1
                 matched_peaks.append(closest)
 
                 # Add the difference of all the matched shifts
-                key += abs(get_closest(matched_peaks, peak) - peak)
+                key += abs(get_closest(matched_peaks, tmp_peak) - tmp_peak)
 
         # Set the calculated values
         res['Peaks_matched'] = num_match
@@ -236,14 +246,14 @@ ORDER BY count(DISTINCT ppm) DESC;
         # Only return the closest matches
         res['Val'] = matched_peaks
 
-        return (-num_match, key, res['Entry_ID'])
+        return -num_match, key, res['Entry_ID']
 
     result = sorted(result, key=get_sort_key)
 
     # Determine actual entry list
     entry_list = json.loads(open(entries_file, "r").read())
 
-    mentry_list = []
+    modified_entry_list = []
     for row in result:
         for entry in entry_list:
             m = []
@@ -253,12 +263,13 @@ ORDER BY count(DISTINCT ppm) DESC;
                     sim.append(row['Peaks_matched'])
                     sim.append(row['Combined_offset'])
                     m.append(sim)
-            mentry_list.append(m)
+            modified_entry_list.append(m)
 
-    return render_template("search_result.html", entries={1:mentry_list},
+    return render_template("search_result.html", entries={1: modified_entry_list},
                            base_url=request.path, frequency=frequency,
                            peak_type=peak_type, raw_shift=raw_shift,
                            threshold=threshold)
+
 
 @application.route('/gui')
 def return_vm():
@@ -266,10 +277,12 @@ def return_vm():
 
     return render_template("vm.html")
 
+
 @application.route('/js/<fname>')
 def js(fname):
     """ Send the JS"""
     return send_from_directory("javascript", fname)
+
 
 @application.route("/mixture", methods=['GET', 'POST'])
 def get_mixture():
@@ -279,66 +292,61 @@ def get_mixture():
     entry_list = [x[0][0] for x in json.loads(open(entries_file, "r").read())]
     entry_list = "var valid_entries = " + json.dumps(entry_list) + ";"
 
+    # Send them the page to enter a mixture
+    if request.method == "GET":
+        return render_template("mixture.html", entry_list=entry_list)
     # They sent a mixture, send them the spectra
-    if request.method == "POST":
+    else:
         try:
             data = request.get_json()
             mixture = data['mixture']
-            fieldstrength = data['fieldstrength']
+            field_strength = data['fieldstrength']
         except KeyError:
             # No compounds specified
             return ""
 
-        # TODO: HESAM
-        # mixture is dictionary with compound information 
-        """ get coeff for fid's from concentration of the reference compound """
-        con_coeff = []
+        # mixture is dictionary with compound information
+        """ get coefficient for FID's from concentration of the reference compound """
+        con_coefficient = []
         ref_index = 0
         for iter_ in range(len(mixture)):
-        	a_cmp = mixture[iter_]
-        	if 'concentration' not in a_cmp:
-        		a_cmp['concentration'] = '0'
-        	con_coeff.append(float(a_cmp['concentration']))
-        	if 'reference' in a_cmp and a_cmp['reference']:
-        		ref_index = iter_
-        for iter_ in range(len(con_coeff)):
-        	con_coeff[iter_] = con_coeff[iter_]/con_coeff[ref_index]
-        """ convert input spectra to float and apply the coeff """
+            a_cmp = mixture[iter_]
+            if 'concentration' not in a_cmp:
+                a_cmp['concentration'] = '0'
+            con_coefficient.append(float(a_cmp['concentration']))
+            if 'reference' in a_cmp and a_cmp['reference']:
+                ref_index = iter_
+        for iter_ in range(len(con_coefficient)):
+            con_coefficient[iter_] = con_coefficient[iter_]/con_coefficient[ref_index]
+        """ convert input spectra to float and apply the coefficient """
         """ Note that the length of the simulated spectra are/must be identical """
         cmp_spectra = []
         cmp_names = []
         mixture_ppm = []
         mixture_fid = []
         for iter_ in range(len(mixture)):
-        	cmp_id = mixture[iter_]['id']
-        	path = entry_path+"/"+cmp_id+"/simulation_1/spectral_data/sim_" + str(fieldstrength) + "MHz.json" 
-		if not os.path.exists(path): # we need some sort of indication that the file doesnt exit!
-			continue
-        	fin = open(path, 'r')
-        	data = json.load(fin)
-        	data[0] = [float(x) for x in data[0]]
-        	data[1] = [con_coeff[iter_]*float(x) for x in data[1]]
-        	cmp_spectra.append([data[0], data[1]])
-        	cmp_names.append(str(mixture[iter_]['compound']))
-        	if mixture_ppm == []:
-        		mixture_ppm = data[0]
-        	if mixture_fid == []:
-        		mixture_fid = data[1]
-        	else: 
-        		mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
-        	fin.close()
-        	#data = requests.get(path)
-        args = {}
-        args['input_mixture_info'] = mixture
-        args['mixture_spectra'] = [mixture_ppm, mixture_fid]
-        args['fieldstrength'] = fieldstrength
-        args['cmp_spectra'] = cmp_spectra
-        args['cmp_names'] = cmp_names
-        # fieldstrength is fieldstrength in mhz
+            cmp_id = mixture[iter_]['id']
+            path = os.path.join(entry_path, cmp_id, "/simulation_1/spectral_data/sim_", str(field_strength), "MHz.json")
+            # we need some sort of indication that the file doesnt exit!
+            if not os.path.exists(path):
+                continue
+            fin = open(path, 'r')
+            data = json.load(fin)
+            data[0] = [float(x) for x in data[0]]
+            data[1] = [con_coefficient[iter_]*float(x) for x in data[1]]
+            cmp_spectra.append([data[0], data[1]])
+            cmp_names.append(str(mixture[iter_]['compound']))
+            if not mixture_ppm:
+                mixture_ppm = data[0]
+            if not mixture_fid:
+                mixture_fid = data[1]
+            else:
+                mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
+            fin.close()
+        args = {'input_mixture_info': mixture, 'mixture_spectra': [mixture_ppm, mixture_fid],
+                'field_strength': field_strength, 'cmp_spectra': cmp_spectra, 'cmp_names': cmp_names}
+        # field_strength is field_strength in mhz
         return render_template("mixture_render.html", **args)
-
-    # Send them the page to enter a mixture
-    return render_template("mixture.html", entry_list=entry_list)
 
 
 @application.route('/entry/<entry_id>')
@@ -359,22 +367,24 @@ def display_summary(entry_id):
 
     # Go through the simulations
     for sim_dir in sims:
-        root = ET.parse(os.path.join(entry_path, entry_id, sim_dir, "spin_simulation.xml")).getroot()
-        sim_dict = {}
-        sim_dict['field_strength'] = get_tag_value(root, "field_strength")
-        sim_dict['sim'] = sim_dir
-        sim_dict['entry_id'] = entry_id
-        data.append(sim_dict)
+        root = ElementTree.parse(os.path.join(entry_path, entry_id, sim_dir, "spin_simulation.xml")).getroot()
+        data.append({'field_strength': get_tag_value(root, "field_strength"), 'sim': sim_dir, 'entry_id': entry_id})
         name = get_tag_value(root, "name")
+    if not sims:
+        return "No simulations available."
 
     return render_template("simulations_list.html", data=data, name=name)
+
 
 @application.route('/entry/<entry_id>/<simulation>/peaks/<frequency>')
 def display_peaks(entry_id, simulation, frequency):
 
     # Get the chemical shifts from postgres
     cur = get_postgres_connection()[1]
-    cur.execute('''SELECT frequency, ppm, amplitude FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
+    cur.execute('''
+SELECT frequency, ppm, amplitude FROM chemical_shifts
+  WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD'
+  ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
 
     if frequency == '0':
         frequency = 'Default'
@@ -384,6 +394,7 @@ def display_peaks(entry_id, simulation, frequency):
                 'shifts': cur.fetchall()}
 
     return render_template("gsd_peaks.html", **res_dict)
+
 
 @application.route('/entry/<entry_id>/<simulation>')
 @application.route('/entry/<entry_id>/<simulation>/<some_file>')
@@ -412,13 +423,14 @@ def display_entry(entry_id, simulation=None, some_file=None):
                     np = os.path.join(root, _file)
                     np = np[np.index(entry_id):]
                     data = ZipInfo(np)
-                    data.external_attr = 0666 << 16L # Give all relevant permissions to downloaded file
+                    data.external_attr = 0666 << 16L  # Give all relevant permissions to downloaded file
                     data.compress_type = ZIP_DEFLATED
                     data.date_time = time.strptime(time.ctime(os.path.getmtime(fn)))
                     zf.writestr(data, open(fn, "r").read())
 
-            comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
-                      request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
+            comment = "Data downloaded from GISSMO server %s. To view entry: %sentry/%s/%s" % \
+                      (time.strftime("%Y-%m-%d %H:%M:%S", time.gmtime()),
+                       request.url_root, entry_id.encode('ascii'), simulation.encode('ascii'))
             zf.comment = comment.encode()
 
             zf.close()
@@ -436,7 +448,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Load the entry XML
     try:
-        root = ET.parse(os.path.join(exp_full_path, "spin_simulation.xml")).getroot()
+        root = ElementTree.parse(os.path.join(exp_full_path, "spin_simulation.xml")).getroot()
     except IOError:
         return "No XML found."
 
@@ -483,7 +495,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
         spin_index, coupling, spin_group_index, coupling_group_index = map(extract, item.split())
         try:
             spin_index = column_names[int(spin_index)-1]
-        except ValueError, IndexError:
+        except (ValueError, IndexError):
             spin_index = "???"
         ent_dict['acc'].append({'spin_index': spin_index,
                                 'coupling': coupling,
@@ -508,16 +520,17 @@ def display_entry(entry_id, simulation=None, some_file=None):
         from_index, to_index, value = map(extract, datum.split())
         from_index = int(from_index)
         to_index = int(to_index)
-        if value == "0.0000000":
-            value = 0
-        else:
+        if value != "0.0000000":
             matrix[from_index][to_index] = round(float(value), 3)
 
     ent_dict['matrix'] = matrix
 
     # Get the chemical shifts from postgres
     cur = get_postgres_connection()[1]
-    cur.execute('''SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts WHERE bmrb_id=%s AND simulation_id=%s and peak_type='standard' ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation])
+    cur.execute('''
+SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts
+  WHERE bmrb_id=%s AND simulation_id=%s AND peak_type='standard'
+  ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation])
     ent_dict['shifts'] = cur.fetchall()
 
     # Return the page

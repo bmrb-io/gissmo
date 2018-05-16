@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDataSourceStorage">
+    <option name="dataSources">
+      <list>
+        <State>
+          <option name="id" value="a7f5969e-f1fe-4a5e-a96c-74a14695b73a" />
+          <option name="name" value="GISSMO" />
+          <option name="urls">
+            <array>
+              <option value="file://$PROJECT_DIR$/utilities/gissmo.ddl" />
+            </array>
+          </option>
+        </State>
+      </list>
+    </option>
+  </component>
+</project>
