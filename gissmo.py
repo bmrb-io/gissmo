@@ -326,10 +326,10 @@ def get_mixture():
         mixture_fid = []
         for iter_ in range(len(mixture)):
             cmp_id = mixture[iter_]['id']
-            path = os.path.join(entry_path, cmp_id, "/simulation_1/spectral_data/sim_", str(field_strength), "MHz.json")
+            path = os.path.join(entry_path, cmp_id, "simulation_1/spectral_data/sim_", str(field_strength), "MHz.json")
             # we need some sort of indication that the file doesnt exit!
             if not os.path.exists(path):
-                continue
+                return path
             fin = open(path, 'r')
             data = json.load(fin)
             data[0] = [float(x) for x in data[0]]
