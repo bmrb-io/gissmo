@@ -329,7 +329,7 @@ def get_mixture():
             path = os.path.join(entry_path, cmp_id, "simulation_1/spectral_data/sim_", str(field_strength), "MHz.json")
             # we need some sort of indication that the file doesnt exit!
             if not os.path.exists(path):
-                return path
+                continue
             fin = open(path, 'r')
             data = json.load(fin)
             data[0] = [float(x) for x in data[0]]
