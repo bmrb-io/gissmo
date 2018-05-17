@@ -335,15 +335,20 @@ def get_mixture():
             data[0] = [float(x) for x in data[0]]
             data[1] = [con_coefficient[iter_]*float(x) for x in data[1]]
 
-            mixture[iter_]['coefficient'] = con_coefficient[iter_];
-            compounds.append(mixture[iter_])
-            names.append(mixture[iter_]['compound'])
             if not mixture_ppm:
                 mixture_ppm = data[0]
             if not mixture_fid:
                 mixture_fid = data[1]
             else:
-                mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
+                try:
+                    mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
+                except IndexError:
+                    print("Data wrong for %s" % path)
+                    continue
+            mixture[iter_]['coefficient'] = con_coefficient[iter_];
+            compounds.append(mixture[iter_])
+            names.append(mixture[iter_]['compound'])
+
             fin.close()
         args = {'input_mixture_info': mixture, 'mixture_spectra': [mixture_ppm, mixture_fid],
                 'field_strength': field_strength, 'compounds': compounds, 'names': names}
