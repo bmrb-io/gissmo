@@ -43,7 +43,7 @@
 
 
 
-
+    // Used to fetch spectra off the server
     var getJSON = function(url, callback) {
         var xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
@@ -59,15 +59,18 @@
         xhr.send();
     };
 
+    // Plot the mixture spectra
     var mixture = {{ mixture_spectra | tojson }};
     my_plot(mixture);
 
+    // asynchronously add the component spectra
     {%  for cmp in compounds %}
          getJSON("/entry/{{ cmp['id'] }}/simulation_1/sim_{{field_strength}}MHz.json", function(err, data) {
             add_spectra(data, '{{ cmp['compound'] }}', '{{ cmp['coefficient'] }}');
         });
     {% endfor %}
 
+    // add a spectra to the plot. First scale the spectra by the coefficient.
     function add_spectra(data, name, coefficient) {
 
         var plot = document.getElementById('myDiv');
