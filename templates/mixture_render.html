@@ -94,7 +94,10 @@
     }
 
     </script>
+    {% if skipped %}<p>Skipped the following compounds due to data source issues: {{ skipped|join(", ") }}</p>{% endif %}
     {% if mixture_spectra is defined %}
     	<div id="myDiv" class="shift_graph">
     {% endif %}
+
+
 </div> 

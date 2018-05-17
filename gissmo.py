@@ -324,6 +324,7 @@ def get_mixture():
         names = []
         mixture_ppm = []
         mixture_fid = []
+        skipped = []
         for iter_ in range(len(mixture)):
             cmp_id = mixture[iter_]['id']
             path = os.path.join(entry_path, cmp_id, "simulation_1/spectral_data/sim_%sMHz.json" % field_strength)
@@ -344,6 +345,7 @@ def get_mixture():
                     mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
                 except IndexError:
                     print("Data wrong for %s" % path)
+                    skipped.append(mixture[iter_]['compound'])
                     continue
             mixture[iter_]['coefficient'] = con_coefficient[iter_];
             compounds.append(mixture[iter_])
@@ -351,7 +353,7 @@ def get_mixture():
 
             fin.close()
         args = {'input_mixture_info': mixture, 'mixture_spectra': [mixture_ppm, mixture_fid],
-                'field_strength': field_strength, 'compounds': compounds, 'names': names}
+                'field_strength': field_strength, 'compounds': compounds, 'names': names, 'skipped': skipped}
 
         # field_strength is field_strength in mhz
         return render_template("mixture_render.html", **args)
