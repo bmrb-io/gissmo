@@ -71,7 +71,7 @@ function addLoadedCompound(compound_name, concentration){
             // Insert error on no match
             if ((compound_list.length === 0) || (!one_valid)){
                 var control_nomatch = $("<tr></tr>").addClass('compound').insertBefore("#compound_anchor");
-                control_nomatch.append($('<td><input type="button" value="Delete"></td>').bind('click', { row: row }, function(event) { event.data.row.remove();}));
+                control_nomatch.append($('<td><input type="button" value="Delete"></td>').bind('click', { row: control_nomatch }, function(event) { event.data.row.remove();}));
                 control_nomatch.append($("<td>" + compound_name + "</td>").addClass('left_align'));
                 control_nomatch.append($("<td></td>").html('No match'));
                 control_nomatch.append($("<td></td>").html(concentration));
