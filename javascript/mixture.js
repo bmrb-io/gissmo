@@ -49,12 +49,12 @@ function addLoadedCompound(compound_name, concentration){
             var first = true;
             var sel = $("<select name='mixture[][compound]'>"); //.css('width', '100%');
             $(compound_list).each(function() {
-                if (first){
-                    compound_id.val(this.value);
-                    inchi.val(this.inchi);
-                    first = false;
-                }
                 if (valid_entries.indexOf(this.value) >= 0){
+                    if (first){
+                        compound_id.val(this.value);
+                        inchi.val(this.inchi);
+                        first = false;
+                    }
                     var option = $("<option>").attr('value', this.label).text(this.label + ' (' + this.value + ')').data('compound_id',this.value).data('inchi_string',this.inchi);
                     one_valid = true;
                     sel.append(option);
