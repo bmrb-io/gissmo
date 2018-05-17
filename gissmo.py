@@ -328,8 +328,9 @@ def get_mixture():
         for iter_ in range(len(mixture)):
             cmp_id = mixture[iter_]['id']
             path = os.path.join(entry_path, cmp_id, "simulation_1/spectral_data/sim_%sMHz.json" % field_strength)
-            # we need some sort of indication that the file doesnt exit!
+
             if not os.path.exists(path):
+                skipped.append(mixture[iter_]['compound'])
                 continue
             fin = open(path, 'r')
             data = json.load(fin)
@@ -341,13 +342,13 @@ def get_mixture():
             if not mixture_fid:
                 mixture_fid = data[1]
             else:
-                try:
-                    mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
-                except IndexError:
+                if len(mixture_fid) != len(data[1]):
                     print("Data wrong for %s" % path)
                     skipped.append(mixture[iter_]['compound'])
                     continue
-            mixture[iter_]['coefficient'] = con_coefficient[iter_];
+                mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
+
+            mixture[iter_]['coefficient'] = con_coefficient[iter_]
             compounds.append(mixture[iter_])
             names.append(mixture[iter_]['compound'])
 
