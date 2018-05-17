@@ -9,23 +9,25 @@ import sys
 
 def reduce_list(raw_ppm, raw_val):
 
-    ppm, val = [], []
-    last, two_ago = None, None
+    last_yield, last_yield_pos = None, 0
 
-    for pos, x in enumerate(raw_val):
-        if x == "0" and last == "0" and two_ago == "0":
-            continue
-        ppm.push(raw_ppm[pos])
-        val.push(x)
-        two_ago = last
-        last = x
+    for pos in range(0, len(raw_val)-2):
+        v = raw_val[pos]
 
-    return ppm, val
+        # If this is the first new value in a while
+        if v != last_yield:
+            if pos - last_yield_pos > 1:
+                yield raw_ppm[pos-1], raw_val[pos-1]
+            yield raw_ppm[pos], v
+            last_yield, last_yield_pos = v, pos
+
+    # Always yield the final point
+    yield raw_ppm[-1], raw_val[-1]
 
 
 def get_minimal(number):
     trimmed = "%.4f" % number
-    while len(trimmed) > 0 and trimmed[-1] in [".", "0"]:
+    while len(trimmed) > 0 and trimmed[-1] in [".", "0", "-"]:
         trimmed = trimmed[:-1]
 
     if not trimmed:
@@ -39,14 +41,16 @@ def to_json(filename):
     ppm = []
     val = []
 
-    x = 4
     for _ in csv.reader(fd):
-        if x % 4 == 0:
-            ppm.append(float(_[0]))
-            val.append(float(_[1]))
-        x += 1
+        ppm.append(float(_[0]))
+        val.append(float(_[1]))
 
-    ppm_list, val_list = reduce_list([get_minimal(x) for x in ppm], [get_minimal(x) for x in val])
+    ppm_list = []
+    val_list = []
+    list_gen = reduce_list([get_minimal(x) for x in ppm], [get_minimal(x) for x in val])
+    for pos, value in list_gen:
+        ppm_list.append(pos)
+        val_list.append(value)
     ppm_string = ",".join(ppm_list)
     val_string = ",".join(val_list)
     return "[[%s],[%s]]" % (ppm_string, val_string)
