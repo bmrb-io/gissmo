@@ -337,16 +337,16 @@ def get_mixture():
             data[0] = [float(x) for x in data[0]]
             data[1] = [con_coefficient[iter_]*float(x) for x in data[1]]
 
-            if not mixture_ppm:
-                mixture_ppm = data[0]
-            if not mixture_fid:
-                mixture_fid = data[1]
-            else:
-                if len(mixture_fid) != len(data[1]):
-                    print("Data wrong for %s" % path)
-                    skipped.append(mixture[iter_]['compound'])
-                    continue
-                mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
+            #if not mixture_ppm:
+            #    mixture_ppm = data[0]
+            #if not mixture_fid:
+            #    mixture_fid = data[1]
+            #else:
+            #    if len(mixture_fid) != len(data[1]):
+            #        print("Data wrong for %s" % path)
+            #        skipped.append(mixture[iter_]['compound'])
+            #        continue
+            #    mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
 
             mixture[iter_]['coefficient'] = con_coefficient[iter_]
             compounds.append(mixture[iter_])

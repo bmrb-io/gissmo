@@ -39,7 +39,7 @@
                 </tbody>
             </table>
             <p>Add compound: <input type="text" id="compound_search"></p>
-            <select name="fieldstrength">
+            <select name="fieldstrength" id="fieldstrength">
                 <option value="40">40 MHz</option>
                 <option value="100">100 MHz</option>
                 <option value="200">200 MHz</option>
@@ -60,6 +60,11 @@
         <div id="results">
         </div>
     </div>
+</div>
+
+<div class="details_box">
+    <a class="fake_button" onclick="downloadCSV()">Download mixture CSV</a></p>
+    <div id="myDiv" class="shift_graph"></div>
 </div>
 
     {% endblock %}
