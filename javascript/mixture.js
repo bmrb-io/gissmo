@@ -168,8 +168,7 @@ function addLoadedCompound(compound_name, concentration){
             }
 
             var conc = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">').val(concentration));
-            var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
-            row.append(control, sel_td, compound_id_td, conc, reference).insertBefore("#compound_anchor");
+            row.append(control, sel_td, compound_id_td, conc).insertBefore("#compound_anchor");
 
             bindData(id);
       }
@@ -191,8 +190,7 @@ function addCompound(selection) {
     var inchi = $('<input type="hidden" name="mixture[][inchi]">').val(selection.inchi);
     compound_td.append(inchi);
     var concentration = $("<td></td>").append($('<input type="text" name="mixture[][concentration]">'));
-    var reference = $("<td></td>").append($('<input type="checkbox" name="mixture[][reference]">'));
-    row.append(control, compound_td, comp_id, concentration, reference).insertBefore("#compound_anchor");
+    row.append(control, compound_td, comp_id, concentration).insertBefore("#compound_anchor");
 
     // Reset the values
     $("#compound_search").val('');
