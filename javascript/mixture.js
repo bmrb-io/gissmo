@@ -49,6 +49,9 @@ $( "form" ).submit(function( event ) {
         data.push(getTrace(retrieveData(comp['id']), comp['compound'], concentration_coefficient));
     }
 
+    // Calculate the mixture
+    data.push(getMixtureTrace(data, 32000));
+
     Plotly.newPlot('myDiv', data, layout, {scrollZoom: true}).then(function(result) {
         plot = result;
     });
@@ -80,6 +83,64 @@ function retrieveData(id){
         return [[],[]];
     }
     return spectralStore[freq][id];
+}
+
+class spectralResolver {
+  constructor(trace) {
+    this.x = trace['x'];
+    this.y = trace['y'];
+    this.xPos = 0;
+    this.name = trace['name'];
+  }
+
+  getY(x){
+    while (x > this.x[this.xPos]){
+        this.xPos += 1;
+    }
+
+    // Exact match
+    if (x == this.x[this.xPos]){
+        return this.y[this.xPos];
+    } else {
+        // Calculate it TODO
+        return this.y[this.xPos];
+    }
+
+  }
+}
+
+// Generate the mixture trace
+function getMixtureTrace(traces, resolution) {
+    var resolvers = [];
+    var interval = 13/resolution;
+
+    for (var i = 0; i < traces.length; i++) {
+        resolvers.push(new spectralResolver(traces[i]));
+    }
+
+    // Empty array
+    var sum = Array.apply(null, Array(resolution)).map(Number.prototype.valueOf,0);
+    var xList = [];
+
+    for (var i=0; i<resolution; i++){
+        var xPos = -1 + i*interval;
+        xList[i] = xPos;
+        for (var n=0; n<resolvers.length; n++){
+            sum[i] += resolvers[n].getY(xPos);
+        }
+    }
+
+    return  {
+        x: xList,
+        y: sum,
+        name: 'Mixture',
+        marker: {
+            color: 'rgb(255, 0, 0)',
+            size: 12
+        },
+        type: 'lines'
+    };
+
 }
 
 // add a spectra to the plot. First scale the spectra by the coefficient.
