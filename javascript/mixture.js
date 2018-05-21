@@ -384,8 +384,9 @@ var getJSON = function(url, callback) {
 
 function downloadCSV(){
     let csvContent = "ppm,val\r\n";
+    var mixture = [plot.data[plot.data.length-1]['x'], plot.data[plot.data.length-1]['y']];
     for (var i=0; i<mixture[0].length; i++) {
-        let row = mixture[0][i] + "," + mixture[1][i];
+        let row = mixture[0][i].toFixed(6) + "," + mixture[1][i].toFixed(6);
         csvContent += row + "\r\n";
     }
 
