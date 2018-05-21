@@ -2,12 +2,8 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="ca255dbe-41f5-42a6-b8f0-0432bb35f85b" name="Default" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/gissmo.py" beforeDir="false" afterPath="$PROJECT_DIR$/gissmo.py" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/javascript/mixture.js" beforeDir="false" afterPath="$PROJECT_DIR$/javascript/mixture.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/mixture.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/mixture.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/templates/mixture_render.html" beforeDir="false" afterPath="$PROJECT_DIR$/templates/mixture_render.html" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="TRACKING_ENABLED" value="true" />
@@ -31,81 +27,51 @@
     <select />
   </component>
   <component name="FileEditorManager">
-    <splitter split-orientation="vertical" split-proportion="0.5">
-      <split-first>
-        <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
-          <file leaf-file-name="gissmo.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/gissmo.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="373">
-                  <caret line="334" column="33" lean-forward="true" selection-start-line="334" selection-start-column="33" selection-end-line="334" selection-end-column="33" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="adjuster.py" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/utilities/adjuster.py">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="255">
-                  <caret line="41" column="12" selection-start-line="41" selection-start-column="12" selection-end-line="41" selection-end-column="12" />
-                  <folding>
-                    <element signature="e#19#56#0" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="mixture_render.html" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/templates/mixture_render.html">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="90">
-                  <caret line="6" column="16" lean-forward="true" selection-start-line="6" selection-start-column="16" selection-end-line="6" selection-end-column="16" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="mixture.html" pinned="false" current-in-tab="false">
-            <entry file="file://$PROJECT_DIR$/templates/mixture.html">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="222">
-                  <caret line="25" column="52" selection-start-line="25" selection-start-column="46" selection-end-line="25" selection-end-column="52" />
-                </state>
-              </provider>
-            </entry>
-          </file>
-          <file leaf-file-name="mixture.js" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/javascript/mixture.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="135">
-                  <caret line="24" column="26" selection-start-line="24" selection-start-column="26" selection-end-line="24" selection-end-column="26" />
-                  <folding>
-                    <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
-                    <element signature="n#style#0;n#span#0;n#a#0;n#!!top" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-first>
-      <split-second>
-        <leaf>
-          <file leaf-file-name="mixture.js" pinned="false" current-in-tab="true">
-            <entry file="file://$PROJECT_DIR$/javascript/mixture.js">
-              <provider selected="true" editor-type-id="text-editor">
-                <state relative-caret-position="362">
-                  <caret line="338" column="31" lean-forward="true" selection-start-line="338" selection-start-column="31" selection-end-line="338" selection-end-column="31" />
-                  <folding>
-                    <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
-                    <element signature="n#style#0;n#span#0;n#a#0;n#!!top" expanded="true" />
-                  </folding>
-                </state>
-              </provider>
-            </entry>
-          </file>
-        </leaf>
-      </split-second>
-    </splitter>
+    <leaf SIDE_TABS_SIZE_LIMIT_KEY="300">
+      <file leaf-file-name="gissmo.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/gissmo.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="463">
+              <caret line="340" column="38" lean-forward="true" selection-start-line="340" selection-start-column="38" selection-end-line="340" selection-end-column="38" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="adjuster.py" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/utilities/adjuster.py">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="330">
+              <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
+              <folding>
+                <element signature="e#19#56#0" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mixture.html" pinned="false" current-in-tab="false">
+        <entry file="file://$PROJECT_DIR$/templates/mixture.html">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="192">
+              <caret line="30" column="38" lean-forward="true" selection-start-line="30" selection-start-column="38" selection-end-line="30" selection-end-column="38" />
+            </state>
+          </provider>
+        </entry>
+      </file>
+      <file leaf-file-name="mixture.js" pinned="false" current-in-tab="true">
+        <entry file="file://$PROJECT_DIR$/javascript/mixture.js">
+          <provider selected="true" editor-type-id="text-editor">
+            <state relative-caret-position="493">
+              <caret line="386" column="88" selection-start-line="386" selection-start-column="88" selection-end-line="386" selection-end-column="88" />
+              <folding>
+                <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
+                <element signature="n#style#0;n#span#0;n#a#0;n#!!top" expanded="true" />
+              </folding>
+            </state>
+          </provider>
+        </entry>
+      </file>
+    </leaf>
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -122,6 +88,7 @@
       <find>entry_path</find>
       <find>my_plot</find>
       <find>my_pl</find>
+      <find>getJSON</find>
       <find>.change</find>
     </findStrings>
   </component>
@@ -247,42 +214,42 @@
     <frame x="3000" y="504" width="1920" height="1082" extended-state="6" />
     <editor active="true" />
     <layout>
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5010672" side_tool="true" weight="0.30073607" />
-      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="TODO" order="8" />
+      <window_info anchor="bottom" id="Event Log" order="10" sideWeight="0.5010672" side_tool="true" weight="0.30073607" />
+      <window_info anchor="bottom" id="Database Changes" order="11" show_stripe_button="false" />
       <window_info anchor="bottom" id="Run" order="2" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Python Console" order="7" weight="0.32982087" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49893278" visible="true" weight="0.0" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12966916" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Version Control" order="12" />
+      <window_info anchor="bottom" id="Python Console" order="13" weight="0.32982087" />
+      <window_info active="true" id="Terminal" order="6" sideWeight="0.49893278" visible="true" weight="0.24493062" />
+      <window_info content_ui="combo" id="Project" order="0" weight="0.12966916" />
+      <window_info anchor="bottom" id="Docker" order="14" show_stripe_button="false" />
       <window_info anchor="right" id="Database" order="3" weight="0.32977587" />
       <window_info anchor="right" id="SciView" order="3" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
-      <window_info id="Favorites" order="2" side_tool="true" />
-      <window_info anchor="bottom" id="Debug" order="3" weight="0.4" />
+      <window_info id="Structure" order="2" side_tool="true" weight="0.25" />
+      <window_info anchor="bottom" id="Debug" order="4" weight="0.4" />
+      <window_info id="Favorites" order="4" side_tool="true" />
+      <window_info anchor="bottom" id="Debug" order="5" weight="0.4" />
       <window_info anchor="right" content_ui="combo" id="Hierarchy" order="2" weight="0.25" />
-      <window_info anchor="bottom" id="Docker" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Inspection" order="5" weight="0.4" />
-      <window_info active="true" content_ui="combo" id="Project" order="0" visible="true" weight="0.12966916" />
+      <window_info anchor="bottom" id="Docker" order="15" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Inspection" order="7" weight="0.4" />
+      <window_info active="true" content_ui="combo" id="Project" order="1" visible="true" weight="0.12966916" />
       <window_info anchor="right" id="SciView" order="3" />
       <window_info anchor="right" id="Commander" internal_type="SLIDING" order="0" type="SLIDING" weight="0.4" />
       <window_info anchor="right" id="Ant Build" order="1" weight="0.25" />
-      <window_info anchor="bottom" id="TODO" order="6" />
-      <window_info anchor="bottom" id="Version Control" order="7" />
-      <window_info anchor="bottom" id="Run" order="2" />
+      <window_info anchor="bottom" id="TODO" order="9" />
+      <window_info anchor="bottom" id="Version Control" order="16" />
+      <window_info anchor="bottom" id="Run" order="3" />
       <window_info anchor="bottom" id="Find" order="1" />
-      <window_info id="Structure" order="1" side_tool="true" weight="0.25" />
+      <window_info id="Structure" order="3" side_tool="true" weight="0.25" />
       <window_info anchor="right" id="Database" order="3" weight="0.32977587" />
-      <window_info anchor="bottom" id="Terminal" order="7" sideWeight="0.49893278" visible="true" weight="0.30031613" />
-      <window_info anchor="bottom" id="Event Log" order="7" sideWeight="0.5010672" side_tool="true" weight="0.30073607" />
-      <window_info anchor="bottom" id="Database Changes" order="7" show_stripe_button="false" />
-      <window_info anchor="bottom" id="Cvs" order="4" weight="0.25" />
-      <window_info id="Favorites" order="2" side_tool="true" />
+      <window_info anchor="bottom" id="Terminal" order="17" sideWeight="0.49893278" visible="true" weight="0.30031613" />
+      <window_info anchor="bottom" id="Event Log" order="18" sideWeight="0.5010672" side_tool="true" weight="0.30073607" />
+      <window_info anchor="bottom" id="Database Changes" order="19" show_stripe_button="false" />
+      <window_info anchor="bottom" id="Cvs" order="6" weight="0.25" />
+      <window_info id="Favorites" order="5" side_tool="true" />
       <window_info anchor="bottom" id="Message" order="0" />
-      <window_info anchor="bottom" id="Messages" order="7" />
-      <window_info anchor="bottom" id="Python Console" order="7" weight="0.32982087" />
+      <window_info anchor="bottom" id="Messages" order="20" />
+      <window_info anchor="bottom" id="Python Console" order="21" weight="0.32982087" />
     </layout>
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -536,10 +503,17 @@
         </state>
       </provider>
     </entry>
+    <entry file="file://$PROJECT_DIR$/templates/mixture_render.html">
+      <provider selected="true" editor-type-id="text-editor">
+        <state relative-caret-position="135">
+          <caret line="9" column="56" selection-start-line="9" selection-start-column="56" selection-end-line="9" selection-end-column="56" />
+        </state>
+      </provider>
+    </entry>
     <entry file="file://$PROJECT_DIR$/utilities/adjuster.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="255">
-          <caret line="41" column="12" selection-start-line="41" selection-start-column="12" selection-end-line="41" selection-end-column="12" />
+        <state relative-caret-position="330">
+          <caret line="22" lean-forward="true" selection-start-line="22" selection-end-line="22" />
           <folding>
             <element signature="e#19#56#0" expanded="true" />
           </folding>
@@ -548,29 +522,22 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/gissmo.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="373">
-          <caret line="334" column="33" lean-forward="true" selection-start-line="334" selection-start-column="33" selection-end-line="334" selection-end-column="33" />
-        </state>
-      </provider>
-    </entry>
-    <entry file="file://$PROJECT_DIR$/templates/mixture_render.html">
-      <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="90">
-          <caret line="6" column="16" lean-forward="true" selection-start-line="6" selection-start-column="16" selection-end-line="6" selection-end-column="16" />
+        <state relative-caret-position="463">
+          <caret line="340" column="38" lean-forward="true" selection-start-line="340" selection-start-column="38" selection-end-line="340" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/templates/mixture.html">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="222">
-          <caret line="25" column="52" selection-start-line="25" selection-start-column="46" selection-end-line="25" selection-end-column="52" />
+        <state relative-caret-position="192">
+          <caret line="30" column="38" lean-forward="true" selection-start-line="30" selection-start-column="38" selection-end-line="30" selection-end-column="38" />
         </state>
       </provider>
     </entry>
     <entry file="file://$PROJECT_DIR$/javascript/mixture.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="135">
-          <caret line="24" column="26" selection-start-line="24" selection-start-column="26" selection-end-line="24" selection-end-column="26" />
+        <state relative-caret-position="493">
+          <caret line="386" column="88" selection-start-line="386" selection-start-column="88" selection-end-line="386" selection-end-column="88" />
           <folding>
             <element signature="n#style#0;n#div#0;n#!!top" expanded="true" />
             <element signature="n#style#0;n#span#0;n#a#0;n#!!top" expanded="true" />
