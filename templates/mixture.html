@@ -64,6 +64,11 @@
 
 <div class="details_box">
     <a class="fake_button" onclick="downloadCSV()">Download mixture CSV</a>
+    <style>
+        input[type="range"] {
+          width:500px;
+        }
+    </style>
     <div id="slidercontainer" style="display: none">Adjust scaling to match uploaded spectra: <input type="range" min=".1" max="2" value="1" step=".01" class="slider" id="slider" onchange="reGraph()"><span id="scale_factor"></span></div>
     <div id="myDiv" class="shift_graph"></div>
 </div>
