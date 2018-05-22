@@ -1,10 +1,15 @@
 var plot;
 var spectralStore = {};
+var userSpectra = null;
 
 $( "form" ).submit(function( event ) {
     event.preventDefault();
+    reGraph();
+});
 
-    var mixture = $( this ).serializeObject()['mixture'];
+function reGraph(){
+
+    var mixture = $( "#upload" ).serializeObject()['mixture'];
     var layout = {
         xaxis: {
             title: 'PPM',
@@ -26,37 +31,70 @@ $( "form" ).submit(function( event ) {
     var ref_id = 0;
     var max_concentration = 0;
 
-    for (var i=0; i < mixture.length; i++){
-        var concentration = parseFloat(mixture[i]['concentration']);
-        if (concentration === undefined){
-            concentration = 0;
+    // If there is a user spectra, add it
+    var userSpectraScale = 1;
+    if (userSpectra){
+
+        var maxPeak = 0;
+        var maxPeakPos = 0;
+        for (var i=0; i < userSpectra['x'].length; i++){
+            if (userSpectra['y'][i] > maxPeak){
+                maxPeak = userSpectra['y'][i];
+                maxPeakPos = userSpectra['x'][i];
+            }
         }
-        concentrations.push(concentration);
-        if (concentration > max_concentration) {
-            max_concentration = concentration;
-            ref_id = i;
+
+        userSpectraScale = maxPeak * $("#slider").val();
+        $("#scale_factor").html($("#slider").val() + " scale factor.");
+    }
+
+    // Mixture calculations and scaling
+    if (typeof mixture !== 'undefined') {
+        for (var i = 0; i < mixture.length; i++) {
+            var concentration = parseFloat(mixture[i]['concentration']);
+            if (concentration === undefined) {
+                concentration = 0;
+            }
+            concentrations.push(concentration);
+            if (concentration > max_concentration) {
+                max_concentration = concentration;
+                ref_id = i;
+            }
         }
+
+        if (max_concentration == 0) {
+            alert('Must specify the concentration of at least one compound.');
+            return;
+        }
+
+        for (var i = 0; i < concentrations.length; i++) {
+            var concentration_coefficient = concentrations[i] / concentrations[ref_id];
+            var comp = mixture[i];
+            data.push(getTrace(retrieveData(comp['id']), comp['compound'], concentration_coefficient * userSpectraScale));
+        }
+
+        // Calculate the mixture
+        data.push(getMixtureTrace(data, 64000));
     }
 
-    if (max_concentration == 0){
-        alert('Must specify the concentration of at least one compound.');
-        return;
+    if (userSpectra) {
+        // Insert the user spectra first
+        data.splice(0, 0, userSpectra);
     }
 
-    for (var i=0; i < concentrations.length; i++) {
-        var concentration_coefficient = concentrations[i] / concentrations[ref_id];
-        var comp = mixture[i];
-        data.push(getTrace(retrieveData(comp['id']), comp['compound'], concentration_coefficient));
+    // Keep the zoom if the user has zoomed
+    if (plot){
+        layout.xaxis.range = plot.layout.xaxis.range;
+        delete layout.xaxis.autorange;
+        layout.yaxis.range = plot.layout.yaxis.range
+        delete layout.yaxis.autorange;
     }
-
-    // Calculate the mixture
-    data.push(getMixtureTrace(data, 32000));
 
     Plotly.newPlot('myDiv', data, layout, {scrollZoom: true}).then(function(result) {
         plot = result;
     });
 
-});
+};
 
 $("#fieldstrength").change(function () {
     var mixture = $( "#upload" ).serializeObject()['mixture'];
@@ -275,7 +313,7 @@ function findLowercaseArray(item, array) {
     return -1;
 }
 
-function parseCSV(csvArray){
+function processCompoundCSV(csvArray){
 
     var compound_pos = findLowercaseArray('name', csvArray);
     var concentration_pos = findLowercaseArray('concentration', csvArray);
@@ -305,19 +343,67 @@ function openFile() {
     var input = document.getElementById("experiment_file");
     var reader = new FileReader();
     reader.onload = function(){
-        parseCSV($.csv.toArrays(reader.result));
+        processCompoundCSV($.csv.toArrays(reader.result));
     };
     reader.readAsText(input.files[0]);
 }
 
-function escape_regexp(text) {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, "\\$&");
+
+function loadSpectraCSV(csvArray){
+
+    var ppm_pos = findLowercaseArray('ppm', csvArray);
+    var amplitude_pos = findLowercaseArray('val', csvArray);
+    if (amplitude_pos < 0){
+        amplitude_pos = findLowercaseArray('amplitude', csvArray);
+    }
+
+    var start = 1;
+    if ((ppm_pos < 0 ) && (amplitude_pos < 0)){ start = 0}
+    if (ppm_pos < 0){ ppm_pos = 0; }
+    if (amplitude_pos < 0){ amplitude_pos = 1; }
+
+    var tmpSpectra = [[],[]];
+    for (var i=start; i<csvArray.length; i++){
+        if (csvArray[i][amplitude_pos]){
+            var ppm = parseFloat(csvArray[i][ppm_pos]);
+            var val = parseFloat(csvArray[i][amplitude_pos]);
+            if (ppm && val){
+                tmpSpectra[0].push(ppm);
+                tmpSpectra[1].push(val);
+            }
+        }
+    }
+
+    if (tmpSpectra[0].length > 0){
+        userSpectra =   {
+            x: tmpSpectra[0],
+            y: tmpSpectra[1],
+            name: 'Uploaded Spectra',
+            marker: {
+                color: 'rgb(0, 0, 255)',
+                size: 12
+            },
+            type: 'lines'
+        };
+    }
 }
 
-$.expr[':'].textEquals = function (a, i, m) {
-  return $(a).text().match("^" + escape_regexp(m[3]) + "$");
-};
 
+function openSpectraFile() {
+    $("#slidercontainer").show();
+
+    // Show the reprocess button
+    var reader = new FileReader();
+    reader.onload = function(){
+        userSpectra = null;
+        loadSpectraCSV($.csv.toArrays(reader.result));
+        if (!userSpectra){
+            loadSpectraCSV($.csv.toArrays(reader.result, {"separator" : "\t"}));
+        }
+        reGraph();
+    };
+    reader.readAsText(document.getElementById("spectra_file").files[0]);
+}
 
 $( "#compound_search" ).autocomplete({
     minLength: 2,
@@ -326,7 +412,7 @@ $( "#compound_search" ).autocomplete({
         // Filter the results based on what GISSMO has available
         $.getJSON("http://webapi.bmrb.wisc.edu/v2/instant", { database: "metabolomics", term : request.term },
             function (response_original) {
-                response = [];
+                var response = [];
                 for (i=0; i<response_original.length; i++){
                     if (valid_entries.indexOf(response_original[i].value) >= 0){
                         response.push(response_original[i]);
@@ -342,33 +428,12 @@ $( "#compound_search" ).autocomplete({
         addCompound(ui.item);
         return false;
     }
-});/*.data("ui-autocomplete")._renderItem = function (ul, item) {
-     return add_color_span_instant(ul, item, "compound_search");
-};*/
+});
 
 // Use this to highlight the query words in a given text
 function highlight_words(words, text){
     var regex = new RegExp("(" + words.join("|") + ")", "ig");
     return text.replace(regex, '<strong>$1</strong>');
-}
-
-function add_color_span_instant(ul, item, id) {
-
-    var terms = document.getElementById(id).value.split(/[ ,]+/);
-    var display = highlight_words(terms, item.value + ": " + item.label);
-
-    var hidden_div = $('<div style="display: none" class="instant_search_extras"></div>');
-
-    if ("extra" in item){
-        hidden_div.append($("<span><b>" + item.extra.termname + "</b>: " + highlight_words(terms, item.extra.term) + "</span><br>"));
-    }
-
-    return $("<li></li>")
-        .mouseenter(function(e){ hidden_div.show(0); })
-        .mouseleave(function(e){ hidden_div.hide(0); })
-        .data("item.autocomplete", item)
-        .append("<a><span style='cursor:pointer;'>" + display + "</span></a>").append(hidden_div)
-        .appendTo(ul);
 }
 
 // Used to fetch spectra off the server

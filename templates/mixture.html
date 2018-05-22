@@ -38,6 +38,7 @@
                 </tbody>
             </table>
             <p>Add compound: <input type="text" id="compound_search"></p>
+            <p>Upload your spectra as a CSV or TSV to render it alongside the simulated spectra: <input type="file" name="spectra_file" id="spectra_file" onchange="openSpectraFile()" accept="text/csv"></p>
             <select name="fieldstrength" id="fieldstrength">
                 <option value="40">40 MHz</option>
                 <option value="100">100 MHz</option>
@@ -62,7 +63,8 @@
 </div>
 
 <div class="details_box">
-    <a class="fake_button" onclick="downloadCSV()">Download mixture CSV</a></p>
+    <a class="fake_button" onclick="downloadCSV()">Download mixture CSV</a>
+    <div id="slidercontainer" style="display: none">Adjust scaling to match uploaded spectra: <input type="range" min=".1" max="2" value="1" step=".01" class="slider" id="slider" onchange="reGraph()"><span id="scale_factor"></span></div>
     <div id="myDiv" class="shift_graph"></div>
 </div>
 
