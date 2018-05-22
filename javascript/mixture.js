@@ -99,11 +99,18 @@ class spectralResolver {
     }
 
     // Exact match
-    if (x == this.x[this.xPos]){
+    if (x === this.x[this.xPos]){
         return this.y[this.xPos];
     } else {
-        // Calculate it TODO
-        return this.y[this.xPos];
+        // If it is the last point (or past it), return it
+        if (this.xPos === this.x.length -1){
+            return this.y[this.xPos];
+        }
+
+        var slope = (this.y[this.xPos+1] - this.y[this.xPos]) / (this.x[this.xPos+1]/this.x[this.xPos]);
+
+        // Add the slope between the next two points to this x value to estimate between the points
+        return this.y[this.xPos] + slope*(x-this.x[this.xPos]);
     }
 
   }
