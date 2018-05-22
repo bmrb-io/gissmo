@@ -359,6 +359,13 @@ def get_mixture():
         # field_strength is field_strength in mhz
         return render_template("mixture_render.html", **args)
 
+@application.route('/static/<file_>')
+def get_file_from_static(file_):
+    """ Download one of the data files. """
+
+    folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
+    return send_from_directory(folder, file_)
+
 
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):

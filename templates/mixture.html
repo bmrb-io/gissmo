@@ -17,7 +17,7 @@
 
         <noscript><h2>This page requires JavaScript.</h2><style>.jsonly { display: none }</style></noscript>
         <div class="jsonly">
-            <P>Load a compound list from a CSV file: <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()" accept="text/csv">
+            <P>Load a compound list from a CSV file (<a href="/static/compound.csv">example file</a>): <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()" accept="text/csv">
                 <button id="reprocess" style="display:none" onclick="openFile()">Reprocess File</button>
                 <button onclick="clearCompounds(); return false;">Clear Compounds</button>
             </p>
@@ -38,7 +38,7 @@
                 </tbody>
             </table>
             <p>Add compound: <input type="text" id="compound_search"></p>
-            <p>Upload your spectra as a CSV or TSV to render it alongside the simulated spectra: <input type="file" name="spectra_file" id="spectra_file" onchange="openSpectraFile()" accept="text/csv"></p>
+            <p>Upload your spectra as a CSV or TSV to render it alongside the simulated spectra (<a href="/static/exp_spectrum.csv">example file</a>): <input type="file" name="spectra_file" id="spectra_file" onchange="openSpectraFile()" accept="text/csv"></p>
             <select name="fieldstrength" id="fieldstrength">
                 <option value="40">40 MHz</option>
                 <option value="100">100 MHz</option>
