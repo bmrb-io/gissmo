@@ -26,7 +26,7 @@ def reduce_list(raw_ppm, raw_val):
 
 
 def get_minimal(number):
-    trimmed = "%.4f" % number
+    trimmed = "%.6f" % number
     while len(trimmed) > 0 and trimmed[-1] in [".", "0", "-"]:
         trimmed = trimmed[:-1]
 
