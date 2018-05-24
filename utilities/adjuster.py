@@ -25,8 +25,13 @@ def reduce_list(raw_ppm, raw_val):
     yield raw_ppm[-1], raw_val[-1]
 
 
-def get_minimal(number):
-    trimmed = "%.6f" % number
+def get_minimal(number, need_convert=True):
+
+    if need_convert:
+        trimmed = "%.5f" % number
+    else:
+        trimmed = number
+
     while len(trimmed) > 0 and trimmed[-1] in [".", "0", "-"]:
         trimmed = trimmed[:-1]
 
@@ -42,12 +47,12 @@ def to_json(filename):
     val = []
 
     for _ in csv.reader(fd):
-        ppm.append(float(_[0]))
+        ppm.append(_[0])
         val.append(float(_[1]))
 
     ppm_list = []
     val_list = []
-    list_gen = reduce_list([get_minimal(x) for x in ppm], [get_minimal(x) for x in val])
+    list_gen = reduce_list([get_minimal(x, False) for x in ppm], [get_minimal(x) for x in val])
     for pos, value in list_gen:
         ppm_list.append(pos)
         val_list.append(value)
