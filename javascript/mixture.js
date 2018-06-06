@@ -49,6 +49,7 @@ function reGraph(){
     }
 
     // Mixture calculations and scaling
+    var mixture_spectra;
     if (typeof mixture !== 'undefined') {
         for (var i = 0; i < mixture.length; i++) {
             var concentration = parseFloat(mixture[i]['concentration']);
@@ -74,12 +75,14 @@ function reGraph(){
         }
 
         // Calculate the mixture
-        data.push(getMixtureTrace(data, 64000));
+        mixture_spectra =  getMixtureTrace(data, 64000);
+        data.splice(0, 0, mixture_spectra);
     }
 
     if (userSpectra) {
         // Insert the user spectra first
         data.splice(0, 0, userSpectra);
+        data.splice(0, 0, getDifferenceTrace(userSpectra, mixture_spectra));
     }
 
     // Keep the zoom if the user has zoomed
@@ -95,6 +98,33 @@ function reGraph(){
     });
 
 };
+
+// Generate the mixture trace
+function getDifferenceTrace(userTrace, mixtureTrace) {
+    var mixtureResolver = new spectralResolver(mixtureTrace);
+    var xUser = userTrace.x;
+    var yUser = userTrace.y;
+
+    // Empty array
+    var sum = [];
+    var xList = [];
+
+    for (var i=0; i<xUser.length; i++){
+        sum[i] = Math.abs(yUser[i] - mixtureResolver.getY(xUser[i]));
+        xList[i] = xUser[i];
+    }
+
+    return  {
+        x: xList,
+        y: sum,
+        name: 'Difference',
+        marker: {
+            color: 'rgb(255, 0, 0)',
+            size: 12
+        },
+        mode: 'lines'
+    };
+}
 
 $("#fieldstrength").change(function () {
     var mixture = $( "#upload" ).serializeObject()['mixture'];
@@ -180,12 +210,14 @@ function getMixtureTrace(traces, resolution) {
         y: sum,
         name: 'Mixture',
         marker: {
-            color: 'rgb(255, 0, 0)',
+            color: 'rgb(0, 139, 139)',
             size: 12
         },
-        type: 'lines'
+        mode: 'lines',
+        line: {
+            dash: 'dot'
+        }
     };
-
 }
 
 // add a spectra to the plot. First scale the spectra by the coefficient.
@@ -204,10 +236,10 @@ function getTrace(data, name, coefficient) {
         y: localData[1],
         name: name,
         marker: {
-            color: 'rgb(0, 255, 0)',
+            color: 'rgb(139, 69, 19)',
             size: 12
         },
-        type: 'lines'
+        mode: 'lines'
     };
 }
 

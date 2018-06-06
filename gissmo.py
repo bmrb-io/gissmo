@@ -239,7 +239,7 @@ def peak_search():
     peaks = re.split('[\s\n\t,;]+', raw_shift)
     frequency = request.args.get('frequency', "800")
     peak_type = request.args.get('peak_type', "standard")
-    threshold = request.args.get('threshold', ".1")
+    threshold = request.args.get('threshold', ".01")
     threshold_dec = Decimal(threshold)
     cur = get_postgres_connection()[1]
 
