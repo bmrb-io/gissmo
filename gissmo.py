@@ -2,6 +2,7 @@
 
 import os
 import re
+
 try:
     import simplejson as json
 except ImportError:
@@ -17,7 +18,8 @@ import requests
 import psycopg2
 from psycopg2.extras import DictCursor, execute_values
 
-from flask import Flask, render_template, send_from_directory, request, redirect, send_file
+from flask import Flask, render_template, send_from_directory, request, redirect, send_file, url_for
+
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
@@ -73,7 +75,6 @@ def get_postgres_connection(user='web', database='webservers', host='pinzgau.nmr
 
 
 def get_aux_info(entry_id, simulation, aux_name):
-
     results = []
     try:
         aux_file = os.path.join(aux_info_path, aux_name, "%s_%s" % (entry_id, simulation))
@@ -182,7 +183,7 @@ DROP TABLE IF EXISTS chemical_shifts_old;
 GRANT SELECT ON ALL TABLES IN SCHEMA gissmo TO web;""")
     conn.commit()
 
-    return redirect("", code=302)
+    return redirect(url_for('display_list'), 302)
 
 
 def get_entry_list():
@@ -291,7 +292,7 @@ ORDER BY count(DISTINCT ppm) DESC;
 
     def get_closest(collection, number):
         """ Returns the closest number from a list of numbers. """
-        return min(collection, key=lambda _: abs(_-number))
+        return min(collection, key=lambda _: abs(_ - number))
 
     def get_sort_key(res):
         """ Returns the sort key. """
@@ -354,7 +355,7 @@ def js(fname):
     return send_from_directory("javascript", fname)
 
 
-@application.route("/mixture", methods=['GET', 'POST'])
+@application.route("/mixture")
 def get_mixture():
     """ Allow the user to specify a mixture. """
 
@@ -363,71 +364,8 @@ def get_mixture():
     entry_list = "var valid_entries = " + json.dumps(entry_list) + ";"
 
     # Send them the page to enter a mixture
-    if request.method == "GET":
-        return render_template("mixture.html", entry_list=entry_list)
-    # They sent a mixture, send them the spectra
-    else:
-        try:
-            data = request.get_json()
-            mixture = data['mixture']
-            field_strength = data['fieldstrength']
-        except KeyError:
-            # No compounds specified
-            return ""
+    return render_template("mixture.html", entry_list=entry_list)
 
-        # mixture is dictionary with compound information
-        """ get coefficient for FID's from concentration of the reference compound """
-        con_coefficient = []
-        ref_index = 0
-        for iter_ in range(len(mixture)):
-            a_cmp = mixture[iter_]
-            if 'concentration' not in a_cmp:
-                a_cmp['concentration'] = '0'
-            con_coefficient.append(float(a_cmp['concentration']))
-            if 'reference' in a_cmp and a_cmp['reference']:
-                ref_index = iter_
-        for iter_ in range(len(con_coefficient)):
-            con_coefficient[iter_] = con_coefficient[iter_]/con_coefficient[ref_index]
-        """ convert input spectra to float and apply the coefficient """
-        """ Note that the length of the simulated spectra are/must be identical """
-        compounds = []
-        names = []
-        mixture_ppm = []
-        mixture_fid = []
-        skipped = []
-        for iter_ in range(len(mixture)):
-            cmp_id = mixture[iter_]['id']
-            path = os.path.join(entry_path, cmp_id, "simulation_1/spectral_data/sim_%sMHz.json" % field_strength)
-
-            if not os.path.exists(path):
-                skipped.append(mixture[iter_]['compound'])
-                continue
-            fin = open(path, 'r')
-            data = json.load(fin)
-            data[0] = [float(x) for x in data[0]]
-            data[1] = [con_coefficient[iter_]*float(x) for x in data[1]]
-
-            #if not mixture_ppm:
-            #    mixture_ppm = data[0]
-            #if not mixture_fid:
-            #    mixture_fid = data[1]
-            #else:
-            #    if len(mixture_fid) != len(data[1]):
-            #        print("Data wrong for %s" % path)
-            #        skipped.append(mixture[iter_]['compound'])
-            #        continue
-            #    mixture_fid = [mixture_fid[i]+data[1][i] for i in range(len(data[1]))]
-
-            mixture[iter_]['coefficient'] = con_coefficient[iter_]
-            compounds.append(mixture[iter_])
-            names.append(mixture[iter_]['compound'])
-
-            fin.close()
-        args = {'input_mixture_info': mixture, 'mixture_spectra': [mixture_ppm, mixture_fid],
-                'field_strength': field_strength, 'compounds': compounds, 'names': names, 'skipped': skipped}
-
-        # field_strength is field_strength in mhz
-        return render_template("mixture_render.html", **args)
 
 @application.route('/static/<file_>')
 def get_file_from_static(file_):
@@ -466,7 +404,6 @@ def display_summary(entry_id):
 
 @application.route('/entry/<entry_id>/<simulation>/peaks/<frequency>')
 def display_peaks(entry_id, simulation, frequency):
-
     # Get the chemical shifts from postgres
     cur = get_postgres_connection()[1]
     cur.execute('''
@@ -582,7 +519,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     for item in get_tag_value(coupling_matrix, "acc", all_=True):
         spin_index, coupling, spin_group_index, coupling_group_index = map(extract, item.split())
         try:
-            spin_index = column_names[int(spin_index)-1]
+            spin_index = column_names[int(spin_index) - 1]
         except (ValueError, IndexError):
             spin_index = "???"
         ent_dict['acc'].append({'spin_index': spin_index,
@@ -591,17 +528,17 @@ def display_entry(entry_id, simulation=None, some_file=None):
                                 'coupling_group_index': coupling_group_index})
 
     # Build the spin matrix
-    size = len(column_names)+1
+    size = len(column_names) + 1
     matrix = [[0 for x in range(size)] for x in range(size)]
 
     # Add in the labels
     matrix[0] = [""] + column_names
     for pos, name in enumerate(column_names):
-        matrix[pos+1][0] = name
+        matrix[pos + 1][0] = name
 
     # Add the diagonals
     for pos, cs in enumerate(diagonal):
-        matrix[pos+1][pos+1] = round(float(cs), 3)
+        matrix[pos + 1][pos + 1] = round(float(cs), 3)
 
     # Add the other values
     for datum in couplings:
