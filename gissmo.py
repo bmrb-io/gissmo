@@ -15,7 +15,7 @@ from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 import requests
 import psycopg2
-from psycopg2.extras import DictCursor
+from psycopg2.extras import DictCursor, execute_values
 
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file
 application = Flask(__name__)
@@ -59,15 +59,16 @@ def get_title(entry_id):
     return title[entry_id]['_Assembly.Name'][0].title()
 
 
-def get_postgres_connection(user='web', database='gissmo',
+def get_postgres_connection(user='web', database='webservers', host='pinzgau.nmrfam.wisc.edu',
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
     if dictionary_cursor:
-        conn = psycopg2.connect(user=user, database=database, cursor_factory=DictCursor)
+        conn = psycopg2.connect(user=user, database=database, host=host, cursor_factory=DictCursor)
     else:
-        conn = psycopg2.connect(user=user, database=database)
+        conn = psycopg2.connect(user=user, database=database, host=host)
     cur = conn.cursor()
+    cur.execute("SET search_path TO gissmo")
 
     return conn, cur
 
@@ -102,7 +103,23 @@ def get_aux_info(entry_id, simulation, aux_name):
 def reload_db():
     """ Regenerate the released entry list. """
 
+    conn, cur = get_postgres_connection(user="postgres")
+
+    cur.execute("""
+-- Create terms table
+DROP TABLE IF EXISTS entries_tmp;
+CREATE TABLE entries_tmp (
+    id text,
+    name text,
+    frequency float,
+    simulation_id text,
+    inchi text,
+    seq serial);""")
+
+    x = 0
+
     valid_entries = []
+    db_entries = []
     for entry_id in os.listdir(entry_path):
 
         sims = []
@@ -130,11 +147,47 @@ def reload_db():
 
         if sims:
             valid_entries.append(sorted(sims, key=lambda x: x[2]))
+            db_entries.extend(sims)
 
     # Sort by protein name
     valid_entries = sorted(valid_entries, key=lambda x: x[0][1].lower())
     # Write out the results
     open(entries_file, "w").write(json.dumps(valid_entries))
+
+    execute_values(cur, """INSERT INTO entries_tmp (id, name, frequency, simulation_id, inchi) VALUES %s;""",
+                   valid_entries,
+                   page_size=1000)
+    cur.execute("""
+CREATE INDEX ON entries_tmp (id);
+
+-- Move the new table into place
+ALTER TABLE IF EXISTS entries RENAME TO entries_old;
+ALTER TABLE entries_tmp RENAME TO entries;
+DROP TABLE IF EXISTS entries_old;""")
+
+    # Reload the chemical shifts
+    cur.execute("""
+    -- Create terms table
+    DROP TABLE IF EXISTS chemical_shifts_tmp;
+    CREATE TABLE chemical_shifts_tmp (
+        bmrb_id text,
+        simulation_ID text,
+        frequency integer,
+        peak_type text,
+        ppm numeric,
+        amplitude float);""")
+    cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
+                    open('/websites/gissmo/DB/peak_list_GSD.csv', "rb"));
+    cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
+                    open('/websites/gissmo/DB/peak_list_standard.csv', "rb"));
+    cur.execute("""-- create index: potentially combine these two based on usage
+CREATE INDEX ON chemical_shifts_tmp (frequency, peak_type, ppm);
+
+-- Move the new table into place
+ALTER TABLE IF EXISTS chemical_shifts RENAME TO chemical_shifts_old;
+ALTER TABLE chemical_shifts_tmp RENAME TO chemical_shifts;
+DROP TABLE IF EXISTS chemical_shifts_old;""")
+    conn.commit()
 
     return redirect("", code=302)
 
