@@ -23,7 +23,6 @@ application = Flask(__name__)
 aux_info_path = "/websites/gissmo/DB/aux_info/"
 entry_path = "/websites/gissmo/DB/BMRB_DB/"
 here = os.path.dirname(__file__)
-entries_file = os.path.join(here, "entries.json")
 
 
 # Helper methods
@@ -113,13 +112,9 @@ CREATE TABLE entries_tmp (
     name text,
     frequency float,
     simulation_id text,
-    inchi text,
-    seq serial);""")
-
-    x = 0
+    inchi text);""")
 
     valid_entries = []
-    db_entries = []
     for entry_id in os.listdir(entry_path):
 
         sims = []
@@ -146,14 +141,10 @@ CREATE TABLE entries_tmp (
                              get_tag_value(root, "InChI")])
 
         if sims:
-            valid_entries.append(sorted(sims, key=lambda x: x[2]))
-            db_entries.extend(sims)
+            valid_entries.extend(sims)
 
     # Sort by protein name
     valid_entries = sorted(valid_entries, key=lambda x: x[0][1].lower())
-    # Write out the results
-    open(entries_file, "w").write(json.dumps(valid_entries))
-
     execute_values(cur, """INSERT INTO entries_tmp (id, name, frequency, simulation_id, inchi) VALUES %s;""",
                    valid_entries,
                    page_size=1000)
@@ -186,17 +177,43 @@ CREATE INDEX ON chemical_shifts_tmp (frequency, peak_type, ppm);
 -- Move the new table into place
 ALTER TABLE IF EXISTS chemical_shifts RENAME TO chemical_shifts_old;
 ALTER TABLE chemical_shifts_tmp RENAME TO chemical_shifts;
-DROP TABLE IF EXISTS chemical_shifts_old;""")
+DROP TABLE IF EXISTS chemical_shifts_old;
+
+GRANT SELECT ON ALL TABLES IN SCHEMA gissmo TO web;""")
     conn.commit()
 
     return redirect("", code=302)
+
+
+def get_entry_list():
+    """ Return the entry list in the format that the functions expect."""
+
+    cur = get_postgres_connection()[1]
+    cur.execute("SELECT * FROM entries ORDER BY id, simulation_ID")
+
+    entry_list = []
+    last_entry = None
+    working_list = []
+    for sim in cur:
+        sim = list(sim)
+        if sim[0] == last_entry:
+            working_list.append(sim)
+        else:
+            if working_list:
+                entry_list.append(working_list)
+            last_entry = sim[0]
+            working_list = [sim]
+    if working_list:
+        entry_list.append(working_list)
+
+    return entry_list
 
 
 @application.route('/')
 def display_list():
     """ Display the list of possible entries. """
 
-    entry_list = json.loads(open(entries_file, "r").read())
+    entry_list = get_entry_list()
 
     entry_letters = {}
     for item in entry_list:
@@ -304,7 +321,7 @@ ORDER BY count(DISTINCT ppm) DESC;
     result = sorted(result, key=get_sort_key)
 
     # Determine actual entry list
-    entry_list = json.loads(open(entries_file, "r").read())
+    entry_list = get_entry_list()
 
     modified_entry_list = []
     for row in result:
@@ -342,7 +359,7 @@ def get_mixture():
     """ Allow the user to specify a mixture. """
 
     # Get the list of valid entries
-    entry_list = [x[0][0] for x in json.loads(open(entries_file, "r").read())]
+    entry_list = [x[0][0] for x in get_entry_list()]
     entry_list = "var valid_entries = " + json.dumps(entry_list) + ";"
 
     # Send them the page to enter a mixture
