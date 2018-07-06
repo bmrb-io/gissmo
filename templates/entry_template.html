@@ -2,7 +2,7 @@
     {% block head %}
         <title>GISSMO - {{ name }}</title>
         <!-- Plotly.js -->
-        <script src="https://cdn.plot.ly/plotly-1.35.2.min.js"></script>
+        <script src="https://cdn.plot.ly/plotly-1.39.0.min.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
         <style>
@@ -86,6 +86,7 @@
     {% if "bmse" in entry_id %}<p><a class="fake_button_sim" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/" target="_blank">ALATIS cross link</a></p>{% endif %}
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
+    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/{{ entry_id }}.str" target="_blank">Download entry NMR-STAR</a></p>
     {% endblock %}
 
     {% block body %}
