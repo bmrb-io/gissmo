@@ -1,0 +1,3 @@
+[submodule "PyNMRSTAR"]
+	path = PyNMRSTAR
+	url = https://github.com/uwbmrb/PyNMRSTAR.git

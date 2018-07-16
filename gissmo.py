@@ -2,6 +2,7 @@
 
 import os
 import re
+import sys
 
 try:
     import simplejson as json
@@ -26,6 +27,8 @@ aux_info_path = "/websites/gissmo/DB/aux_info/"
 entry_path = "/websites/gissmo/DB/BMRB_DB/"
 here = os.path.dirname(__file__)
 
+sys.path.append(os.path.join(here, 'PyNMRSTAR'))
+import pynmrstar
 
 # Helper methods
 def get_tag_value(root, tag, all_=False):
@@ -501,10 +504,24 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Get the entry directories
     ent_dict['sim_dirs'] = os.listdir(os.path.join(entry_path, entry_id))
 
-    # Get the auxiliary info
-    for aux_type in ["pka", "buffer", "cytocide", "reference", "solvent", "solvent", "ph", "temperature"]:
-        ent_dict[aux_type] = get_aux_info(entry_id, simulation, aux_type)
     ent_dict['name'] = get_tag_value(root, "name")
+
+    # Get the pka from the accessory file
+    ent_dict["pka"] = get_aux_info(entry_id, simulation, "pka")
+
+    # Get the NMR-STAR entry for sample info
+    star_entry = pynmrstar.Entry.from_file(os.path.join(entry_path, entry_id, simulation, "%s.str" % entry_id))
+    sample_conditions = star_entry.get_loops_by_category("_Sample_condition_variable")[0]
+    sample_conditions = sample_conditions.get_tag(["Type", "Val", "Val_units"])
+    for record in sample_conditions:
+        if record[0] == "temperature":
+            ent_dict[record[0].lower()] = "%s %s" % (record[1], record[2])
+        else:
+            ent_dict[record[0].lower()] = record[1]
+
+    sample_mix = star_entry.get_loops_by_category("_Sample_component")[0]
+    ent_dict['sample'] = sample_mix.get_tag(["Mol_common_Name", "Isotopic_labeling", "Type", "Concentration_val",
+                                            "Concentration_val_units"])
 
     # Get the spin matrix data only for the first coupling matrix
     coupling_matrix = root.getiterator("coupling_matrix").next()

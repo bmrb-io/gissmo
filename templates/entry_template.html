@@ -109,30 +109,6 @@
                 <td>RMSD of the fit</td>
                 <td>{{ roi_rmsd }}</td>
             </tr>
-            {% if solvent -%}
-            <tr>
-                <td>Solvent</td>
-                <td>{{ solvent }}</td>
-            </tr>
-            {% endif -%}
-            {% if buffer -%}
-            <tr>
-                <td>Buffer</td>
-                <td>{{ buffer }}</td>
-            </tr>
-            {% endif -%}
-            {% if cytocide -%}
-            <tr>
-                <td>Cytocide</td>
-                <td>{{ cytocide }}</td>
-            </tr>
-            {% endif -%}
-            {% if reference -%}
-            <tr>
-                <td>Reference</td>
-                <td>{{ reference }}</td>
-            </tr>
-            {% endif -%}
             {% if temperature -%}
             <tr>
                 <td>Temperature</td>
@@ -174,6 +150,23 @@
                 </td>
             </tr>
             {% endif %}
+        </table>
+        <h3>Sample description:</h3>
+        <table class="alternating left_align">
+            <thead>
+                <tr>
+                    <th>Compound</th>
+                    <th>Type</th>
+                    <th>Concentration</th>
+                </tr>
+            </thead>
+            {% for comp in sample %}
+            <tr>
+                <td>{{comp[0]}}</td>
+                <td>{{comp[2]}}</td>
+                <td>{{comp[3] + comp[4]}}</td>
+            </tr>
+            {% endfor %}
         </table>
         <a class="fake_button" onclick="$('#spin_matrix').toggle()" style="margin-top: 1em">Show/Hide Spin System Matrix</a>
     </div>
