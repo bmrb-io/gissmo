@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+from __future__ import print_function
+
 import os
 import re
 import sys
@@ -29,6 +31,7 @@ here = os.path.dirname(__file__)
 
 sys.path.append(os.path.join(here, 'PyNMRSTAR'))
 import pynmrstar
+
 
 # Helper methods
 def get_tag_value(root, tag, all_=False):
@@ -134,7 +137,7 @@ CREATE TABLE entries_tmp (
             except IOError:
                 continue
             except Exception as e:
-                print entry_id, e
+                print(entry_id, e)
                 continue
 
             # Check the entry is released
@@ -172,9 +175,9 @@ DROP TABLE IF EXISTS entries_old;""")
         ppm numeric,
         amplitude float);""")
     cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
-                    open('/websites/gissmo/DB/peak_list_GSD.csv', "rb"));
+                    open('/websites/gissmo/DB/peak_list_GSD.csv', "rb"))
     cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
-                    open('/websites/gissmo/DB/peak_list_standard.csv', "rb"));
+                    open('/websites/gissmo/DB/peak_list_standard.csv', "rb"))
     cur.execute("""-- create index: potentially combine these two based on usage
 CREATE INDEX ON chemical_shifts_tmp (frequency, peak_type, ppm);
 
@@ -452,6 +455,8 @@ def display_entry(entry_id, simulation=None, some_file=None):
                     np = np[np.index(entry_id):]
                     data = ZipInfo(np)
                     data.external_attr = 0666 << 16L  # Give all relevant permissions to downloaded file
+                    # Python 3.7 fix for the above line:
+                    # data.external_attr = 0o0666 << 16  # Give all relevant permissions to downloaded file
                     data.compress_type = ZIP_DEFLATED
                     data.date_time = time.strptime(time.ctime(os.path.getmtime(fn)))
                     zf.writestr(data, open(fn, "r").read())
@@ -580,4 +585,4 @@ SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts
 
 
 if __name__ == "__main__":
-    print "Called main."
+    print("Called main.")
