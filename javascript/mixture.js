@@ -488,7 +488,19 @@ var getJSON = function(url, callback) {
 
 function downloadCSV(){
     let csvContent = "ppm,val\r\n";
-    var mixture = [plot.data[plot.data.length-1]['x'], plot.data[plot.data.length-1]['y']];
+
+    var mixture_plot = null;
+    for (var i=0; i<plot.data.length; i++){
+        if (plot.data[i].name === 'Mixture'){
+            mixture_plot = i;
+        }
+    }
+    if (mixture_plot === null){
+        alert('No mixture plot available to download. Have you selected at least one compound?');
+        return;
+    }
+
+    var mixture = [plot.data[mixture_plot]['x'], plot.data[mixture_plot]['y']];
     for (var i=0; i<mixture[0].length; i++) {
         let row = mixture[0][i].toFixed(6) + "," + mixture[1][i].toFixed(6);
         csvContent += row + "\r\n";
