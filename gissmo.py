@@ -217,6 +217,11 @@ def get_entry_list():
 
 
 @application.route('/')
+def home():
+	return render_template("home.html")
+
+
+@application.route('/library')
 def display_list():
     """ Display the list of possible entries. """
 
