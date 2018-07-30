@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{% block head %}
+{{ super() }}
+{% endblock %}
+
+{% block body %}
+        <div class="details_box" align="left">
+		<h2>Guided Ideographic Spin System Model Optimization (GISSMO)</h2>
+			GISSMO enables the efficient calculation and refinement of spin system matrices (chemical shift and coupling constants) 
+			against experimental 1D-<sup>1</sup>H NMR spectra of small molecules. <br>
+			<img src="/static/gissmo_logo.jpg" alt="">
+		<h3>GISSMO library:</h3>
+			The library of parameterized compounds by GISSMO contains more than 1100 compounds, including many key mammalian metabolites and a library of drug-like fragments used in ligand screening. 
+			The library covers simulations of <sup>1</sup>H NMR spectra at a variety of magnetic fields (40, 100, 200, 300, 400, 500, 600, 700, 750, 800, 900, 950, 1000, and 1300 MHz) and in addition the library provides spectral peak lists for every simulated spectra.<br>
+			The exceptionally rich information content of NMR spectra is routinely used to identify and characterize molecules in a wide range of applications, including clinical biomarker discovery, drug discovery, environmental chemistry, and metabolomics. To facilitate seamless access to this reproducible and unique NMR metabolomics data library, every entry in the GISSMO library can be downloaded in <a href="http://www.bmrb.wisc.edu/dictionary/> target="_blank">NMR-STAR</a> and <a href="http://nmredata.org/" target="_blank">NMReDATA</a> data format. <br>
+			The complete list of the entries in the GISSMO library can be accessed from “<a href="http://gissmo.nmrfam.wisc.edu/library" target="_blank">Global links->GISSMO Library</a>”
+
+		<h3>GISSMO GUI:</h3> 
+			<p>
+			GISSMO utilizes a graphical user interface (GUI) for guided optimization of spin system matrices that can be downloaded from the “<a href="http://gissmo.nmrfam.wisc.edu/gui" target="_blank">Global links->GISSMO-GUI</a>”.
+			</p>
+
+		<h3>Citation:</h3>
+			<p>
+			Hesam Dashti, William M. Westler, Marco Tonelli, Jonathan R. Wedell, John L. Markley, and Hamid R. Eghbalnia, <a href="https://pubs.acs.org/doi/abs/10.1021/acs.analchem.7b02884" target="_blank">Spin System Modeling of Nuclear Magnetic Resonance Spectra for Applications in Metabolomics and Small Molecule Screening, Analytical Chemistry, 2017, 89 (22), pp 12201–12208, doi: 10.1021/acs.analchem.7b02884</a><br>
+			</p>
+
+		
+		<h3>Acknowledgement:</h3>
+			<p>
+			The GISSMO project is a collaboration between <a href="https://nmrfam.wisc.edu/" target="_blank">NMRFAM</a>, <a href="https://www.nmrbox.org/" target="_blank">NMRbox</a>, and <a href="http://www.bmrb.wisc.edu/" target="_blank">BMRB</a>. 
+			We are collaborating with the <a href="http://nmredata.org/" target="_blank"> NMReDATA initiative</a> and <a href="http://mestrelab.com/software/mnova/" target="_blank">Mestrelab</a>, and we are grateful for their supports.<br>
+			This study made use of the National Magnetic Resonance Facility at Madison, WI, which is supported by National Institutes of Health (NIH) Grant P41GM103399. Metabolite data were from BMRB, which is supported by NIH Grant GM109046. We are supported in part by the National Center for Biomolecular NMR Data Processing and Analysis, which is supported by NIH Grant P41GM111135.
+			</p>
+
+        </div>
+{% endblock %}
