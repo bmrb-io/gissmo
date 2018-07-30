@@ -360,6 +360,13 @@ def return_vm():
     return render_template("vm.html")
 
 
+@application.route('/convert_mol_svg')
+def mol_svn_converter_page():
+    """ Render the mol -> svn conversion page."""
+
+    return render_template('convert_mol_svg.html')
+
+
 @application.route('/js/<fname>')
 def js(fname):
     """ Send the JS"""
