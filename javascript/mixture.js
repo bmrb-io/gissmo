@@ -26,6 +26,48 @@ function reGraph(){
         showlegend: true
     };
 
+    var toggle_off_icon = {
+        'width': 24,
+        'path': 'M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zM7 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+        'ascent': 24,
+        'descent': 0
+    };
+
+    var toggle_on_icon = {
+        'width': 24,
+        'path': 'M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+        'ascent': 24,
+        'descent': 0
+    };
+
+    var config = {
+        scrollZoom: true,
+        modeBarButtonsToAdd: [{
+            name: 'Show Individual Compounds',
+            click: (gd) => {
+              Plotly.restyle(gd, 'visible', true);
+            },
+            icon: toggle_off_icon
+          },
+          {
+            name: 'Hide Individual Compounds',
+            click: (gd) => {
+              Plotly.restyle(gd, 'visible', 'legendonly');
+
+              var turn_on = [];
+              ['Mixture', 'Uploaded Spectra', 'Difference'].forEach(function(element){
+                var tmp_index = get_plot_index_by_name(element);
+                console.log(tmp_index, element);
+                if (tmp_index !== null) {
+                    turn_on.push(tmp_index)
+                };
+              })
+              Plotly.restyle(gd, {'visible': true}, turn_on);
+            },
+            icon: toggle_on_icon
+          }]
+    };
+
     var data = [];
     var concentrations = [];
     var ref_id = 0;
@@ -93,7 +135,7 @@ function reGraph(){
         delete layout.yaxis.autorange;
     }
 
-    Plotly.newPlot('myDiv', data, layout, {scrollZoom: true}).then(function(result) {
+    Plotly.newPlot('myDiv', data, layout, config).then(function(result) {
         plot = result;
     });
 
@@ -485,16 +527,20 @@ var getJSON = function(url, callback) {
 };
 
 
+function get_plot_index_by_name(plot_name){
+    var search_plot = null;
+    for (var i=0; i<plot.data.length; i++){
+        if (plot.data[i].name === plot_name){
+            search_plot = i;
+        }
+    }
+    return search_plot;
+}
 
 function downloadCSV(){
     let csvContent = "ppm,val\r\n";
 
-    var mixture_plot = null;
-    for (var i=0; i<plot.data.length; i++){
-        if (plot.data[i].name === 'Mixture'){
-            mixture_plot = i;
-        }
-    }
+    var mixture_plot = get_plot_index_by_name('Mixture');
     if (mixture_plot === null){
         alert('No mixture plot available to download. Have you selected at least one compound?');
         return;
