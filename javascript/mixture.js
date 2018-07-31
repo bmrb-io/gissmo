@@ -42,7 +42,15 @@ function reGraph(){
 
     var config = {
         scrollZoom: true,
+        modeBarButtonsToRemove: ['sendDataToCloud', 'toImage', 'toggleSpikelines'],
         modeBarButtonsToAdd: [{
+            name: 'Download mixture CSV',
+            icon: Plotly.Icons.disk,
+            click: (gd) => {
+              downloadCSV();
+            }
+        },
+        {
             name: 'Show Individual Compounds',
             click: (gd) => {
               Plotly.restyle(gd, 'visible', true);
@@ -57,7 +65,6 @@ function reGraph(){
               var turn_on = [];
               ['Mixture', 'Uploaded Spectra', 'Difference'].forEach(function(element){
                 var tmp_index = get_plot_index_by_name(element);
-                console.log(tmp_index, element);
                 if (tmp_index !== null) {
                     turn_on.push(tmp_index)
                 };
