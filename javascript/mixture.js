@@ -28,18 +28,20 @@ function reGraph(){
 
     var toggle_off_icon = {
         'width': 24,
-        'path': 'M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zM7 15c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+        'path': 'M12 2c5.514 0 10 4.486 10 10s-4.486 10-10 10-10-4.486-10-10 4.486-10 10-10zm0-2c-6.627 0-12 5.373-12 12s5.373 12 12 12 12-5.373 12-12-5.373-12-12-12zm6 16.094l-4.157-4.104 4.1-4.141-1.849-1.849-4.105 4.159-4.156-4.102-1.833 1.834 4.161 4.12-4.104 4.157 1.834 1.832 4.118-4.159 4.143 4.102 1.848-1.849z',
         'ascent': 24,
         'descent': 0
     };
 
     var toggle_on_icon = {
         'width': 24,
-        'path': 'M17 7H7c-2.76 0-5 2.24-5 5s2.24 5 5 5h10c2.76 0 5-2.24 5-5s-2.24-5-5-5zm0 8c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3z',
+        'path': 'M21.856 10.303c.086.554.144 1.118.144 1.697 0 6.075-4.925 11-11 11s-11-4.925-11-11 4.925-11 11-11c2.347 0 4.518.741 6.304 1.993l-1.422 1.457c-1.408-.913-3.082-1.45-4.882-1.45-4.962 0-9 4.038-9 9s4.038 9 9 9c4.894 0 8.879-3.928 8.99-8.795l1.866-1.902zm-.952-8.136l-9.404 9.639-3.843-3.614-3.095 3.098 6.938 6.71 12.5-12.737-3.096-3.096z',
         'ascent': 24,
-        'descent': 0
+        'descent': 0,
+        'transform': 'prevent_plotly_from_rotating_this'
     };
 
+    // Buttons that can be removed described here: https://github.com/plotly/plotly.js/blob/7acca0abb3ae226c458ce29b3dabdd1c1e3c460a/src/components/modebar/buttons.js
     var config = {
         scrollZoom: true,
         modeBarButtonsToRemove: ['sendDataToCloud', 'toImage', 'toggleSpikelines'],
@@ -55,7 +57,7 @@ function reGraph(){
             click: (gd) => {
               Plotly.restyle(gd, 'visible', true);
             },
-            icon: toggle_off_icon
+            icon: toggle_on_icon
           },
           {
             name: 'Hide Individual Compounds',
@@ -71,7 +73,7 @@ function reGraph(){
               })
               Plotly.restyle(gd, {'visible': true}, turn_on);
             },
-            icon: toggle_on_icon
+            icon: toggle_off_icon
           }]
     };
 
