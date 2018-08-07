@@ -385,14 +385,6 @@ def get_mixture():
     return render_template("mixture.html", entry_list=entry_list)
 
 
-@application.route('/static/<file_>')
-def get_file_from_static(file_):
-    """ Download one of the data files. """
-
-    folder = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'static')
-    return send_from_directory(folder, file_)
-
-
 @application.route('/entry/<entry_id>')
 def display_summary(entry_id):
     """ Renders the page with a list of simulations available. """
