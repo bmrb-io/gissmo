@@ -26,7 +26,7 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
-entry_path = "/websites/gissmo/DB/BMRB_DB/"
+entry_path = "/websites/gissmo/DB_08_18_2018/"
 here = os.path.dirname(__file__)
 
 sys.path.append(os.path.join(here, 'PyNMRSTAR'))
@@ -124,6 +124,8 @@ CREATE TABLE entries_tmp (
     valid_entries = []
     for entry_id in os.listdir(entry_path):
 
+        print(entry_id)
+
         sims = []
         dir_path = os.path.join(entry_path, entry_id)
         if not os.path.isdir(dir_path):
@@ -161,7 +163,7 @@ CREATE INDEX ON entries_tmp (id);
 -- Move the new table into place
 ALTER TABLE IF EXISTS entries RENAME TO entries_old;
 ALTER TABLE entries_tmp RENAME TO entries;
-DROP TABLE IF EXISTS entries_old;""")
+DROP TABLE IF EXISTS entries_old CASCADE;""")
 
     # Reload the chemical shifts
     cur.execute("""
@@ -175,9 +177,9 @@ DROP TABLE IF EXISTS entries_old;""")
         ppm numeric,
         amplitude float);""")
     cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
-                    open('/websites/gissmo/DB/peak_list_GSD.csv', "rb"))
+                    open('%s/peak_list_GSD.csv' % entry_path, "rb"))
     cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
-                    open('/websites/gissmo/DB/peak_list_standard.csv', "rb"))
+                    open('%s/peak_list_standard.csv' % entry_path, "rb"))
     cur.execute("""-- create index: potentially combine these two based on usage
 CREATE INDEX ON chemical_shifts_tmp (frequency, peak_type, ppm);
 
@@ -308,7 +310,7 @@ ORDER BY count(DISTINCT ppm) DESC;
 
     def get_closest(collection, number):
         """ Returns the closest number from a list of numbers. """
-        return min(collection, key=lambda _: abs(_ - number))
+        return Decimal(min(collection, key=lambda _: abs(_ - number)))
 
     def get_sort_key(res):
         """ Returns the sort key. """
@@ -407,6 +409,7 @@ def display_summary(entry_id):
         return redirect("/entry/%s/%s" % (entry_id, sims[0]), 302)
 
     # Go through the simulations
+    name = "unknown"
     for sim_dir in sims:
         root = ElementTree.parse(os.path.join(entry_path, entry_id, sim_dir, "spin_simulation.xml")).getroot()
         data.append({'field_strength': get_tag_value(root, "field_strength"), 'sim': sim_dir, 'entry_id': entry_id})
@@ -508,8 +511,13 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict['simulation'] = simulation
 
     # Look up what simulated field strengths are available
-    field_strengths = sorted([int(x[4:].replace("MHz", "")) for x in os.listdir(os.path.join(exp_full_path, "B0s"))])
-    ent_dict['simulated_fields'] = field_strengths
+    field_strengths = []
+    for x in os.listdir(os.path.join(exp_full_path, "B0s")):
+        try:
+            field_strengths.append(int(x[4:].replace("MHz.csv", "")))
+        except ValueError:
+            pass
+    ent_dict['simulated_fields'] = sorted(field_strengths)
 
     # Make sure the image file exists
     if not os.path.isfile(os.path.join(exp_full_path, ent_dict['path_2D_image'])):
@@ -524,7 +532,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict["pka"] = get_aux_info(entry_id, simulation, "pka")
 
     # Get the NMR-STAR entry for sample info
-    star_entry = pynmrstar.Entry.from_file(os.path.join(entry_path, entry_id, simulation, "%s.str" % entry_id))
+    star_entry = pynmrstar.Entry.from_file(os.path.join(entry_path, entry_id, simulation, "%s-%s.str" % (entry_id, simulation)))
     sample_conditions = star_entry.get_loops_by_category("_Sample_condition_variable")[0]
     sample_conditions = sample_conditions.get_tag(["Type", "Val", "Val_units"])
     for record in sample_conditions:
@@ -539,16 +547,15 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Get the spin matrix data only for the first coupling matrix
     coupling_matrix = root.getiterator("coupling_matrix").next()
-    column_names = get_tag_value(coupling_matrix, "spin", all_=True)
-    diagonal = get_tag_value(coupling_matrix, "cs", all_=True)
-    couplings = get_tag_value(coupling_matrix, "coupling", all_=True)
 
-    def extract(attribute):
-        return attribute.split('"')[1]
+    column_names = [x.attrib['name'] for x in coupling_matrix.getiterator("spin")]
 
     ent_dict['acc'] = []
-    for item in get_tag_value(coupling_matrix, "acc", all_=True):
-        spin_index, coupling, spin_group_index, coupling_group_index = map(extract, item.split())
+    for item in coupling_matrix.getiterator('acc'):
+        spin_index = item.attrib['spin_index']
+        coupling = item.attrib['coupling']
+        spin_group_index = item.attrib['spin_group_index']
+        coupling_group_index = item.attrib['coupling_group_index']
         try:
             spin_index = column_names[int(spin_index) - 1]
         except (ValueError, IndexError):
@@ -560,7 +567,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
 
     # Build the spin matrix
     size = len(column_names) + 1
-    matrix = [[0 for x in range(size)] for x in range(size)]
+    matrix = [[0 for _ in range(size)] for _ in range(size)]
 
     # Add in the labels
     matrix[0] = [""] + column_names
@@ -568,12 +575,12 @@ def display_entry(entry_id, simulation=None, some_file=None):
         matrix[pos + 1][0] = name
 
     # Add the diagonals
-    for pos, cs in enumerate(diagonal):
-        matrix[pos + 1][pos + 1] = round(float(cs), 3)
+    for pos, item in enumerate(coupling_matrix.getiterator("cs")):
+        matrix[pos + 1][pos + 1] = round(float(item.attrib['ppm']), 3)
 
     # Add the other values
-    for datum in couplings:
-        from_index, to_index, value = map(extract, datum.split())
+    for item in coupling_matrix.getiterator("coupling"):
+        from_index, to_index, value = item.attrib['from_index'], item.attrib['to_index'], item.attrib['value']
         from_index = int(from_index)
         to_index = int(to_index)
         if value != "0.0000000":
