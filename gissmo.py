@@ -218,7 +218,7 @@ def get_entry_list():
 
 @application.route('/')
 def home():
-	return render_template("home.html")
+    return render_template("home.html")
 
 
 @application.route('/tutorial')
