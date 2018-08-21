@@ -221,6 +221,11 @@ def home():
 	return render_template("home.html")
 
 
+@application.route('/tutorial')
+def tutorial_page():
+    return render_template("tutorial.html")
+
+
 @application.route('/library')
 def display_list():
     """ Display the list of possible entries. """
