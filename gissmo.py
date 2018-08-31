@@ -26,7 +26,7 @@ from flask import Flask, render_template, send_from_directory, request, redirect
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
-entry_path = "/websites/gissmo/DB_08_18_2018/"
+entry_path = "/websites/gissmo/DB/"
 here = os.path.dirname(__file__)
 
 sys.path.append(os.path.join(here, 'PyNMRSTAR'))
