@@ -41,13 +41,9 @@ class SpectralResolver:
         self.x, self.y = json.load(open(file_location, "r"))
         self.x = [float(_) for _ in self.x]
         self.y = [scale*float(_) for _ in self.y]
-
-        self.x_position = -1
+        self.x_position = 0
 
     def get_y(self, x):
-
-        if x < self.x_position:
-            raise ValueError('Cannot decrement X value without first calling reset()')
 
         while x > self.x[self.x_position]:
             self.x_position += 1
@@ -94,6 +90,14 @@ def get_mixture_spectra(frequency, resolution, gissmo_id_and_scale_tuple, filena
         x[i] = x_pos
         for resolver in resolvers:
             y[i] += resolver.get_y(x_pos)
+
+    # Scale amplitude to 1
+    max_y = 0
+    for y_val in y:
+        if y_val > max_y:
+            max_y = y_val
+    print('Normalizing to ', max_y)
+    y = [_/max_y for _ in y]
 
     if filename:
         csv.writer(open(filename, "w")).writerows(zip(x, y))
