@@ -86,7 +86,7 @@
     {% if "bmse" in entry_id %}<p><a class="fake_button_sim" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/" target="_blank">ALATIS cross link</a></p>{% endif %}
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
-    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/{{ entry_id }}.str" target="_blank">Download entry NMR-STAR</a></p>
+    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/{{ entry_id }}-{{ simulation }}.str" target="_blank">Download entry NMR-STAR</a></p>
     <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/{{ entry_id }}_{{ simulation }}_nmredata.zip" target="_blank">Download entry NMReDATA</a></p>
     {% endblock %}
 
