@@ -197,6 +197,8 @@ GRANT SELECT ON ALL TABLES IN SCHEMA gissmo TO web;""")
 def get_entry_list():
     """ Return the entry list in the format that the functions expect."""
 
+    return json.load(open('mocks/entry_list.json'))
+
     cur = get_postgres_connection()[1]
     cur.execute("SELECT * FROM entries ORDER BY id, simulation_ID")
 
@@ -215,7 +217,7 @@ def get_entry_list():
     if working_list:
         entry_list.append(working_list)
 
-    return entry_list
+    #open('mocks/entry_list.json', "w").write(json.dumps(entry_list))
 
 
 @application.route('/')
