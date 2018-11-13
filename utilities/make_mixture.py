@@ -96,11 +96,14 @@ def get_mixture_spectra(frequency, resolution, gissmo_id_and_scale_tuple, filena
     for y_val in y:
         if y_val > max_y:
             max_y = y_val
-    print('Normalizing to ', max_y)
     y = [_/max_y for _ in y]
 
     if filename:
-        csv.writer(open(filename, "w")).writerows(zip(x, y))
+        x = ["%.6f" % _ for _ in x]
+        y = ["%.6f" % _ for _ in y]
+        writer = csv.writer(open(filename, "w"))
+        writer.writerow(['ppm', 'val'])
+        writer.writerows(zip(x, y))
     else:
         return [x, y]
 
