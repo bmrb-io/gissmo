@@ -6,7 +6,6 @@ import os
 import csv
 import sys
 
-
 def reduce_list(raw_ppm, raw_val):
 
     last_yield, last_yield_pos = None, 0
@@ -72,12 +71,15 @@ def do_ent(ent):
             sd = os.path.join(ent, sim, "spectral_data")
             if not os.path.exists:
                 os.mkdir(sd)
-            open(os.path.join(sd, "experimental.json"), "w").write(to_json(os.path.join(ent, sim, "exp_0")))
-            open(os.path.join(sd, "sim_default.json"), "w").write(to_json(os.path.join(ent, sim, "sim_0")))
             bdir = os.path.join(ent, sim, "B0s")
+            print("    exp_default.csv")
+            open(os.path.join(sd, "experimental.json"), "w").write(to_json(os.path.join(bdir, "exp_default.csv")))
+            print("    sim_default.csv")
+            open(os.path.join(sd, "sim_default.json"), "w").write(to_json(os.path.join(bdir, "sim_default.csv")))
+
             for s in os.listdir(bdir):
                 print("    %s" % s)
-                open(os.path.join(sd, s + ".json"), "w").write(to_json(os.path.join(bdir, s)))
+                open(os.path.join(sd, s[:-4] + ".json"), "w").write(to_json(os.path.join(bdir, s)))
         except IOError:
             continue
 
