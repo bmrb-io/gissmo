@@ -546,10 +546,14 @@ function get_plot_index_by_name(plot_name){
     return search_plot;
 }
 
-function downloadCSV(){
+function downloadCSV(plot_name){
     let csvContent = "ppm,val\r\n";
 
-    var mixture_plot = get_plot_index_by_name('Mixture');
+    if (!plot_name) {
+        plot_name = 'Mixture';
+    }
+
+    var mixture_plot = get_plot_index_by_name(plot_name);
     if (mixture_plot === null){
         alert('No mixture plot available to download. Have you selected at least one compound?');
         return;
