@@ -17,7 +17,6 @@ from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
-import requests
 import psycopg2
 from psycopg2.extras import DictCursor, execute_values
 
@@ -61,6 +60,7 @@ def dict_builder(root, tags):
 def get_title(entry_id):
     """ Fetches the actual compound name from BMRB API. """
 
+    import requests
     title = requests.get("http://webapi.bmrb.wisc.edu/v2/entry/%s?tag=_Assembly.Name" % entry_id,
                          headers={"Application": "GISSMO"}).json()
     return title[entry_id]['_Assembly.Name'][0].title()
