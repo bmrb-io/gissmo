@@ -4,7 +4,6 @@ from __future__ import print_function
 
 import os
 import re
-import sys
 
 try:
     import simplejson as json
@@ -17,20 +16,17 @@ from decimal import Decimal, InvalidOperation
 from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
+# Local virtualenv imports
+import pynmrstar
 import requests
 import psycopg2
 from psycopg2.extras import DictCursor, execute_values
-
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file, url_for
 
 application = Flask(__name__)
 
 aux_info_path = "/websites/gissmo/DB/aux_info/"
 entry_path = "/websites/gissmo/DB/"
-here = os.path.dirname(__file__)
-
-sys.path.append(os.path.join(here, 'PyNMRSTAR'))
-import pynmrstar
 
 
 # Helper methods
