@@ -1,5 +1,56 @@
 {% extends "base.html" %}
 
+{% block head %}
+	<title>GISSMO NMR</title>
+	<script type="application/ld+json">
+	{
+	   "@context":"http://schema.org/",
+	   "@type":"Dataset",
+	   "name":"NMR Spin System Matrix",
+	   "measurementTechnique":"NMR",
+	   "description":"Spin System Matrix of Small Molecules; Guided Ideographic Spin System Model Optimization",
+	   "distribution":[
+		  {
+			 "productionCompany":[
+				"NMRFAM",
+				"NMRBox"
+			 ],
+			 "@type":"DataDownload",
+			 "encodingFormat":"XML",
+			 "version": "1",
+			 "contentUrl":"http://gissmo.nmrfam.wisc.edu/static/DB_xml_v1_17_aug_2018.tar.gz"
+		  }
+	   ],
+	   "variableMeasured":{
+		  "@type":"PropertyValue",
+		  "name":[
+			 "Chemical Shift",
+			 "Coupling Constants"
+		  ]
+	   },
+	   "provider":{
+		  "@type":"Organization",
+		  "name":"National Magnetic Resonance Facility At Madison (NMRFAM)"
+	   },
+	   "citation":[
+		  "Hesam Dashti, Jonathan R. Wedell, William M. Westler, Marco Tonelli, David Aceti, Gaya K. Amarasinghe, John L. Markley, and Hamid R. Eghbalnia, Applications of Parametrized NMR Spin Systems of Small Molecules, Anal. Chem., 2018, 90 (18), pp 10646–10649, DOI: 10.1021/acs.analchem.8b02660",
+		  "Hesam Dashti, William M. Westler, Marco Tonelli, Jonathan R. Wedell, John L. Markley, and Hamid R. Eghbalnia, Spin System Modeling of Nuclear Magnetic Resonance Spectra for Applications in Metabolomics and Small Molecule Screening, Analytical Chemistry, 2017, 89 (22), pp 12201–12208, doi: 10.1021/acs.analchem.7b02884"
+	   ],
+	   "image":"http://gissmo.nmrfam.wisc.edu/static/gissmo_logo.gif",
+	   "accessibilitySummary":"Spin system matrix of small molecules",
+	   "keywords":[
+		  "NMR",
+		  "Chemical Shift",
+		  "Coupling constants",
+		  "NMR-STAR",
+		  "NMReDATA"
+	   ],
+	   "url":"http://gissmo.nmrfam.wisc.edu/",
+	   "thumbnailUrl":""
+	}
+	</script>
+{% endblock %}
+
 {% block body %}
         <div class="details_box" style="text-align: left">
 		<h2>Guided Ideographic Spin System Model Optimization (GISSMO)</h2>
