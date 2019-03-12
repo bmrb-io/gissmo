@@ -100,6 +100,22 @@ def get_aux_info(entry_id, simulation, aux_name):
         return results
 
 
+@application.route('/search')
+def name_search():
+    """ Render the name search."""
+
+    term = request.args.get('term', "")
+    if term:
+        cur = get_postgres_connection(dictionary_cursor=True)[1]
+        sql = 'SELECT id, name from entries where name ~ %s'
+        cur.execute(sql, [term])
+        results = cur.fetchall()
+    else:
+        results = []
+    var_dict = {'title': term, 'results': results}
+
+    return render_template("name_search.html", **var_dict)
+
 # URI methods
 @application.route('/reload')
 def reload_db():
@@ -155,6 +171,7 @@ CREATE TABLE entries_tmp (
                    page_size=1000)
     cur.execute("""
 CREATE INDEX ON entries_tmp (id);
+CREATE INDEX ON entries using gin(name gin_trgm_ops);
 
 -- Move the new table into place
 ALTER TABLE IF EXISTS entries RENAME TO entries_old;
