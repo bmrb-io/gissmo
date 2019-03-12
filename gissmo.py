@@ -107,8 +107,8 @@ def name_search():
     term = request.args.get('term', "")
     if term:
         cur = get_postgres_connection(dictionary_cursor=True)[1]
-        sql = 'SELECT id, name from entries where name ~ %s'
-        cur.execute(sql, [term])
+        sql = 'SELECT id, name from entries where name ~ %s or inchi = %s or inchi = %s'
+        cur.execute(sql, [term, term, 'InChI=' + term])
         results = cur.fetchall()
     else:
         results = []
