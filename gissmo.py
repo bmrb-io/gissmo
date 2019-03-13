@@ -21,7 +21,7 @@ import pynmrstar
 import requests
 import psycopg2
 from psycopg2.extras import DictCursor, execute_values
-from flask import Flask, render_template, send_from_directory, request, redirect, send_file, url_for
+from flask import Flask, render_template, send_from_directory, request, redirect, send_file, url_for, jsonify
 
 application = Flask(__name__)
 
@@ -99,22 +99,6 @@ def get_aux_info(entry_id, simulation, aux_name):
     else:
         return results
 
-
-@application.route('/search')
-def name_search():
-    """ Render the name search."""
-
-    term = request.args.get('term', "")
-    if term:
-        cur = get_postgres_connection(dictionary_cursor=True)[1]
-        sql = 'SELECT id, name from entries where name ~ %s or inchi = %s or inchi = %s'
-        cur.execute(sql, [term, term, 'InChI=' + term])
-        results = cur.fetchall()
-    else:
-        results = []
-    var_dict = {'title': term, 'results': results}
-
-    return render_template("name_search.html", **var_dict)
 
 # URI methods
 @application.route('/reload')
@@ -207,11 +191,18 @@ GRANT SELECT ON ALL TABLES IN SCHEMA gissmo TO web;""")
     return redirect(url_for('display_list'), 302)
 
 
-def get_entry_list():
+def get_entry_list(term=None):
     """ Return the entry list in the format that the functions expect."""
 
     cur = get_postgres_connection()[1]
-    cur.execute("SELECT * FROM entries ORDER BY id, simulation_ID")
+
+    if term:
+        cur.execute('''
+SELECT * FROM entries
+  WHERE name ~ %s OR inchi = %s OR inchi = %s
+  ORDER BY id, simulation_ID''', [term, term, 'InChI=' + term])
+    else:
+        cur.execute("SELECT * FROM entries ORDER BY id, simulation_ID")
 
     entry_list = []
     last_entry = None
@@ -241,11 +232,28 @@ def tutorial_page():
     return render_template("tutorial.html")
 
 
+@application.route('/search')
+def name_search():
+    """ Render the name search."""
+
+    term = request.args.get('term', "")
+    if term:
+        cur = get_postgres_connection()[1]
+        sql = 'SELECT id, name from entries where name ~ %s or inchi = %s or inchi = %s'
+        cur.execute(sql, [term, term, 'InChI=' + term])
+        results = []
+        for item in cur:
+            results.append({'id': item[0], 'name': item[1]})
+    else:
+        results = []
+    return jsonify(results)
+
 @application.route('/library')
 def display_list():
     """ Display the list of possible entries. """
 
-    entry_list = get_entry_list()
+    term = request.args.get('term', "")
+    entry_list = get_entry_list(term)
 
     entry_letters = {}
     for item in entry_list:
@@ -259,7 +267,7 @@ def display_list():
                 entry_letters[letter].append(item)
                 break
 
-    return render_template("list_template.html", entries=entry_letters)
+    return render_template("list_template.html", entries=entry_letters, term=term)
 
 
 @application.route('/peak_search')

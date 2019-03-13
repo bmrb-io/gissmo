@@ -6,6 +6,10 @@
         {% endblock %}
 
         <style>
+            .same-line-form {
+                display: inline;
+            }
+
             /* Use these to style tables nicely */
             table.alternating tr:nth-child(odd) {
                 background-color: #CBDBFF;
@@ -177,15 +181,14 @@
 
         <div class="details_box" style="float: left">
             <h3>Global links:</h3>
-            <p><a class="fake_button_main" href="/">GISSMO Home</a></p>
-	    <p><a class="fake_button_main" href="/library">GISSMO Library</a></p>
-            <p><a class="fake_button_main" href="/tutorial" target="_blank">GISSMO Tutorial</a></p>
-            <p><a class="fake_button_main" href="/gui" target="_blank">GISSMO-GUI</a></p>
+            <p><a class="fake_button_main" href="{{url_for('home')}}">GISSMO Home</a></p>
+	    <p><a class="fake_button_main" href="{{url_for('display_list')}}">GISSMO Library</a></p>
+            <p><a class="fake_button_main" href="{{url_for('tutorial_page')}}" target="_blank">GISSMO Tutorial</a></p>
+            <p><a class="fake_button_main" href="{{url_for('return_vm')}}" target="_blank">GISSMO-GUI</a></p>
             <h3>Web Services:</h3>
-            <p><a class="fake_button_main" href="/peak_search">Peak Search</a></p>
-            <p><a class="fake_button_main" href="/search">Entry Search</a></p>
-            <p><a class="fake_button_main" href="/mixture">Mixture Simulation</a></p>
-            <p><a class="fake_button_main" href="/convert_mol_svg">Mol to jpg conversion</a></p>
+            <p><a class="fake_button_main" href="{{url_for('peak_search')}}">Peak Search</a></p>
+            <p><a class="fake_button_main" href="{{url_for('get_mixture')}}">Mixture Simulation</a></p>
+            <p><a class="fake_button_main" href="{{url_for('mol_svn_converter_page')}}">Mol to jpg conversion</a></p>
 
                 {% block links %}
                 {% endblock %}
