@@ -44,7 +44,7 @@ function reGraph(){
     // Buttons that can be removed described here: https://github.com/plotly/plotly.js/blob/7acca0abb3ae226c458ce29b3dabdd1c1e3c460a/src/components/modebar/buttons.js
     var config = {
         scrollZoom: true,
-        modeBarButtonsToRemove: ['sendDataToCloud', 'toImage', 'toggleSpikelines'],
+        modeBarButtonsToRemove: ['toggleSpikelines'],
         modeBarButtonsToAdd: [{
             name: 'Download mixture CSV',
             icon: Plotly.Icons.disk,
