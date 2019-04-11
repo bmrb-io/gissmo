@@ -6,181 +6,206 @@
 {% endblock %}
 
 {% block body %}
-        <div class="details_box">
-            <h2>Peak Search</h2>
+<div class="details_box">
+    <h2>Peak Search</h2>
 
-            <form method="get" id="search_form" action="" onsubmit="event.preventDefault(); return false;">
-                <p>Select the peak type:
-                <select name="peak_type">
-                  <option value="standard"{% if peak_type=="standard" %} selected="selected"{% endif %}>Standard</option>
-                  <option value="GSD" {% if peak_type=="GSD" %} selected="selected"{% endif %}>Deconvoluted</option>
-                </select>
-                Select the matching threshold (ppm):
-                <input name="threshold" list="thresholds" placeholder="{{threshold}}" value="{{threshold}}"/>
-                <datalist id="thresholds">
-                    {% for thresh in [".1", ".03", ".01", ".005", ".001"] %}
-                    <option value="{{thresh}}">
+    <form method="get" id="search_form" action="" onsubmit="event.preventDefault(); return false;">
+        <p>Select the peak type:
+            <label for="peak_type"></label>
+            <select name="peak_type" id="peak_type">
+                <option value="standard" {% if peak_type=="standard" %} selected="selected" {% endif %}>Standard
+                </option>
+                <option value="GSD" {% if peak_type=="GSD" %} selected="selected" {% endif %}>Deconvoluted</option>
+            </select>
+            Select the matching threshold (ppm):
+            <label for="threshold"></label>
+            <input name="threshold" list="thresholds" id="threshold" placeholder="{{threshold}}" value="{{threshold}}"/>
+            <datalist id="thresholds">
+                {% for thresh in [".1", ".03", ".01", ".005", ".001"] %}
+                <option value="{{thresh}}">
                     {% endfor %}
-                </datalist>
+            </datalist>
 
-                Select the frequency:
-                <select name="frequency">
-                  <option value="40"{% if frequency=="40" %} selected="selected"{% endif %}>40 Mhz</option>
-                  <option value="100"{% if frequency=="100" %} selected="selected"{% endif %}>100 Mhz</option>
-                  <option value="200"{% if frequency=="200" %} selected="selected"{% endif %}>200 Mhz</option>
-                  <option value="300"{% if frequency=="300" %} selected="selected"{% endif %}>300 Mhz</option>
-                  <option value="400"{% if frequency=="400" %} selected="selected"{% endif %}>400 Mhz</option>
-                  <option value="500"{% if frequency=="500" %} selected="selected"{% endif %}>500 Mhz</option>
-                  <option value="600"{% if frequency=="600" %} selected="selected"{% endif %}>600 Mhz</option>
-                  <option value="700"{% if frequency=="700" %} selected="selected"{% endif %}>700 Mhz</option>
-                  <option value="750"{% if frequency=="750" %} selected="selected"{% endif %}>750 Mhz</option>
-                  <option value="800"{% if frequency=="800" %} selected="selected"{% endif %}>800 Mhz</option>
-                  <option value="900"{% if frequency=="900" %} selected="selected"{% endif %}>900 Mhz</option>
-                  <option value="950"{% if frequency=="950" %} selected="selected"{% endif %}>950 Mhz</option>
-                  <option value="1000"{% if frequency=="1000" %} selected="selected"{% endif %}>1000 Mhz</option>
-                  <option value="1300"{% if frequency=="1300" %} selected="selected"{% endif %}>1300 Mhz</option>
-                </select></p>
+            Select the frequency:
+            <label for="freq"></label>
+            <select name="frequency" id="freq">
+                <option value="40" {% if frequency=="40" %} selected="selected" {% endif %}>40 Mhz</option>
+                <option value="100" {% if frequency=="100" %} selected="selected" {% endif %}>100 Mhz</option>
+                <option value="200" {% if frequency=="200" %} selected="selected" {% endif %}>200 Mhz</option>
+                <option value="300" {% if frequency=="300" %} selected="selected" {% endif %}>300 Mhz</option>
+                <option value="400" {% if frequency=="400" %} selected="selected" {% endif %}>400 Mhz</option>
+                <option value="500" {% if frequency=="500" %} selected="selected" {% endif %}>500 Mhz</option>
+                <option value="600" {% if frequency=="600" %} selected="selected" {% endif %}>600 Mhz</option>
+                <option value="700" {% if frequency=="700" %} selected="selected" {% endif %}>700 Mhz</option>
+                <option value="750" {% if frequency=="750" %} selected="selected" {% endif %}>750 Mhz</option>
+                <option value="800" {% if frequency=="800" %} selected="selected" {% endif %}>800 Mhz</option>
+                <option value="900" {% if frequency=="900" %} selected="selected" {% endif %}>900 Mhz</option>
+                <option value="950" {% if frequency=="950" %} selected="selected" {% endif %}>950 Mhz</option>
+                <option value="1000" {% if frequency=="1000" %} selected="selected" {% endif %}>1000 Mhz</option>
+                <option value="1300" {% if frequency=="1300" %} selected="selected" {% endif %}>1300 Mhz</option>
+            </select></p>
 
-                <p><p>Enter a list of spectral peaks from an 1D-<sup>1</sup>H spectrum in PPM. Peaks must be separated by spaces, commas, or newlines. Specify only the peak value and not the atom type. The search prioritizes entries that match the largest number of peaks first and the closeness of the matches second. Therefore you will get the best results by searching for several characteristic peaks.</p>
-                <textarea COLS="40" ROWS="20" WRAP="hard" id="rs" name="rs">{{ raw_shift }}</textarea><br>
+        <p>
+        <p>Enter a list of spectral peaks from an 1D-<sup>1</sup>H spectrum in PPM. Peaks must be separated by spaces,
+            commas, or newlines. Specify only the peak value and not the atom type. The search prioritizes entries that
+            match the largest number of peaks first and the closeness of the matches second. Therefore you will get the
+            best results by searching for several characteristic peaks.</p>
+        <label for="rs"></label>
+        <textarea cols="40" rows="20" wrap="hard" id="rs" name="rs">{{ raw_shift }}</textarea><br>
 
-                <input type="submit" id="submit" value="Query">
-                <br>
-                <br>
-            </form>
+        <input type="submit" id="submit" value="Query">
+        <br>
+        <br>
+    </form>
 
-            <script>
-$("#submit").click(function(){
+    <script>
+        $("#submit").click(function () {
 
-    // Clean up the shifts
-    var shifts = $('#rs').val().split(/[ \t,\n\r;]+/);
-    shifts = shifts.filter(function(n){ return n != "" });
-
-    if (shifts.join("").length > 1900){
-        alert("Too many peaks specified. Please search for fewer peaks.");
-        return;
-    }
-
-    $("#rs").val(shifts.join(" "));
-
-    window.location.replace('{{ base_url }}?' + $("#search_form").serialize());
-});
-
-// This CSV code has a MIT license
-// Sourced from: http://bl.ocks.org/kalebdf/ee7a5e7f44416b2116c0
-$(document).ready(function () {
-    function exportTableToCSV($table, filename) {
-        var $headers = $table.find('tr:has(th):not(.download)')
-            ,$rows = $table.find('tr:has(td):not(.download)')
-
-            // Temporary delimiter characters unlikely to be typed by keyboard
-            // This is to avoid accidentally splitting the actual contents
-            ,tmpColDelim = String.fromCharCode(11) // vertical tab character
-            ,tmpRowDelim = String.fromCharCode(0) // null character
-
-            // actual delimiter characters for CSV format
-            ,colDelim = '","'
-            ,rowDelim = '"\r\n"';
-
-            // Grab text from table into CSV formatted string
-            var csv = '"';
-            csv += formatRows($headers.map(grabRow));
-            csv += rowDelim;
-            csv += formatRows($rows.map(grabRow)) + '"';
-
-            // Data URI
-            var csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
-
-        // For IE (tested 10+)
-        if (window.navigator.msSaveOrOpenBlob) {
-            var blob = new Blob([decodeURIComponent(encodeURI(csv))], {
-                type: "text/csv;charset=utf-8;"
+            // Clean up the shifts
+            let shifts = $('#rs').val().split(/[ \t,\n\r;]+/);
+            shifts = shifts.filter(function (n) {
+                return n !== ""
             });
-            navigator.msSaveBlob(blob, filename);
-        } else {
-            $(this)
-                .attr({
-                    'download': filename
-                    ,'href': csvData
-            });
-        }
 
-        //------------------------------------------------------------
-        // Helper Functions
-        //------------------------------------------------------------
-        // Format the output so it has the appropriate delimiters
-        function formatRows(rows){
-            return rows.get().join(tmpRowDelim)
-                .split(tmpRowDelim).join(rowDelim)
-                .split(tmpColDelim).join(colDelim);
-        }
-        // Grab and format a row from the table
-        function grabRow(i,row){
+            if (shifts.join("").length > 1900) {
+                alert("Too many peaks specified. Please search for fewer peaks.");
+                return;
+            }
 
-            var $row = $(row);
-            //for some reason $cols = $row.find('td') || $row.find('th') won't work...
-            var $cols = $row.find('td:not(.download)');
-            if(!$cols.length) $cols = $row.find('th:not(.download)');
+            $("#rs").val(shifts.join(" "));
 
-            return $cols.map(grabCol)
+            window.location.replace('{{ base_url }}?' + $("#search_form").serialize());
+        });
+
+        // This CSV code has a MIT license
+        // Sourced from: http://bl.ocks.org/kalebdf/ee7a5e7f44416b2116c0
+        $(document).ready(function () {
+            function exportTableToCSV($table, filename) {
+                const $headers = $table.find('tr:has(th):not(.download)')
+                    , $rows = $table.find('tr:has(td):not(.download)')
+
+                    // Temporary delimiter characters unlikely to be typed by keyboard
+                    // This is to avoid accidentally splitting the actual contents
+                    , tmpColDelim = String.fromCharCode(11) // vertical tab character
+                    , tmpRowDelim = String.fromCharCode(0) // null character
+
+                    // actual delimiter characters for CSV format
+                    , colDelim = '","'
+                    , rowDelim = '"\r\n"';
+
+                // Grab text from table into CSV formatted string
+                let csv = '"';
+                csv += formatRows($headers.map(grabRow));
+                csv += rowDelim;
+                csv += formatRows($rows.map(grabRow)) + '"';
+
+                // Data URI
+                const csvData = 'data:application/csv;charset=utf-8,' + encodeURIComponent(csv);
+
+                // For IE (tested 10+)
+                if (window.navigator.msSaveOrOpenBlob) {
+                    const blob = new Blob([decodeURIComponent(encodeURI(csv))], {
+                        type: "text/csv;charset=utf-8;"
+                    });
+                    navigator.msSaveBlob(blob, filename);
+                } else {
+                    $(this)
+                        .attr({
+                            'download': filename
+                            , 'href': csvData
+                        });
+                }
+
+                //------------------------------------------------------------
+                // Helper Functions
+                //------------------------------------------------------------
+                // Format the output so it has the appropriate delimiters
+                function formatRows(rows) {
+                    return rows.get().join(tmpRowDelim)
+                        .split(tmpRowDelim).join(rowDelim)
+                        .split(tmpColDelim).join(colDelim);
+                }
+
+                // Grab and format a row from the table
+                function grabRow(i, row) {
+
+                    const $row = $(row);
+                    //for some reason $cols = $row.find('td') || $row.find('th') won't work...
+                    let $cols = $row.find('td:not(.download)');
+                    if (!$cols.length) $cols = $row.find('th:not(.download)');
+
+                    return $cols.map(grabCol)
                         .get().join(tmpColDelim);
-        }
-        // Grab and format a column from the table
-        function grabCol(j,col){
-            var $col = $(col),
-                $text = $col.text();
+                }
 
-            return $text.replace('"', '""'); // escape double quotes
+                // Grab and format a column from the table
+                function grabCol(j, col) {
+                    let $col = $(col),
+                        $text = $col.text();
 
-        }
-    }
+                    return $text.replace('"', '""'); // escape double quotes
 
-    // This must be a hyperlink
-    $("#export").click(function (event) {
-        var outputFile = 'peak_search_results.csv';
+                }
+            }
 
-        // CSV
-        exportTableToCSV.apply(this, [$('#results_table'), outputFile]);
-    });
-});
-            </script>
-            {% if entries[1]|length > 0 %}
-            <a href="#" id ="export" role='button' class="fake_button">Download current results as CSV</a>
-            <table class="alternating" id="results_table" style="width: 100%">
-                <thead>
-                    <tr>
-                        <th class="left_align">Compound Name</th>
-                        <th>Entry ID</th>
-                        <th>Simulation Name</th>
-                        <th class="download">Data</th>
-                        <th>Number of Matching Peaks</th>
-                        <th>Combined Peak Offset</th>
-                        <th>Matching Peaks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for letter in entries.keys()|sort -%}
-                    {% for entry in entries[letter] -%}
-                    {% set outer_loop = loop -%}
-                    {% for simulation in entry -%}
-                    {% if outer_loop.first -%}
-                    <tr id="{{ letter }}">{% else %}
-                    <tr>{%- endif -%}
-                       {% if loop.first %}<td rowspan="{{ entry|length }}" class="left_align"><a href="/entry/{{ simulation[0] }}" alt="{{ simulation[5] }}" title="{{ simulation[5] }}" target="_blank">{{ simulation[1] }}</a></td>{% endif %}
-                       {% if loop.first %}<td rowspan="{{ entry|length }}"><a {% if 'bmse' in simulation[0] %}href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}" target="_blank"{% endif %}>{% if 'bmse' in simulation[0] %}BMRB {% endif %}{{ simulation[0] }}</a></td>{% endif %}
-                       <td><a href="/entry/{{ simulation[0] }}/{{ simulation[3] }}" target="_blank">{{ simulation[3].title() }}</a></td>
-                       <td class="download"><a class="fake_button" href="/entry/{{ simulation[0] }}/{{ simulation[3] }}/zip">Download</a></td>
-                       <td>{{ simulation[6] }}</td>
-                       <td>{{ simulation[7] }}</td>
-                       <td>{{ simulation[5]|join(", ") }}</td>
-                    </tr>
-                    {%- endfor -%}
-                    {%- endfor -%}
-                    {%- endfor -%}
-                </tbody>
-            </table>
-            {% else %}
-            <h3>No matching peaks found.</h3>
+            // This must be a hyperlink
+            $("#export").click(() => {
+                const outputFile = 'peak_search_results.csv';
+                exportTableToCSV.apply(this, [$('#results_table'), outputFile]);
+            });
+        });
+    </script>
+    {% if entries[1]|length > 0 %}
+    <a href="#" id="export" role='button' class="fake_button">Download current results as CSV</a>
+    <table class="alternating" id="results_table" style="width: 100%">
+        <thead>
+        <tr>
+            <th class="left_align">Compound Name</th>
+            <th>Entry ID</th>
+            <th>Simulation Name</th>
+            <th class="download">Data</th>
+            <th>Number of Matching Peaks</th>
+            <th>Combined Peak Offset</th>
+            <th>Matching Peaks</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for letter in entries.keys()|sort -%}
+        {% for entry in entries[letter] -%}
+        {% set outer_loop = loop -%}
+        {% for simulation in entry -%}
+        {% if outer_loop.first -%}
+        <tr id="{{ letter }}">{% else %}
+        <tr>{%- endif -%}
+            {% if loop.first %}
+            <td rowspan="{{ entry|length }}" class="left_align">
+                <a href="{{url_for('display_summary', entry_id=simulation[0])}}" title="{{ simulation[5] }}"
+                   target="_blank">{{ simulation[1] }}</a>
+            </td>
             {% endif %}
-        </div>
+            {% if loop.first %}
+            <td rowspan="{{ entry|length }}">
+                <a {% if 'bmse' in simulation[0] %}href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}"
+                target="_blank"{% endif %}>{% if 'bmse' in simulation[0] %}BMRB {% endif %}{{ simulation[0] }}</a>
+            </td>
+            {% endif %}
+            <td>
+                <a href="{{url_for('display_entry', entry_id=simulation[0], simulation=simulation[3])}}" target="_blank">{{ simulation[3].title() }}</a>
+            </td>
+            <td class="download">
+                <a class="fake_button" href="{{url_for('display_entry', entry_id=simulation[0], simulation=simulation[3], some_file='zip')}}">Download</a>
+            </td>
+            <td>{{ simulation[6] }}</td>
+            <td>{{ simulation[7] }}</td>
+            <td>{{ simulation[5]|join(", ") }}</td>
+        </tr>
+        {%- endfor -%}
+        {%- endfor -%}
+        {%- endfor -%}
+        </tbody>
+    </table>
+    {% else %}
+    <h3>No matching peaks found.</h3>
+    {% endif %}
+</div>
 {% endblock %}

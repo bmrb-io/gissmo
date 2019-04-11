@@ -1,314 +1,315 @@
 {% extends "base.html" %}
-    {% block head %}
-        <title>GISSMO - {{ name }}</title>
-        <!-- Plotly.js -->
-        <script src="https://cdn.plot.ly/plotly-1.39.0.min.js"></script>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+{% block head %}
+<title>GISSMO - {{ name }}</title>
+<!-- Plotly.js -->
+<script src="https://cdn.plot.ly/plotly-1.39.0.min.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
 
-        <style>
+{% endblock %}
 
-        /* Center the image in the td */
-        td img{
-            display: block;
-            margin-left: auto;
-            margin-right: auto;
-        }
+{% block links %}
 
-        /* Style the left column like the first row */
-        table.matrix tr td:first-child,
-        table.matrix th,
-        .fake_header {
-            font-size: 130%;
-            font-weight: bold;
-            background-color: #CBDBFF;
-        }
+{% if  sim_dirs|length > 1 %}
+<h3>Simulations:</h3>
+<p><a class="fake_button" href="{{url_for('display_summary', entry_id=entry_id)}}">Simulation overview</a></p>
+{% for sim in sim_dirs -%}
+<p><a class="fake_button" href="{{url_for('display_entry', entry_id=entry_id, simulation=sim)}}">{{ sim.title() }}</a>
+</p>
+{% endfor %}
+{% endif %}
 
-        .white {
-            background-color: white !important;
-        }
+<h3>Simulation: {{ simulation }}</h3>
 
-        /*
-        table.matrix {
-            overflow-x: auto;
-            border-collapse: collapse;
-        }
+{% if "bmse" in entry_id %}
+<p><a class="fake_button_sim" target="_blank"
+      href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}">
+    BMRB entry</a>
+</p>
+{% endif %}
 
-        td.matrix:not(:first-child) {
-            border: 2px solid white;
-        }*/
+{% if "bmse" in entry_id %}
+<p>
+    <a class="fake_button_sim" target="_blank"
+       href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/">ALATIS cross link</a>
+</p>
+{% endif %}
 
-        /* Allow displaying text in multiple columns */
-        .flex {
-            display: flex;                  /* establish flex container */
-            flex-direction: row;            /* default value; can be omitted */
-            flex-wrap: nowrap;              /* default value; can be omitted */
-            justify-content: space-between; /* switched from default (flex-start, see below) */
-        }
+<p><a class="fake_button_sim"
+      href="{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file='zip')}}">Download simulation
+    data</a></p>
+<p><a class="fake_button_sim"
+      href="{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file='spin_simulation.xml')}}"
+      target="_blank">View entry XML</a></p>
+<p><a class="fake_button_sim"
+      href="{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file=entry_id + '-' + simulation + '.str')}}"
+      target="_blank">Download entry NMR-STAR</a></p>
+<p><a class="fake_button_sim"
+      href="{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file=entry_id + '_' + simulation + '_nmredata.zip')}}"
+      target="_blank">Download entry NMReDATA</a></p>
+{% endblock %}
 
-        .container {
-            width: 100%;
-            margin: auto;
-            padding: 10px;
-        }
-        .shift_graph {
-            width: 80%;
-            height: 500px;
-            float: left;
-        }
-        .shift_list {
-            margin-left: 80%;
-            height: 500px;
-        }
-        .fake_link {
-             cursor:pointer;
-             color:blue;
-        }
-        .fake_link:hover {
-             text-decoration:none;
-             text-shadow: 1px 1px 1px #555;
-        }
+{% block body %}
 
-        </style>
-    {% endblock %}
+<div class="details_box">
+    <h1>{{ name }}</h1>
+    <h2>Simulation outputs:</h2>
 
-    {% block links %}
-
-    {% if  sim_dirs|length > 1 %}
-    <h3>Simulations:</h3>
-    <p><a class="fake_button" href="/entry/{{ entry_id }}">Simulation overview</a></p>
-    {% for sim in sim_dirs -%}
-    <p><a class="fake_button" href="/entry/{{ entry_id }}/{{ sim }}">{{ sim.title() }}</a></p>
-    {% endfor %}
-    {% endif %}
-
-    <h3>Simulation: {{ simulation }}</h3>
-    {% if "bmse" in entry_id %}<p><a class="fake_button_sim" href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ entry_id }}" target="_blank">BMRB entry</a></p>{% endif %}
-    {% if "bmse" in entry_id %}<p><a class="fake_button_sim" href="http://alatis.nmrfam.wisc.edu/examples/BMRB/{{ entry_id }}/" target="_blank">ALATIS cross link</a></p>{% endif %}
-    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/zip">Download simulation data</a></p>
-    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/spin_simulation.xml" target="_blank">View entry XML</a></p>
-    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/{{ entry_id }}-{{ simulation }}.str" target="_blank">Download entry NMR-STAR</a></p>
-    <p><a class="fake_button_sim" href="/entry/{{ entry_id }}/{{ simulation }}/{{ entry_id }}_{{ simulation }}_nmredata.zip" target="_blank">Download entry NMReDATA</a></p>
-    {% endblock %}
-
-    {% block body %}
-
-    <div class="details_box">
-        <h1>{{ name }}</h1>
-        <h2>Simulation outputs:</h2>
-
-        <table class="alternating left_align">
-            <tr>
-                <td rowspan="30" class="white"><img alt="{{ InChI }}" title="{{ InChI }}" src="/entry/{{ entry_id }}/{{ simulation }}/{{ path_2D_image }}" style="max-width:400px; max-height:auto;"></td>
-                <td class="fake_header">Parameter</td>
-                <td class="fake_header">Value</td>
-            </tr>
-            <tr>
-                <td>Field strength</td>
-                <td>{{ field_strength }}(MHz)</td>
-            </tr>
-            <tr>
-                <td>RMSD of the fit</td>
-                <td>{{ roi_rmsd }}</td>
-            </tr>
-            {% if temperature -%}
-            <tr>
-                <td>Temperature</td>
-                <td>{{ temperature }}</td>
-            </tr>
-            {% endif -%}
-            {% if ph -%}
-            <tr>
-                <td>pH</td>
-                <td>{{ ph }}</td>
-            </tr>
-            {% endif -%}
-            {% if InChI %}
-            <tr><td>InChI</td><td>{{ InChI }}</td></tr>
-            {% endif %}
-            {% if pka %}
-            {% if pka is string %}
-            <tr><td>pKa</td><td>{{ pka }}</td>
+    <table class="alternating left_align">
+        <tr>
+            <td rowspan="30" class="white">
+                <img alt="{{ InChI }}" title="{{ InChI }}" style="max-width:400px; max-height:auto;"
+                     src="{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file=path_2D_image)}}">
+            </td>
+            <td class="fake_header">Parameter</td>
+            <td class="fake_header">Value</td>
+        </tr>
+        <tr>
+            <td>Field strength</td>
+            <td>{{ field_strength }}(MHz)</td>
+        </tr>
+        <tr>
+            <td>RMSD of the fit</td>
+            <td>{{ roi_rmsd }}</td>
+        </tr>
+        {% if temperature -%}
+        <tr>
+            <td>Temperature</td>
+            <td>{{ temperature }}</td>
+        </tr>
+        {% endif -%}
+        {% if ph -%}
+        <tr>
+            <td>pH</td>
+            <td>{{ ph }}</td>
+        </tr>
+        {% endif -%}
+        {% if InChI %}
+        <tr>
+            <td>InChI</td>
+            <td>{{ InChI }}</td>
+        </tr>
+        {% endif %}
+        {% if pka %}
+        {% if pka is string %}
+        <tr>
+            <td>pKa</td>
+            <td>{{ pka }}</td>
             {% else %}
-            {% for one_pka in pka %}<tr><td>pKa</td><td>{{ one_pka }}</td>
+            {% for one_pka in pka %}
+        <tr>
+            <td>pKa</td>
+            <td>{{ one_pka }}</td>
             {% endfor %}
             {% endif %}
             {% endif %}
             {% if note %}
             {% for n in note %}
-            <tr><td>Note {{loop.index}}</td><td>{{ n }}</td></tr>
-            {% endfor %}
-            {% endif %}
-            {% if acc and acc|length > 0 %}
-            <tr style="background-color: transparent !important">
-                <td>Additional coupling constants</td>
-                <td>
-                    <table>
-                        <tr><td>Spin</td><td>Coupling constant</td></tr>
-                        {% for ac in acc %}
-                        <tr><td>{{ac.spin_index}}</td><td>{{ac.coupling}}</td></tr>
-                        {% endfor %}
-                    </table>
-                </td>
-            </tr>
-            {% endif %}
-        </table>
-        <h3>Sample description:</h3>
-        <table class="alternating left_align">
-            <thead>
-                <tr>
-                    <th>Compound</th>
-                    <th>Type</th>
-                    <th>Concentration</th>
-                </tr>
-            </thead>
-            {% for comp in sample %}
-            <tr>
-                <td>{{comp[0]}}</td>
-                <td>{{comp[2]}}</td>
-                <td>{{comp[3] + comp[4]}}</td>
-            </tr>
-            {% endfor %}
-        </table>
-        <a class="fake_button" onclick="$('#spin_matrix').toggle()" style="margin-top: 1em">Show/Hide Spin System Matrix</a>
-    </div>
-
-    <style>.nojsonly { display: none }</style>
-    <noscript><style>.nojsonly { display: block }</style></noscript>
-
-    <div id="spin_matrix" class="details_box nojsonly">
-        <h2>Spin System Matrix</h2>
-        <table class="alternating matrix">
-        {% for item in matrix %}{% set outer_loop = loop -%}
-        <tr>{% for subitem in item -%}
-            {% if outer_loop.first %}<th>{{ subitem }}</th>{% else %}<td>{% if subitem != 0 %}<strong>{{ subitem }}</strong>{% else %}{{ subitem }}{% endif %}</td>{% endif %}{% endfor %}</tr>
-        {% endfor -%}
-        </table>
-    </div>
-
-    <div class="details_box">
-        <h2>Spectra</h2>
-        <div>
-            <p>Select field strength to view simulated spectra and peak lists (standard and GSD):
-            <select id="fieldstrength" onchange="load_spectra()">
-                    <option value="default" selected="selected">Default</option>
-                {% for sim in simulated_fields -%}
-                     <option value="{{sim}}MHz">{{sim}} MHz</option>
-                {% endfor %}
-            </select>
-            <a class="fake_button" onclick="autoscale()">Autoscale</a>
-            </p>
-
-            <div class="tooltip">
-                <h3>Help</h3>
-                <span class="tooltiptext">To zoom into a region, draw a box around it.<br>
-                            Hover over the x/y-axis and use mouse-wheel to zoom in/out.<br>
-                            Hover over the x/y-axis hold down left-button to move around the spectra.<br>
-                            (De)activate a spectrum by clicking on its legend.<br></span>
-            </div>
-        </div>
-        <div class="container">
-            <div id="myDiv" class="shift_graph"><!-- Plotly chart will be drawn inside this DIV --></div>
-            <div id="content" class="shift_list" style="overflow: scroll">
-                <table class="alternating left_align">
-                    <thead>
-                        <tr>
-                            <th>PPM</th>
-                            <th>Amplitude</th>
-                            <th>Peak Type</th>
-                        </tr>
-                    </thead>
-                    {% for cs in shifts %}
-                    <tr class="shift {{cs[0]}}">
-                        <td class="fake_link" onclick="load_shift({{cs[1]}},{{cs[2]}})">{{ cs[1] }}</td>
-                        <td>{{ cs[2] }}</td>
-                        <td>{{ cs[3] }}</td>
+        <tr>
+            <td>Note {{loop.index}}</td>
+            <td>{{ n }}</td>
+        </tr>
+        {% endfor %}
+        {% endif %}
+        {% if acc and acc|length > 0 %}
+        <tr style="background-color: transparent !important">
+            <td>Additional coupling constants</td>
+            <td>
+                <table>
+                    <tr>
+                        <td>Spin</td>
+                        <td>Coupling constant</td>
+                    </tr>
+                    {% for ac in acc %}
+                    <tr>
+                        <td>{{ac.spin_index}}</td>
+                        <td>{{ac.coupling}}</td>
                     </tr>
                     {% endfor %}
                 </table>
+            </td>
+        </tr>
+        {% endif %}
+    </table>
+    <h3>Sample description:</h3>
+    <table class="alternating left_align">
+        <thead>
+        <tr>
+            <th>Compound</th>
+            <th>Type</th>
+            <th>Concentration</th>
+        </tr>
+        </thead>
+        {% for comp in sample %}
+        <tr>
+            <td>{{comp[0]}}</td>
+            <td>{{comp[2]}}</td>
+            <td>{{comp[3] + comp[4]}}</td>
+        </tr>
+        {% endfor %}
+    </table>
+    <a class="fake_button" onclick="$('#spin_matrix').toggle()" style="margin-top: 1em">Show/Hide Spin System Matrix</a>
+</div>
+
+<style>.nojsonly {
+    display: none
+}</style>
+<noscript>
+    <style>.nojsonly {
+        display: block
+    }</style>
+</noscript>
+
+<div id="spin_matrix" class="details_box nojsonly">
+    <h2>Spin System Matrix</h2>
+    <table class="alternating matrix">
+        {% for item in matrix %}{% set outer_loop = loop -%}
+        <tr>{% for subitem in item -%}
+            {% if outer_loop.first %}
+            <th>{{ subitem }}</th>
+            {% else %}
+            <td>
+                {% if subitem != 0 %}<strong>{{ subitem }}</strong>{% else %}{{ subitem }}{% endif %}
+            </td>
+            {% endif %}{% endfor %}
+        </tr>
+        {% endfor -%}
+    </table>
+</div>
+
+<div class="details_box">
+    <h2>Spectra</h2>
+    <div>
+        <p>Select field strength to view simulated spectra and peak lists (standard and GSD):
+            <label for="fieldstrength"></label>
+            <select id="fieldstrength" onchange="load_spectra()">
+                <option value="default" selected="selected">Default</option>
                 {% for sim in simulated_fields -%}
-                    <a class="fake_button {{sim}} shift" href="{{simulation}}/peaks/{{sim}}" onclick="window.open('{{simulation}}/peaks/{{sim}}','GSD_{{sim}}', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View GSD Peaks</a>
+                <option value="{{sim}}MHz">{{sim}} MHz</option>
                 {% endfor %}
-                    <a class="fake_button 0 shift" href="{{simulation}}/peaks/0" onclick="window.open('{{simulation}}/peaks/0','GSD_Default', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View GSD Peaks</a>
-            </div>
+            </select>
+            <a class="fake_button" onclick="autoscale()">Autoscale</a>
+        </p>
+
+        <div class="tooltip">
+            <h3>Help</h3>
+            <span class="tooltiptext">To zoom into a region, draw a box around it.<br>
+                            Hover over the x/y-axis and use mouse-wheel to zoom in/out.<br>
+                            Hover over the x/y-axis hold down left-button to move around the spectra.<br>
+                            (De)activate a spectrum by clicking on its legend.<br></span>
         </div>
     </div>
+    <div class="container">
+        <div id="myDiv" class="shift_graph"><!-- Plotly chart will be drawn inside this DIV --></div>
+        <div id="content" class="shift_list" style="overflow: scroll">
+            <table class="alternating left_align">
+                <thead>
+                <tr>
+                    <th>PPM</th>
+                    <th>Amplitude</th>
+                    <th>Peak Type</th>
+                </tr>
+                </thead>
+                {% for cs in shifts %}
+                <tr class="shift {{cs[0]}}">
+                    <td class="fake_link" onclick="load_shift({{cs[1]}},{{cs[2]}})">{{ cs[1] }}</td>
+                    <td>{{ cs[2] }}</td>
+                    <td>{{ cs[3] }}</td>
+                </tr>
+                {% endfor %}
+            </table>
+            {% for sim in simulated_fields -%}
+            <a class="fake_button {{sim}} shift"
+               href="{{url_for('display_peaks', entry_id=entry_id, simulation=sim, frequency=sim)}}"
+               onclick="window.open('{{url_for(\'display_peaks\', entry_id=entry_id, simulation=sim, frequency=sim)}}','GSD_{{sim}}', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View
+                GSD Peaks</a>
+            {% endfor %}
+            <a class="fake_button 0 shift"
+               href="{{url_for('display_peaks', entry_id=entry_id, simulation=sim, frequency=0)}}"
+               onclick="window.open('{{url_for(\'display_peaks\', entry_id=entry_id, simulation=sim, frequency=0)}}','GSD_Default', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View
+                GSD Peaks</a>
+        </div>
+    </div>
+</div>
 
-    <script type="text/javascript">
-        function my_plot(data1, data2, fs, xrange, yrange){
+<script type="text/javascript" src="{{url_for('static', filename='entry_template.js'}}">
+    let experiment_data;
 
-            var trace1 = {
-                x: data1[0],
-                y: data1[1],
-                name: 'Simulated ' + fs,
-                marker: {
-                    color: 'rgb(256, 0, 0)',
-                    size: 12
-                },
-                type: 'lines'
-            };
-            var trace2 = {
-                x: data2[0],
-                y: data2[1],
-                name: 'Experimental data',
-                marker: {
-                    color: 'rgb(0, 255, 0)',
-                    size: 12
-                },
-                type: 'lines'
-            };
+    function my_plot(data1, data2, fs, xrange, yrange) {
 
-            var data = [];
-            if (fs == "default"){
-                var data = [trace1, trace2];
-            } else {
-                var data = [trace1];
-            }
-
-            var layout = {
-                xaxis: {
-                    title: 'PPM',
-                    autorange: 'reversed',
-                    titlefont: {
-                        family: 'Arial, sans-serif',
-                        size: 18,
-                        color: 'black'
-                    }
-                },
-                yaxis: {
-                    fixedrange: false
-                },
-                showlegend: true
-            };
-
-            if (xrange){
-                layout.xaxis.range = xrange;
-                delete layout.xaxis.autorange;
-            }
-            if (yrange){
-                layout.yaxis.range = yrange;
-                delete layout.xaxis.autorange;
-            }
-
-            Plotly.newPlot('myDiv', data, layout, {scrollZoom: true});
+        const trace1 = {
+            x: data1[0],
+            y: data1[1],
+            name: 'Simulated ' + fs,
+            marker: {
+                color: 'rgb(256, 0, 0)',
+                size: 12
+            },
+            type: 'lines'
+        };
+        const trace2 = {
+            x: data2[0],
+            y: data2[1],
+            name: 'Experimental data',
+            marker: {
+                color: 'rgb(0, 255, 0)',
+                size: 12
+            },
+            type: 'lines'
         };
 
-        var getJSON = function(url, callback) {
-            var xhr = new XMLHttpRequest();
-            xhr.open('GET', url, true);
-            xhr.responseType = 'json';
-            xhr.onload = function() {
-              var status = xhr.status;
-              if (status === 200) {
+        let data = [];
+        if (fs === "default") {
+            data = [trace1, trace2];
+        } else {
+            data = [trace1];
+        }
+
+        const layout = {
+            xaxis: {
+                title: 'PPM',
+                autorange: 'reversed',
+                titlefont: {
+                    family: 'Arial, sans-serif',
+                    size: 18,
+                    color: 'black'
+                }
+            },
+            yaxis: {
+                fixedrange: false
+            },
+            showlegend: true
+        };
+
+        if (xrange) {
+            layout.xaxis.range = xrange;
+            delete layout.xaxis.autorange;
+        }
+        if (yrange) {
+            layout.yaxis.range = yrange;
+            delete layout.xaxis.autorange;
+        }
+
+        Plotly.newPlot('myDiv', data, layout, {scrollZoom: true});
+    }
+
+    const getJSON = function (url, callback) {
+        const xhr = new XMLHttpRequest();
+        xhr.open('GET', url, true);
+        xhr.responseType = 'json';
+        xhr.onload = function () {
+            const status = xhr.status;
+            if (status === 200) {
                 callback(null, xhr.response);
-              } else {
+            } else {
                 callback(status, xhr.response);
-              }
-            };
-            xhr.send();
+            }
         };
+        xhr.send();
+    };
 
-        // Default experiment data and initial load
-        getJSON("/entry/{{ entry_id }}/{{ simulation }}/experimental.json", function(err, data) {
+    // Default experiment data and initial load
+    getJSON("{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file='experimental.json')}}",
+        function (err, data) {
             if (err !== null) {
                 alert('Something went wrong: ' + err);
             } else {
@@ -317,68 +318,68 @@
             }
         });
 
-        function autoscale() {
-            Plotly.relayout(document.getElementById('myDiv'), {
-                'xaxis.autorange': true,
-                'yaxis.autorange': true
-            });
-        }
+    function autoscale() {
+        Plotly.relayout(document.getElementById('myDiv'), {
+            'xaxis.autorange': true,
+            'yaxis.autorange': true
+        });
+    }
 
-        function load_shift(ppm, amplitude) {
-            var update = {
-                xaxis: {range: [ppm + .1, ppm - .1]},
-                yaxis: {range: [0, amplitude * 1.3]},
-                annotations: [
+    function load_shift(ppm, amplitude) {
+        const update = {
+            xaxis: {range: [ppm + .1, ppm - .1]},
+            yaxis: {range: [0, amplitude * 1.3]},
+            annotations: [
                 {
-                  x: ppm,
-                  y: amplitude,
-                  xref: 'x',
-                  yref: 'y',
-                  text: 'Selected Peak',
-                  showarrow: true,
-                  arrowhead: 7,
-                  ax: 0,
-                  ay: -40
+                    x: ppm,
+                    y: amplitude,
+                    xref: 'x',
+                    yref: 'y',
+                    text: 'Selected Peak',
+                    showarrow: true,
+                    arrowhead: 7,
+                    ax: 0,
+                    ay: -40
                 }
-              ]
-            };
-            Plotly.relayout(document.getElementById('myDiv'), update);
-        }
+            ]
+        };
+        Plotly.relayout(document.getElementById('myDiv'), update);
+    }
 
-        function load_spectra(){
+    function load_spectra() {
 
-            var field_strength = $("#fieldstrength").val();
+        const field_strength = $("#fieldstrength").val();
 
-            getJSON("/entry/{{ entry_id }}/{{ simulation }}/sim_" + field_strength + ".json", function(err, data) {
+        getJSON("{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file='sim_' + field_strength + '.json')}}",
+            function (err, data) {
                 if (err !== null) {
                     alert('Something went wrong: ' + err);
                 } else {
-                    var plot = document.getElementById('myDiv');
+                    const plot = document.getElementById('myDiv');
                     if (plot.layout) {
                         my_plot(data, experiment_data, field_strength, plot.layout.xaxis.range, plot.layout.yaxis.range);
                     } else {
                         my_plot(data, experiment_data, field_strength);
-                    };
-
+                    }
                 }
             });
 
-            // Show the right shifts
-            var shifts = document.getElementsByClassName("shift");
-            var clean_fs;
-            if (field_strength === 'default'){
-                clean_fs = '0';
+        // Show the right shifts
+        const shifts = document.getElementsByClassName("shift");
+        let clean_fs;
+        if (field_strength === 'default') {
+            clean_fs = '0';
+        } else {
+            clean_fs = field_strength.slice(0, -3);
+        }
+        for (let i = 0; i < shifts.length; i++) {
+            if (shifts[i].classList.contains(clean_fs)) {
+                shifts[i].style.display = "";
             } else {
-                clean_fs = field_strength.slice(0, -3);
-            }
-            for (var i = 0; i < shifts.length; i++) {
-                if (shifts[i].classList.contains(clean_fs)){
-                    shifts[i].style.display = "";
-                } else {
-                    shifts[i].style.display = "none";
-                }
+                shifts[i].style.display = "none";
             }
         }
+    }
 
-    </script>
-    {% endblock %}
+</script>
+{% endblock %}

@@ -1,9 +1,5 @@
 {% extends "base.html" %}
 
-{% block head %}
-{{ super() }}
-{% endblock %}
-
 {% block body %}
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
 <script type="text/javascript" src="//ajax.googleapis.com/ajax/libs/jqueryui/1.10.1/jquery-ui.min.js"></script>
@@ -12,6 +8,7 @@
 <div class="details_box">
     <form action="{{url_for('display_list')}}" method="get" class="same-line-form">
         <b>Search by name or InChI:</b>
+        <label for="search"></label>
         <input type="text" id="search" name="term" title="Search" value="{{term}}">
         <button type="submit">Search</button>
     </form>
@@ -72,16 +69,15 @@
 <script>
 // Use this to highlight the query words in a given text
 function highlight_words(words, text){
-    regex = new RegExp("(" + words.join("|") + ")", "ig");
+    const regex = new RegExp("(" + words.join("|") + ")", "ig");
     return text.replace(regex, '<strong>$1</strong>');
 }
 
 // These two are for the instant search - at top of page. Do not remove!
 function add_color_span_instant(ul, item) {
 
-    var terms = document.getElementById('search').value.split(/[ ,]+/);
-    console.log(terms, item);
-    var display = highlight_words(terms, item.name);
+    const terms = document.getElementById('search').value.split(/[ ,]+/);
+    const display = highlight_words(terms, item.name);
 
     return $("<li></li>")
         .data("item.autocomplete", item)

@@ -5,10 +5,6 @@ from __future__ import print_function
 import os
 import re
 
-try:
-    import simplejson as json
-except ImportError:
-    import json
 import xml.etree.cElementTree as ElementTree
 
 import time
@@ -17,9 +13,10 @@ from io import BytesIO
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 # Local virtualenv imports
-import pynmrstar
 import requests
 import psycopg2
+import pynmrstar
+import simplejson as json
 from psycopg2.extras import DictCursor, execute_values
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file, url_for, jsonify
 
@@ -62,7 +59,7 @@ def get_title(entry_id):
     return title[entry_id]['_Assembly.Name'][0].title()
 
 
-def get_postgres_connection(user='web', database='webservers', host='pinzgau.nmrfam.wisc.edu',
+def get_postgres_connection(user='web', database='webservers', host='localhost',
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
@@ -248,6 +245,7 @@ def name_search():
         results = []
     return jsonify(results)
 
+
 @application.route('/library')
 def display_list():
     """ Display the list of possible entries. """
@@ -393,12 +391,6 @@ def mol_svn_converter_page():
     """ Render the mol -> svn conversion page."""
 
     return render_template('convert_mol_svg.html')
-
-
-@application.route('/js/<fname>')
-def js(fname):
-    """ Send the JS"""
-    return send_from_directory("javascript", fname)
 
 
 @application.route("/mixture")

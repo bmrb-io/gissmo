@@ -1,44 +1,61 @@
 {% extends "base.html" %}
-    {% block head %}
-        <title>Mixture Spectra Simulation</title>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-        <link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
-        <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
-        <script src="/js/jquery.csv.min.js"></script>
-        <script src="/js/jquery.serialize-object.min.js"></script>
-        <script>{{entry_list|safe}}</script>
-        <script src="/js/mixture.js" defer></script>
-        <script src="https://cdn.plot.ly/plotly-1.39.0.min.js"></script>
-    {% endblock %}
+{% block head %}
+<title>Mixture Spectra Simulation</title>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<link rel="stylesheet" href="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/themes/smoothness/jquery-ui.css">
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<script src="{{url_for('static', filename='jquery.csv.min.js')}}"></script>
+<script src="{{url_for('static', filename='jquery.serialize-object.min.js')}}"></script>
+<script>{{entry_list|safe}}</script>
+<script src="{{url_for('static', filename='mixture.js')}}" defer></script>
+<script src="https://cdn.plot.ly/plotly-1.39.0.min.js"></script>
 
-    {% block body %}
-    <div class="details_box">
-        <h1>Mixture Spectra Simulation</h1>
+<style>
+    input[type="range"] {
+        width: 500px;
+    }
+</style>
+{% endblock %}
 
-        <noscript><h2>This page requires JavaScript.</h2><style>.jsonly { display: none }</style></noscript>
-        <div class="jsonly">
-            <P>Load a compound list from a CSV file (<a href="/static/compound.csv">example file</a>): <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()" accept="text/csv">
-                <button id="reprocess" style="display:none" onclick="openFile()">Reprocess File</button>
-                <button onclick="clearCompounds(); return false;">Clear Compounds</button>
-            </p>
-            <div id="message" style="color: red"></div>
+{% block body %}
+<div class="details_box">
+    <h1>Mixture Spectra Simulation</h1>
 
-            <form method="post" action="" id="upload" enctype="multipart/form-data">
+    <noscript>
+        <h2>This page requires JavaScript.</h2>
+        <style>.jsonly {display: none}</style>
+    </noscript>
+    <div class="jsonly">
+        <P>Load a compound list from a CSV file (<a href="/static/compound.csv">example file</a>):
+            <input type="file" name="experiment_file" id="experiment_file" onchange="openFile()" accept="text/csv">
+            <button id="reprocess" style="display:none" onclick="openFile()">Reprocess File</button>
+            <button onclick="clearCompounds(); return false;">Clear Compounds</button>
+        </p>
+        <div id="message" style="color: red"></div>
+
+        <form method="post" action="" id="upload" enctype="multipart/form-data">
             <table class="alternating">
                 <thead>
-                    <tr>
-                        <th></th>
-                        <th>Compound Name</th>
-                        <th>Compound ID</th>
-                        <th>Compound Concentration</th>
-                    </tr>
+                <tr>
+                    <th></th>
+                    <th>Compound Name</th>
+                    <th>Compound ID</th>
+                    <th>Compound Concentration</th>
+                </tr>
                 </thead>
                 <tbody>
-                    <tr id="compound_anchor"></tr>
+                <tr id="compound_anchor"></tr>
                 </tbody>
             </table>
-            <p>Add compound: <input type="text" id="compound_search"></p>
-            <p>Upload your spectra as a CSV or TSV to render it alongside the simulated spectra (<a href="/static/exp_spectrum.csv">example file</a>): <input type="file" name="spectra_file" id="spectra_file" onchange="openSpectraFile()" accept="text/csv"></p>
+            <p>Add compound:
+                <label for="compound_search"></label>
+                <input type="text" id="compound_search">
+            </p>
+            <p>Upload your spectra as a CSV or TSV to render it alongside the simulated spectra
+                (<a href="/static/exp_spectrum.csv">example file</a>):
+                <input type="file" name="spectra_file" id="spectra_file" onchange="openSpectraFile()" accept="text/csv">
+            </p>
+            <label for="fieldstrength"></label>
             <select name="fieldstrength" id="fieldstrength">
                 <option value="40">40 MHz</option>
                 <option value="100">100 MHz</option>
@@ -53,7 +70,7 @@
                 <option value="900">900 MHz</option>
                 <option value="950">950 MHz</option>
                 <option value="1000">1000 MHz</option>
-		<option value="1100">1100 MHz</option>
+                <option value="1100">1100 MHz</option>
                 <option value="1300">1300 MHz</option>
             </select>
             <input type="submit" value="Generate Spectra">
@@ -64,13 +81,12 @@
 </div>
 
 <div class="details_box">
-    <style>
-        input[type="range"] {
-          width:500px;
-        }
-    </style>
-    <div id="slidercontainer" style="display: none">Adjust scaling to match uploaded spectra: <input type="range" min=".1" max="2" value="1" step=".01" class="slider" id="slider" onchange="reGraph()"><span id="scale_factor"></span></div>
+    <div id="slidercontainer" style="display: none">Adjust scaling to match uploaded spectra:
+        <label for="slider"></label>
+        <input type="range" min=".1" max="2" value="1" step=".01" class="slider" id="slider" onchange="reGraph()">
+        <span id="scale_factor"></span>
+    </div>
     <div id="myDiv" class="shift_graph"></div>
 </div>
 
-    {% endblock %}
+{% endblock %}

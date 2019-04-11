@@ -1,38 +1,45 @@
 {% extends "base.html" %}
-    {% block head %}
-        <title>GISSMO Tutorials</title>
-    {% endblock %}
+{% block head %}
+<title>GISSMO Tutorials</title>
+{% endblock %}
 
-    {% block links %}
-    {% endblock %}
+{% block links %}
+{% endblock %}
 
-    {% block body %}
+{% block body %}
 
-    <div class="details_box" align="left">
-        <h2>GISSMO Tutorials</h2>
-	<p>
-		<h3>GISSMO-GUI v 2.0</h3>
-		<p>
-			<ul>
-				<li>Simple functions <a href="/static/GISSMO_v2_1_first.pdf" download>Download</a></li>
-				<li>Ambiguous assignments <a href="/static/GISSMO_v2_2_ambiguous.pdf" download>Download</a></li>
-				<li>Additional coupling <a href="/static/GISSMO_v2_3_additional_couplings.pdf" download>Download</a></li>
-				<li>Split spin matrix <a href="/static/GISSMO_v2_4_split.pdf" download>Download</a></li>
-				<li>Additional coupling II <a href="/static/GISSMO_v2_5_additional_couplings_2.pdf" download>Download</a></li>
-				<li>Additional coupling III <a href="/static/GISSMO_v2_5_2_additional_couplings_3.pdf" download>Download</a></li>
-				<li>Strong coupling <a href="/static/GISSMO_v2_6_strong_coupling.pdf" download>Download</a></li>
-			</ul>
-		</p>
-	
-		<hr>
-        	<h3>GISSMO-GUI v 1.0</h3>
-		<p>
-			<ul>
-				<li><a href="/static/GISSMO_Tutorial.pdf" download>Download tutorial</a></li>
-			</ul>
-		</p>
-	</p>
-    </div>
+<div class="details_box" align="left">
+    <h2>GISSMO Tutorials</h2>
+    <h3>GISSMO-GUI v 2.0</h3>
+    <ul>
+        <li>Simple functions
+            <a href="{{url_for('static', filename='GISSMO_v2_1_first.pdf')}}" download>Download</a>
+        </li>
+        <li>Ambiguous assignments
+            <a href="{{url_for('static', filename='GISSMO_v2_2_ambiguous.pdf')}}" download>Download</a>
+        </li>
+        <li>Additional coupling
+            <a href="{{url_for('static', filename='GISSMO_v2_3_additional_couplings.pdf')}}" download>Download</a>
+        </li>
+        <li>Split spin matrix
+            <a href="{{url_for('static', filename='GISSMO_v2_4_split.pdf')}}" download>Download</a>
+        </li>
+        <li>Additional coupling II
+            <a href="{{url_for('static', filename='GISSMO_v2_5_additional_couplings_2.pdf')}}" download>Download</a>
+        </li>
+        <li>Additional coupling III
+            <a href="{{url_for('static', filename='GISSMO_v2_5_2_additional_couplings_3.pdf')}}" download>Download</a>
+        </li>
+        <li>Strong coupling
+            <a href="{{url_for('static', filename='GISSMO_v2_6_strong_coupling.pdf')}}" download>Download</a>
+        </li>
+    </ul>
 
+    <hr>
+    <h3>GISSMO-GUI v 1.0</h3>
+    <ul>
+        <li><a href="{{url_for('static', filename='GISSMO_Tutorial.pdf')}}" download>Download tutorial</a></li>
+    </ul>
+</div>
 
-    {% endblock %}
+{% endblock %}

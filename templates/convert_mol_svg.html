@@ -2,17 +2,21 @@
 
 {% block body %}
 <div class="details_box" style="text-align: left">
-<form action="/php/upload.php" method="post" enctype="multipart/form-data">
-Converting a 3D structure file (MOL) to a 2D svg/jpg file.<br>
-These svg files are to be used in the <a href="http://gissmo.nmrfam.wisc.edu/">GISSMO</a> software package.<br><br>
-<b>Please note:</b> The scripts for geneating the svg figure use the academic version of <a href="https://www.chemaxon.com/">ChemAxon</a> software package, meaning this web-server is only for <b>non-commercial research or educational purposes</b>. 
-When you use our figures, in addition to citing our paper, please acknowledge ChemAxon by including:<i>"Marvin was used for drawing, displaying and characterizing chemical structures, substructures and reactions, Marvin 16.7.11, 2016, ChemAxon (http://www.chemaxon.com)".</i><br>
-Marvin acknowledgement was extracted from <a href="https://www.chemaxon.com/forum/ftopic977.html">here</a> on March 2017.<br><br><br><br>
+    <form action="/php/upload.php" method="post" enctype="multipart/form-data">
+        Converting a 3D structure file (MOL) to a 2D svg/jpg file.<br>
+        These svg files are to be used in the <a href="http://gissmo.nmrfam.wisc.edu/">GISSMO</a> software package.<br><br>
+        <b>Please note:</b> The scripts for generating the svg figure use the academic version of <a
+            href="https://www.chemaxon.com/">ChemAxon</a> software package, meaning this web-server is only for <b>non-commercial
+        research or educational purposes</b>.
+        When you use our figures, in addition to citing our paper, please acknowledge ChemAxon by including:<i>"Marvin
+        was used for drawing, displaying and characterizing chemical structures, substructures and reactions, Marvin
+        16.7.11, 2016, ChemAxon (http://www.chemaxon.com)".</i><br>
+        Marvin acknowledgement was extracted from <a href="https://www.chemaxon.com/forum/ftopic977.html">here</a> on
+        March 2017.<br><br><br><br>
 
- 
-<label>Select a 3D structure file:</label><br><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="file" name="infile" id="infile"/><br>
-&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="Submit" style="height:50px; width:250px"><br><br>
-</form>
-    </div>
+        <label>Select a 3D structure file:</label><br><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="file" name="infile" id="infile"/><br>
+        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<input type="submit" value="Submit" style="height:50px; width:250px"><br><br>
+    </form>
+</div>
 {% endblock %}

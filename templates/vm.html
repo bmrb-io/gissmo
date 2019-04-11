@@ -1,51 +1,40 @@
 {% extends "base.html" %}
-    {% block head %}
-        <title>GISSMO VM Download</title>
-    {% endblock %}
+{% block head %}
+<title>GISSMO VM Download</title>
+{% endblock %}
 
-    {% block links %}
-    {% endblock %}
+{% block links %}
+{% endblock %}
 
-    {% block body %}
+{% block body %}
 
-    <div class="details_box" align="left">
-        <h2>GISSMO-desktop GUI virtual machine</h2>
-        	<p>The VM contains the GISSMO software package and our database of small molecules</p>
-            <p>Note that this is a 64-bit virtual machine. It may require enabling virtulation in your computer's BIOS.</p>
-            <ol>
-                   <li> GISSMO v2.</li>
-                    <p>
-                        <p>Release data: Aug 22, 2018</p>
-                        <p><a class="fake_button" href="static/vm/NMRFAM_GISSMO_v2.ova">Download</a></p>
-                        <p><b>File size</b>: 9.0 GB</p>
-                        <p><b>MD5</b>: ae25473ad2e0e90d88400061bd08645b</p>
-                    </p>
-                   <li> GISSMO v1.</li>
-                    <p>
-                        <p>Release data: September 19, 2017</p>
-                        <p><a class="fake_button" href="static/vm/NMRFAM_GISSMO.ova">Download</a></p>
-                        <p><b>File size</b>: 6.6 GB</p>
-                        <p><b>MD5</b>: 40b60c10a896aa935dda71e5bd1e7faf</p>
-                    </p>
-            </ol>
+<div class="details_box" align="left">
+    <h2>GISSMO-desktop GUI virtual machine</h2>
+    <p>The VM contains the GISSMO software package and our database of small molecules</p>
+    <p>Note that this is a 64-bit virtual machine. It may require enabling virtulation in your computer's BIOS.</p>
+    <ol>
+        <li> GISSMO v2.</li>
+        <p>Release data: Aug 22, 2018</p>
+        <p><a class="fake_button" href="{{url_for('static', filename='vm/NMRFAM_GISSMO_v2.ova')}}">Download</a></p>
+        <p><b>File size</b>: 9.0 GB</p>
+        <p><b>MD5</b>: ae25473ad2e0e90d88400061bd08645b</p>
+        <li> GISSMO v1.</li>
+        <p>Release data: September 19, 2017</p>
+        <p><a class="fake_button" href="{{url_for('static', filename='vm/NMRFAM_GISSMO.ova')}}">Download</a></p>
+        <p><b>File size</b>: 6.6 GB</p>
+        <p><b>MD5</b>: 40b60c10a896aa935dda71e5bd1e7faf</p>
+    </ol>
 
-	    <hr>
-        <h2>GISSMO-desktop GUI standalone</h2>
-	        <ol>
-                <li> GISSMO v1.</li>
-                        <p>
-                    		<ul>
-                                <li><b>OS: Windows</b></li>
-                                <p>
-                                    <p>Release data: May 10, 2018</p>
-                                    <p><a class="fake_button" href="static/vm/GISSMO_windows.zip">Download</a></p>
-                                    <p><b>File size</b>: 8.6 MB</p>
-                                    <p><b>Note:</b> You need to install <a href="https://www.mathworks.com/products/compiler/matlab-runtime.html" target="_blank">MATLAB runtime library (2016a)</a> to run this binary file.</p>
-                                </p>
-                            </ul>
-                        </p>
-
-
-    	    </ol>
-    </div>
-    {% endblock %}
+    <hr>
+    <h2>GISSMO-desktop GUI standalone</h2>
+    <ol>
+        <li> GISSMO v1 - <b>OS: Windows</b></li>
+        <p>Release data: May 10, 2018</p>
+        <p><a class="fake_button" href="{{url_for('static', filename='vm/GISSMO_windows.zip')}}">Download</a></p>
+        <p><b>File size</b>: 8.6 MB</p>
+        <p><b>Note:</b> You need to install
+            <a href="https://www.mathworks.com/products/compiler/matlab-runtime.html" target="_blank">
+                MATLAB runtime library (2016a)</a> to run this binary file.</p>
+    </ol>
+</div>
+{% endblock %}
