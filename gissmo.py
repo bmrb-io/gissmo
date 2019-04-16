@@ -59,7 +59,7 @@ def get_title(entry_id):
     return title[entry_id]['_Assembly.Name'][0].title()
 
 
-def get_postgres_connection(user='web', database='webservers', host='localhost',
+def get_postgres_connection(user='web', database='webservers', host='pinzgau',
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
