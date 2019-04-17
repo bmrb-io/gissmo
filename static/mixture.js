@@ -286,17 +286,13 @@ function getTrace(data, name, coefficient, index = 0, records = 1) {
     let lowestColor = 150;
     let highestColor = 255;
     let val = ((index + 1)/records) * (highestColor - lowestColor) + lowestColor;
-    let color = 'rgba(50,50,' + val + ', .4)'
-    console.log(color);
-
-    // 'rgb(139, 69, 19)'
 
     return {
         x: localData[0],
         y: localData[1],
         name: name,
         marker: {
-            color: color,
+            color: 'rgba(50,50,' + val + ', .4)',
             size: 12
         },
         mode: 'lines'
