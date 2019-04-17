@@ -68,7 +68,7 @@ def get_postgres_connection(user='web', database='webservers', host='pinzgau',
     else:
         conn = psycopg2.connect(user=user, database=database, host=host)
     cur = conn.cursor()
-    cur.execute("SET search_path TO gissmo")
+    cur.execute("SET search_path TO gissmo, public")
 
     return conn, cur
 
@@ -195,9 +195,8 @@ def get_entry_list(term=None):
 
     if term:
         cur.execute('''
-SELECT * FROM entries
-  WHERE name ~ %s OR inchi = %s OR inchi = %s
-  ORDER BY id, simulation_ID''', [term, term, 'InChI=' + term])
+SELECT * FROM gissmo.entries
+  WHERE lower(%s) %% lower(name) OR inchi = %s OR inchi = %s''', [term, term, 'InChI=' + term])
     else:
         cur.execute("SELECT * FROM entries ORDER BY id, simulation_ID")
 
@@ -236,8 +235,11 @@ def name_search():
     term = request.args.get('term', "")
     if term:
         cur = get_postgres_connection()[1]
-        sql = 'SELECT id, name FROM entries WHERE LOWER(name) % LOWER(%s) OR inchi = %s OR inchi = %s'
-        cur.execute(sql, [term, term, 'InChI=' + term])
+        sql = '''
+SELECT id, name FROM gissmo.entries
+  WHERE lower(%s) %% lower(name) OR inchi = %s OR inchi = %s
+  ORDER BY similarity(lower(name), lower(%s)) DESC'''
+        cur.execute(sql, [term, term, 'InChI=' + term, term])
         results = []
         for item in cur:
             results.append({'id': item[0], 'name': item[1]})
