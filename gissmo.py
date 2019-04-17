@@ -152,7 +152,7 @@ CREATE TABLE entries_tmp (
                    page_size=1000)
     cur.execute("""
 CREATE INDEX ON entries_tmp (id);
-CREATE INDEX ON entries using gin(name gin_trgm_ops);
+CREATE INDEX ON entries using gin(lower(name) gin_trgm_ops);
 
 -- Move the new table into place
 ALTER TABLE IF EXISTS entries RENAME TO entries_old;
@@ -236,7 +236,7 @@ def name_search():
     term = request.args.get('term', "")
     if term:
         cur = get_postgres_connection()[1]
-        sql = 'SELECT id, name from entries where name ~ %s or inchi = %s or inchi = %s'
+        sql = 'SELECT id, name FROM entries WHERE LOWER(name) % LOWER(%s) OR inchi = %s OR inchi = %s'
         cur.execute(sql, [term, term, 'InChI=' + term])
         results = []
         for item in cur:
