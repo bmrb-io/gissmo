@@ -219,19 +219,19 @@
             </table>
             {% for sim in simulated_fields -%}
             <a class="fake_button {{sim}} shift"
-               href="{{url_for('display_peaks', entry_id=entry_id, simulation=sim, frequency=sim)}}"
-               onclick="window.open('{{url_for('display_peaks', entry_id=entry_id, simulation=sim, frequency=sim)}}','GSD_{{sim}}', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View
+               href="{{url_for('display_peaks', entry_id=entry_id, simulation=simulation, frequency=sim)}}"
+               onclick="window.open('{{url_for('display_peaks', entry_id=entry_id, simulation=simulation, frequency=sim)}}','GSD_{{sim}}', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View
                 GSD Peaks</a>
             {% endfor %}
             <a class="fake_button 0 shift"
-               href="{{url_for('display_peaks', entry_id=entry_id, simulation=sim, frequency=0)}}"
-               onclick="window.open('{{url_for('display_peaks', entry_id=entry_id, simulation=sim, frequency=0)}}','GSD_Default', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View
+               href="{{url_for('display_peaks', entry_id=entry_id, simulation=simulation, frequency=0)}}"
+               onclick="window.open('{{url_for('display_peaks', entry_id=entry_id, simulation=simulation, frequency=0)}}','GSD_Default', 'toolbar=no, location=no, status=no, menubar=no, scrollbars=yes, resizable=yes, width=400px, height=600px'); return false;">View
                 GSD Peaks</a>
         </div>
     </div>
 </div>
 
-<script type="text/javascript" src="{{url_for('static', filename='entry_template.js')}}">
+<script type="text/javascript">
     let experiment_data;
 
     function my_plot(data1, data2, fs, xrange, yrange) {
@@ -350,7 +350,7 @@
 
         const field_strength = $("#fieldstrength").val();
 
-        getJSON("{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file='sim_' + field_strength + '.json')}}",
+        getJSON("{{url_for('display_entry', entry_id=entry_id, simulation=simulation)}}" + "/sim_" + field_strength + ".json",
             function (err, data) {
                 if (err !== null) {
                     alert('Something went wrong: ' + err);
