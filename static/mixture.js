@@ -105,6 +105,9 @@ function reGraph() {
     let mixture_spectra;
     if (typeof mixture !== 'undefined') {
         for (let i = 0; i < mixture.length; i++) {
+            if (!mixture[i]['inchi']) {
+                continue;
+            }
             let concentration = parseFloat(mixture[i]['concentration']);
             if (concentration === undefined) {
                 concentration = 0;
@@ -173,7 +176,7 @@ function getDifferenceTrace(userTrace, mixtureTrace) {
         y: sum,
         name: 'Difference',
         marker: {
-            color: 'rgba(255, 0, 0, .6)',
+            color: 'rgba(255, 0, 0, .65)',
             size: 12
         },
         mode: 'lines',
@@ -292,7 +295,7 @@ function getTrace(data, name, coefficient, index = 0, records = 1) {
         y: localData[1],
         name: name,
         marker: {
-            color: 'rgba(50,50,' + val + ', .4)',
+            color: 'rgba(50,50,' + val + ', .5)',
             size: 12
         },
         mode: 'lines'
@@ -345,11 +348,16 @@ function addLoadedCompound(compound_name, concentration) {
                 }
             }
 
+            const option = $("<option>").text('No matching compound');
+            sel.append(option);
+
             sel.change(item => {
                 const id = $("option:selected", item.target).data('compound_id');
                 compound_id.val(id);
                 inchi.val($("option:selected", item.target).data('inchi_string'));
-                bindData(id);
+                if (id) {
+                    bindData(id);
+                }
             });
             sel_td.append(sel);
             sel_td.append(inchi);
