@@ -125,7 +125,7 @@ function reGraph() {
             const concentration_coefficient = concentrations[i] / concentrations[ref_id];
             const comp = mixture[i];
             data.push(getTrace(retrieveData(comp['id']), comp['compound'],
-                concentration_coefficient * userSpectraScale));
+                concentration_coefficient * userSpectraScale, i, concentrations.length));
         }
 
         // Calculate the mixture
@@ -173,10 +173,11 @@ function getDifferenceTrace(userTrace, mixtureTrace) {
         y: sum,
         name: 'Difference',
         marker: {
-            color: 'rgb(255, 0, 0)',
+            color: 'rgba(255, 0, 0, .6)',
             size: 12
         },
-        mode: 'lines'
+        mode: 'lines',
+        visible: 'legendonly'
     };
 }
 
@@ -264,18 +265,15 @@ function getMixtureTrace(traces, resolution) {
         y: sum,
         name: 'Mixture',
         marker: {
-            color: 'rgb(0, 139, 139)',
+            color: 'rgba(0, 0, 0, .8)',
             size: 12
         },
         mode: 'lines',
-        line: {
-            dash: 'dot'
-        }
     };
 }
 
 // add a spectra to the plot. First scale the spectra by the coefficient.
-function getTrace(data, name, coefficient) {
+function getTrace(data, name, coefficient, index = 0, records = 1) {
 
     const localData = [[], []];
 
@@ -285,12 +283,20 @@ function getTrace(data, name, coefficient) {
         localData[0][i] = data[0][i];
     }
 
+    let lowestColor = 150;
+    let highestColor = 255;
+    let val = ((index + 1)/records) * (highestColor - lowestColor) + lowestColor;
+    let color = 'rgba(50,50,' + val + ', .4)'
+    console.log(color);
+
+    // 'rgb(139, 69, 19)'
+
     return {
         x: localData[0],
         y: localData[1],
         name: name,
         marker: {
-            color: 'rgb(139, 69, 19)',
+            color: color,
             size: 12
         },
         mode: 'lines'
@@ -481,7 +487,7 @@ function loadSpectraCSV(csvArray) {
             y: tmpSpectra[1],
             name: 'Uploaded Spectra',
             marker: {
-                color: 'rgb(0, 0, 255)',
+                color: 'rgba(0, 150, 0, .8)',
                 size: 12
             },
             type: 'lines'
