@@ -399,7 +399,7 @@ def get_mixture():
 
     # Get the list of valid entries
     entry_list = [x[0][0] for x in get_entry_list()]
-    entry_list = "var valid_entries = " + json.dumps(entry_list) + ";"
+    entry_list = "let valid_entries = " + json.dumps(entry_list) + ";"
 
     # Send them the page to enter a mixture
     return render_template("mixture.html", entry_list=entry_list)

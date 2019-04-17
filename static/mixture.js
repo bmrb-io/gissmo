@@ -66,12 +66,12 @@ function reGraph() {
                     Plotly.restyle(gd, 'visible', 'legendonly');
 
                     const turn_on = [];
-                    ['Mixture', 'Uploaded Spectra', 'Difference'].forEach(element => {
+                    for (const element of ['Mixture', 'Uploaded Spectra', 'Difference']){
                         const tmp_index = get_plot_index_by_name(element);
                         if (tmp_index !== null) {
                             turn_on.push(tmp_index)
                         }
-                    });
+                    };
                     Plotly.restyle(gd, {'visible': true}, turn_on);
                 },
                 icon: toggle_off_icon
@@ -329,23 +329,24 @@ function addLoadedCompound(compound_name, concentration) {
             let first = true;
             const sel = $("<select name='mixture[][compound]'>");
             let id = 0;
-            $(compound_list).each(() => {
-                if (valid_entries.indexOf(this.value) >= 0) {
+            for (const comp of compound_list) {
+                if (valid_entries.indexOf(comp.value) >= 0) {
                     if (first) {
-                        compound_id.val(this.value);
-                        inchi.val(this.inchi);
+                        compound_id.val(comp.value);
+                        inchi.val(comp.inchi);
                         first = false;
-                        id = this.value;
+                        id = comp.value;
                     }
-                    const option = $("<option>").attr('value', this.label).text(this.label + ' (' + this.value + ')').data('compound_id', this.value).data('inchi_string', this.inchi);
+                    const option = $("<option>").attr('value', comp.label).text(comp.label + ' (' + comp.value + ')').data('compound_id', comp.value).data('inchi_string', comp.inchi);
                     one_valid = true;
                     sel.append(option);
                 }
-            });
-            sel.change(() => {
-                const id = $("option:selected", this).data('compound_id');
+            }
+
+            sel.change(item => {
+                const id = $("option:selected", item.target).data('compound_id');
                 compound_id.val(id);
-                inchi.val($("option:selected", this).data('inchi_string'));
+                inchi.val($("option:selected", item.target).data('inchi_string'));
                 bindData(id);
             });
             sel_td.append(sel);
@@ -354,7 +355,7 @@ function addLoadedCompound(compound_name, concentration) {
             // Insert error on no match
             if ((compound_list.length === 0) || (!one_valid)) {
                 const control_nomatch = $("<tr></tr>").addClass('compound').insertBefore("#compound_anchor");
-                control_nomatch.append($('<td><input type="button" value="Delete"></td>').bind('click', {row: control_nomatch}, function (event) {
+                control_nomatch.append($('<td><input type="button" value="Delete"></td>').bind('click', {row: control_nomatch}, event => {
                     event.data.row.remove();
                 }));
                 control_nomatch.append($("<td>" + compound_name + "</td>").addClass('left_align'));
@@ -514,7 +515,7 @@ $("#compound_search").autocomplete({
             function (response_original) {
                 const response = [];
                 for (i = 0; i < response_original.length; i++) {
-                    if (valid_entries.indexOf(response_original[i].value) >= 0) {
+                    if (window.valid_entries.indexOf(response_original[i].value) >= 0) {
                         response.push(response_original[i]);
                     }
                 }
