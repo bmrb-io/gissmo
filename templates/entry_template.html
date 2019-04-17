@@ -34,6 +34,11 @@
 </p>
 {% endif %}
 
+<p>
+     <a class="fake_button_sim" target="_blank"
+       href="http://gateway.nmrfam.wisc.edu/inchi/{{ InChI | urlencode }}">Gateway cross link</a>
+</p>
+
 <p><a class="fake_button_sim"
       href="{{url_for('display_entry', entry_id=entry_id, simulation=simulation, some_file='zip')}}">Download simulation
     data</a></p>

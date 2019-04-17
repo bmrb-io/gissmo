@@ -8,8 +8,10 @@ import re
 import xml.etree.cElementTree as ElementTree
 
 import time
+import urllib
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
+from markupsafe import Markup
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 # Local virtualenv imports
@@ -25,6 +27,14 @@ application = Flask(__name__)
 aux_info_path = "/websites/gissmo/DB/aux_info/"
 entry_path = "/websites/gissmo/DB/"
 
+
+@application.template_filter('urlencode')
+def urlencode_filter(s):
+    if type(s) == 'Markup':
+        s = s.unescape()
+    s = s.encode('utf8')
+    s = urllib.quote_plus(s)
+    return Markup(s)
 
 # Helper methods
 def get_tag_value(root, tag, all_=False):
