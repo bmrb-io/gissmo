@@ -195,6 +195,7 @@ def get_entry_list(term=None):
 
     if term:
         cur.execute('''
+SELECT set_limit(.75);
 SELECT * FROM gissmo.entries
   WHERE lower(%s) %% lower(name) OR inchi = %s OR inchi = %s''', [term, term, 'InChI=' + term])
     else:
@@ -236,6 +237,7 @@ def name_search():
     if term:
         cur = get_postgres_connection()[1]
         sql = '''
+SELECT set_limit(.6);
 SELECT id, name FROM gissmo.entries
   WHERE lower(%s) %% lower(name) OR inchi = %s OR inchi = %s
   ORDER BY similarity(lower(name), lower(%s)) DESC'''
