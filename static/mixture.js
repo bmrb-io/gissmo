@@ -525,7 +525,7 @@ $("#compound_search").autocomplete({
             function (response_original) {
                 const response = [];
                 for (i = 0; i < response_original.length; i++) {
-                    if (window.valid_entries.indexOf(response_original[i].value) >= 0) {
+                    if (valid_entries.indexOf(response_original[i].value) >= 0) {
                         response.push(response_original[i]);
                     }
                 }
