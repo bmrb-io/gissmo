@@ -59,7 +59,7 @@
     </form>
 
     <script>
-        $("#submit").click(function () {
+        $("#submit").click(() => {
 
             // Clean up the shifts
             let shifts = $('#rs').val().split(/[ \t,\n\r;]+/);
@@ -149,7 +149,7 @@
             }
 
             // This must be a hyperlink
-            $("#export").click(() => {
+            $("#export").click(function(event) {
                 const outputFile = 'peak_search_results.csv';
                 exportTableToCSV.apply(this, [$('#results_table'), outputFile]);
             });
