@@ -178,20 +178,13 @@
         <tr id="{{ letter }}">{% else %}
         <tr>{%- endif -%}
             {% if loop.first %}
-            <td rowspan="{{ entry|length }}" class="left_align">
-                <a href="{{url_for('display_summary', entry_id=simulation[0])}}" title="{{ simulation[5] }}"
-                   target="_blank">{{ simulation[1] }}</a>
-            </td>
+            <td rowspan="{{ entry|length }}" class="left_align"><a href="{{url_for('display_summary', entry_id=simulation[0])}}" title="{{ simulation[5] }}" target="_blank">{{ simulation[1] }}</a></td>
             {% endif %}
             {% if loop.first %}
-            <td rowspan="{{ entry|length }}">
-                <a {% if 'bmse' in simulation[0] %}href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}"
-                target="_blank"{% endif %}>{% if 'bmse' in simulation[0] %}BMRB {% endif %}{{ simulation[0] }}</a>
-            </td>
+            <td rowspan="{{ entry|length }}"><a {% if 'bmse' in simulation[0] %}href="http://www.bmrb.wisc.edu/metabolomics/mol_summary/show_data.php?id={{ simulation[0] }}"
+                target="_blank"{% endif %}>{% if 'bmse' in simulation[0] %}BMRB {% endif %}{{ simulation[0] }}</a></td>
             {% endif %}
-            <td>
-                <a href="{{url_for('display_entry', entry_id=simulation[0], simulation=simulation[3])}}" target="_blank">{{ simulation[3].title() }}</a>
-            </td>
+            <td><a href="{{url_for('display_entry', entry_id=simulation[0], simulation=simulation[3])}}" target="_blank">{{ simulation[3].title() }}</a></td>
             <td class="download">
                 <a class="fake_button" href="{{url_for('display_entry', entry_id=simulation[0], simulation=simulation[3], some_file='zip')}}">Download</a>
             </td>
