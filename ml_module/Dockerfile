@@ -11,7 +11,7 @@ RUN pip3 install --no-cache-dir -r /opt/wsgi/requirements.txt
 
 COPY ./*py ./wsgi.conf ./*.h5 ./*pickle ./*csv /opt/wsgi/
 
-#RUN cd /opt/wsgi && chown -R uwsgi:uwsgi .
+RUN cd /opt/ && chown -R uwsgi:uwsgi wsgi
 
 USER uwsgi
 CMD [ "uwsgi", "--ini", "/opt/wsgi/wsgi.conf" ]
