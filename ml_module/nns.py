@@ -39,7 +39,7 @@ def load_jc_model():
 
 
 def get_chemical_shift(model_cs, train_stats_cs, table_out_cs):
-    tmp_table_cs = "cs_table_%s.csv" % datetime.now().strftime('%Y%m%d%H%M%S')
+    tmp_table_cs = "/tmp/cs_table_%s.csv" % datetime.now().strftime('%Y%m%d%H%M%S')
     fout = open(tmp_table_cs, "w")
     writer = csv.writer(fout)
     for _ in table_out_cs:
@@ -52,7 +52,7 @@ def get_chemical_shift(model_cs, train_stats_cs, table_out_cs):
 
 
 def get_couplings(model_jc, table_out_cs, proton_distances, train_stats_jc):
-    tmp_table_jc = "jc_table_%s.csv" % datetime.now().strftime('%Y%m%d%H%M%S')
+    tmp_table_jc = "/tmp/jc_table_%s.csv" % datetime.now().strftime('%Y%m%d%H%M%S')
     fout = open(tmp_table_jc, "w")
     writer = csv.writer(fout)
     row = [x for x in table_out_cs[0]]

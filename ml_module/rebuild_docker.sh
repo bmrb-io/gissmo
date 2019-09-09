@@ -10,5 +10,5 @@ if [[ $# -eq 0 ]]; then
   fi
 fi
 
-#-v /websites/webapi/configuration.json:/opt/wsgi/configuration.json
-sudo docker run -d --name gissmo_ml -p 9000:9000 -p 9001:9001 --restart=always  gissmo_ml
+#-v /websites/webapi/configuration.json:/opt/wsgi/configuration.json -p 9000:9000 -p 9001:9001
+sudo docker run -d --name gissmo_ml -p 9000:9000 --restart=always  gissmo_ml
