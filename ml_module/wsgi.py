@@ -5,6 +5,7 @@ import json
 import generate_spectra
 import model_prepare_input
 import nns
+import requests
 from flask import Flask, render_template, send_from_directory, request, redirect, send_file, url_for, jsonify
 from matplotlib import pyplot as plt
 
@@ -68,7 +69,19 @@ def simulate():
         return 'No file uploaded or structure entered.'
 
     with NamedTemporaryFile() as temp_file:
-        file_.save(temp_file.name)
+        #file_.save(temp_file.name)
+
+        # ALATIS-ify
+        files = {'infile': file_}
+        data = {'format': 'mol',
+                'response_type': 'json',
+                'project_2_to_3': 'on',
+                'add_hydrogens': 'on'
+                }
+        temp_file.write(requests.post('http://alatis.nmrfam.wisc.edu/upload',
+                                      data=data, files=files).json()['structure'])
+        temp_file.seek(0)
+        print(temp_file.name, open(temp_file.name, 'r').read())
 
         input_parameters = {"input_mol_file_path": temp_file.name,
                             "numpoints": int(request.args.get('numpoint', 32768)),
@@ -94,6 +107,6 @@ def simulate():
         input_parameters['spin_matrix'] = input_parameters['spin_matrix'].tolist()
         json.dump(input_parameters, open("params.json", "w"))
 
-        os.system("zip outputs.zip params.json spectrum.csv spin_system.csv")
+        os.system("zip --quiet outputs.zip params.json spectrum.csv spin_system.csv")
 
         return send_file("outputs.zip")
