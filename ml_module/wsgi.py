@@ -69,8 +69,6 @@ def simulate():
         return 'No file uploaded or structure entered.'
 
     with NamedTemporaryFile() as temp_file:
-        #file_.save(temp_file.name)
-
         # ALATIS-ify
         files = {'infile': file_}
         data = {'format': 'mol',
@@ -79,9 +77,8 @@ def simulate():
                 'add_hydrogens': 'on'
                 }
         temp_file.write(requests.post('http://alatis.nmrfam.wisc.edu/upload',
-                                      data=data, files=files).json()['structure'])
+                                      data=data, files=files).json()['structure'].encode())
         temp_file.seek(0)
-        print(temp_file.name, open(temp_file.name, 'r').read())
 
         input_parameters = {"input_mol_file_path": temp_file.name,
                             "numpoints": int(request.args.get('numpoint', 32768)),
