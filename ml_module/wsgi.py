@@ -137,6 +137,24 @@ def write_gissmo_input(proton_indices, spin_matrix, input_mol_path, field, inchi
     return gissmo_folder
 
 
+def zipdir(ob, path, rel=""):
+    basename = os.path.basename(path)
+    if os.path.isdir(path):
+        if rel == "":
+            rel = basename
+        ob.write(path, os.path.join(rel))
+        for root, dirs, files in os.walk(path):
+            for d in dirs:
+                zipdir(ob, os.path.join(root, d), os.path.join(rel, d))
+            for f in files:
+                ob.write(os.path.join(root, f), os.path.join(rel, f))
+            break
+    elif os.path.isfile(path):
+        ob.write(path, os.path.join(rel, basename))
+    else:
+        pass
+
+
 @application.route('/simulate')
 def simulate():
     """ Run the code. """
@@ -197,7 +215,8 @@ def simulate():
             zip_file.write('params.json')
             zip_file.write('spectrum.csv')
             zip_file.write('spin_system.csv')
-            zip_file.write(gissmo_folder)
+            zipdir(zip_file, gissmo_folder, rel="")
+            # zip_file.write(gissmo_folder)
             zip_file.close()
 
             return send_file(output_file.name)
