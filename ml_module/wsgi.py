@@ -1,17 +1,20 @@
 import csv
-import os
-from tempfile import NamedTemporaryFile
 import json
+import os
+import zipfile
+from tempfile import NamedTemporaryFile
+
+import requests
+from flask import Flask, request, send_file
+from matplotlib import pyplot as plt
+
 import generate_spectra
 import model_prepare_input
 import nns
-import requests
-from flask import Flask, render_template, send_from_directory, request, redirect, send_file, url_for, jsonify
-from matplotlib import pyplot as plt
 
 application = Flask(__name__)
 
- 
+
 def draw_spectrum(ppm, sim_fid):
     plt.plot(ppm.real, sim_fid.real)
     plt.gca().invert_xaxis()
@@ -35,10 +38,10 @@ def write_spin_system(proton_indices, spin_matrix, input_parameters):
     writer = csv.writer(fout)
     a_row = [""]
     for _ in range(len(proton_indices)):
-        a_row.append(proton_indices[_]+1)
+        a_row.append(proton_indices[_] + 1)
     writer.writerow(a_row)
     for _ in range(spin_matrix.shape[0]):
-        a_row = [proton_indices[_]+1]
+        a_row = [proton_indices[_] + 1]
         for __ in range(spin_matrix.shape[1]):
             val = spin_matrix[_, __]
             if _ == __:
@@ -100,10 +103,17 @@ def simulate():
             write_spectrum(ppm, sim_fid)
             write_spin_system(proton_indices, spin_matrix, input_parameters)
             input_parameters['spin_matrix'] = input_parameters['spin_matrix'].tolist()
-        except:
-            input_parameters["err"] = "Something went wrong!"
+        except Exception as exp:
+            input_parameters["err"] = "Something went wrong: %s" % exp
 
         json.dump(input_parameters, open("params.json", "w"))
-        os.system("zip --quiet outputs.zip params.json spectrum.csv spin_system.csv")
 
-        return send_file("outputs.zip")
+        with NamedTemporaryFile(suffix='.zip') as output_file:
+            zip_file = zipfile.ZipFile(output_file.name, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True)
+            zip_file.write('params.json')
+            zip_file.write('spectrum.csv')
+            zip_file.write('spin_system.csv')
+            zip_file.close()
+            output_file.seek(0)
+
+            return send_file(output_file)
