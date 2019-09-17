@@ -114,6 +114,5 @@ def simulate():
             zip_file.write('spectrum.csv')
             zip_file.write('spin_system.csv')
             zip_file.close()
-            output_file.seek(0)
 
-            return send_file(output_file)
+            return send_file(output_file.name)
