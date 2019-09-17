@@ -39,15 +39,15 @@ def write_spin_system(proton_indices, spin_matrix, input_parameters):
     writer = csv.writer(fout)
     a_row = [""]
     for _ in range(len(proton_indices)):
-        a_row.append(proton_indices[_] + 1)
+        a_row.append("%d" % (proton_indices[_] + 1))
     writer.writerow(a_row)
     for _ in range(spin_matrix.shape[0]):
-        a_row = [proton_indices[_] + 1]
+        a_row = ["%d" % (proton_indices[_] + 1)]
         for __ in range(spin_matrix.shape[1]):
             val = spin_matrix[_, __]
             if _ == __:
                 val = val / input_parameters["field"]
-            a_row.append(val)
+            a_row.append("%.04f" % val)
         writer.writerow(a_row)
     fout.close()
 
