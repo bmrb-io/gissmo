@@ -7,7 +7,6 @@ import os
 from datetime import datetime
 
 
-
 def norm(input_dic, describe_stats):
     return (input_dic - describe_stats['mean']) / describe_stats['std']
 
@@ -23,8 +22,6 @@ def draw_hist_error(error):
 def load_cs_model():
     model_file_path = "cs.h5"
     model = tf.keras.models.load_model(model_file_path)
-    model.compile(loss='mae',  optimizer=tf.keras.optimizers.Adam(lr=1e-3, decay=1e-5), metrics=['mae'])
-    #model.summary()
     train_stats = pd.read_pickle("trained_cs_stats.pickle")
     return model, train_stats
 
@@ -32,8 +29,6 @@ def load_cs_model():
 def load_jc_model():
     model_file_path = "jc_mse.h5"
     model = tf.keras.models.load_model(model_file_path)
-    model.compile(loss='mse', optimizer=tf.keras.optimizers.Adam(lr=1e-3, decay=1e-5), metrics=['mse', 'mae'])
-    #model.summary()
     train_stats = pd.read_pickle("trained_jc_stats.pickle")
     return model, train_stats
 
@@ -72,7 +67,10 @@ def get_couplings(model_jc, table_out_cs, proton_distances, train_stats_jc):
     dataset = raw_dataset.copy()
     normalized_dataset = norm(dataset, train_stats_jc)
     normalized_dataset = normalized_dataset.drop(to_be_removed_tags, axis=1)
-    test_predictions = model_jc.predict(normalized_dataset).flatten()
+    if len(normalized_dataset.index) != 0:
+        test_predictions = model_jc.predict(normalized_dataset).flatten()
+    else:
+        test_predictions = []
     return test_predictions, atom_indices
 
 
@@ -83,7 +81,6 @@ def run(table_out_cs, proton_distances):
 
     test_predictions_cs = get_chemical_shift(model_cs, train_stats_cs, table_out_cs)
     test_predictions_jc, jc_atom_indices = get_couplings(model_jc, table_out_cs, proton_distances, train_stats_jc)
-
     spin_matrix = np.zeros([len(test_predictions_cs), len(test_predictions_cs)])
     for _ in range(len(test_predictions_cs)):
         spin_matrix[_, _] = test_predictions_cs[_]

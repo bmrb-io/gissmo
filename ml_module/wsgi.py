@@ -3,6 +3,7 @@ import json
 import os
 import zipfile
 from tempfile import NamedTemporaryFile
+from datetime import datetime
 
 import requests
 from flask import Flask, request, send_file
@@ -60,6 +61,82 @@ def write_spectrum(ppm, sim_fid):
     fout.close()
 
 
+def write_gissmo_input(proton_indices, spin_matrix, input_mol_path, field, inchi):
+    temp_id = datetime.now().strftime('%Y%m%d%H%M%S')
+    gissmo_folder = os.path.join("/tmp/", temp_id)
+    os.system("mkdir %s" % gissmo_folder)
+    os.system("mkdir %s/1H" % gissmo_folder)
+    os.system("cp %s %s/input.mol" % (input_mol_path, gissmo_folder))
+    fout = open(os.path.join(gissmo_folder, "spin_simulation.xml"), "w")
+    fout.write("<spin_simulation>\n")
+    fout.write("	<version>2</version>\n")
+    fout.write("	<name>GIISMOML_cmp</name>\n")
+    fout.write("	<ID>%s</ID>\n" % temp_id)
+    fout.write('	<SRC name="GISSMOML" ID="%s"></SRC>\n' % temp_id)
+    fout.write("	<InChI>%s</InChI>\n" % inchi)
+    fout.write("	<comp_db_link>\n")
+    fout.write("	</comp_db_link>\n")
+    fout.write("	<mol_file_path>./input.mol</mol_file_path>\n")
+    fout.write("	<experimental_spectrum>\n")
+    fout.write("        <type>Bruker</type>\n")
+    fout.write("        <root_folder>./1H/</root_folder>\n")
+    fout.write("	</experimental_spectrum>\n")
+    fout.write("	<field_strength>%f</field_strength>\n" % field)
+    fout.write("	<field_strength_applied_flag>1</field_strength_applied_flag>\n")
+    fout.write("	<num_simulation_points>32768</num_simulation_points>\n")
+    fout.write("	<num_simulation_points_applied_flag>1</num_simulation_points_applied_flag>\n")
+    fout.write("	<path_2D_image>.</path_2D_image>\n")
+    fout.write("	<num_split_matrices>0</num_split_matrices>\n")
+    fout.write("	<roi_rmsd>1000</roi_rmsd>\n")
+    fout.write("	<notes>\n")
+    fout.write("	    <status>Initial values</status>\n")
+    fout.write("	    <note></note>\n")
+    fout.write("	</notes>\n")
+    fout.write("	<coupling_matrix>\n")
+    fout.write("        <label>merged</label>\n")
+    fout.write("        <index>1</index>\n")
+    fout.write("        <lw>1</lw>\n")
+    fout.write("        <peak_shape_coefficients>\n")
+    fout.write("            <lorentzian>0.8</lorentzian>\n")
+    fout.write("            <gaussian>0.2</gaussian>\n")
+    fout.write("        </peak_shape_coefficients>\n")
+    fout.write("        <water_region>\n")
+    fout.write("            <min_ppm>4.7000</min_ppm>\n")
+    fout.write("            <max_ppm>5.0000</max_ppm>\n")
+    fout.write("            <remove_flag>1</remove_flag>\n")
+    fout.write("        </water_region>\n")
+    fout.write("        <DSS_region>\n")
+    fout.write("            <min_ppm>-0.1000</min_ppm>\n")
+    fout.write("            <max_ppm>0.1000</max_ppm>\n")
+    fout.write("            <remove_flag>1</remove_flag>\n")
+    fout.write("        </DSS_region>\n")
+    fout.write("        <additional_coupling_constants>\n")
+    fout.write("        </additional_coupling_constants>\n")
+    fout.write("        <spin_names>\n")
+    for _ in range(len(proton_indices)):
+        fout.write('            <spin index="%d" name="%d"></spin>\n' % (_+1, proton_indices[_]))
+    fout.write("        </spin_names>\n")
+    fout.write("        <chemical_shifts_ppm>\n")
+    for _ in range(spin_matrix.shape[0]):
+        fout.write('            <cs index="%d" ppm="%f"></cs>\n' % (_+1, spin_matrix[_][_]/field))
+    fout.write("        </chemical_shifts_ppm>\n")
+    fout.write("        <couplings_Hz>\n")
+    for _ in range(spin_matrix.shape[0]):
+        for __ in range(spin_matrix.shape[1]):
+            if _ == __ or spin_matrix[_][__] == 0:
+                continue
+            fout.write('            <coupling from_index="%d" to_index="%d" value="%f"></coupling>\n' %
+                       (_+1, __+1, spin_matrix[_][__]))
+    fout.write("        </couplings_Hz>\n")
+    fout.write("        <peak_list>\n")
+    fout.write("        </peak_list>\n")
+    fout.write("        <spectrum>\n")
+    fout.write("        </spectrum>\n")
+    fout.write("    </coupling_matrix>\n")
+    fout.write("</spin_simulation>\n")
+    return gissmo_folder
+
+
 @application.route('/simulate')
 def simulate():
     """ Run the code. """
@@ -79,8 +156,9 @@ def simulate():
                 'project_2_to_3': 'on',
                 'add_hydrogens': 'on'
                 }
-        temp_file.write(requests.post('http://alatis.nmrfam.wisc.edu/upload',
-                                      data=data, files=files).json()['structure'].encode())
+        alatis_output = requests.post('http://alatis.nmrfam.wisc.edu/upload',  data=data, files=files).json()
+        inchi = alatis_output["inchi"]
+        temp_file.write(alatis_output['structure'].encode())
         temp_file.seek(0)
 
         input_parameters = {"input_mol_file_path": temp_file.name,
@@ -103,8 +181,14 @@ def simulate():
             write_spectrum(ppm, sim_fid)
             write_spin_system(proton_indices, spin_matrix, input_parameters)
             input_parameters['spin_matrix'] = input_parameters['spin_matrix'].tolist()
+            gissmo_folder = write_gissmo_input(proton_indices, spin_matrix,
+                                               input_parameters["input_mol_file_path"], input_parameters["field"],
+                                               inchi)
+            input_parameters["gissmo_folder"] = gissmo_folder
+            input_parameters["inchi"] = inchi
         except Exception as exp:
             input_parameters["err"] = "Something went wrong: %s" % exp
+            gissmo_folder = ""
 
         json.dump(input_parameters, open("params.json", "w"))
 
@@ -113,6 +197,7 @@ def simulate():
             zip_file.write('params.json')
             zip_file.write('spectrum.csv')
             zip_file.write('spin_system.csv')
+            zip_file.write(gissmo_folder)
             zip_file.close()
 
             return send_file(output_file.name)

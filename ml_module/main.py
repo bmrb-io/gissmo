@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 from time import gmtime, strftime
 import json
 
+
 def draw_spectrum(ppm, sim_fid):
     plt.plot(ppm.real, sim_fid.real)
     plt.gca().invert_xaxis()
@@ -19,27 +20,36 @@ def load_spin_info(input_parameters):
     input_parameters["water_max"] = 4.7
     input_parameters["DSS_min"] = -0.1
     input_parameters["DSS_max"] = 0.1
-    input_parameters["spin_matrix"]=[]
+    input_parameters["spin_matrix"] = []
     input_parameters["sw"] = 13 * input_parameters["field"]
     input_parameters["dw"] = 2 / input_parameters["sw"]
     return input_parameters
 
 
-def write_spin_system(proton_indices, spin_matrix):
+def write_spin_system(proton_indices, spin_matrix, input_parameters):
     fout = open("spin_system.csv", "w")
     writer = csv.writer(fout)
     a_row = [""]
     for _ in range(len(proton_indices)):
-        a_row.append(proton_indices[_])
+        a_row.append(proton_indices[_] + 1)
     writer.writerow(a_row)
     for _ in range(spin_matrix.shape[0]):
-        a_row = [proton_indices[_]]
+        a_row = [proton_indices[_] + 1]
         for __ in range(spin_matrix.shape[1]):
             val = spin_matrix[_, __]
             if _ == __:
-                val = val/input_parameters["field"]
+                val = val / input_parameters["field"]
             a_row.append(val)
         writer.writerow(a_row)
+    fout.close()
+
+
+def write_spectrum(ppm, sim_fid):
+    fout = open("spectrum.csv", "w")
+    writer = csv.writer(fout)
+    writer.writerow(["PPM", "AMP"])
+    for _ in range(len(ppm)):
+        writer.writerow([ppm[_], sim_fid[_]])
     fout.close()
 
 
@@ -130,27 +140,30 @@ def write_spectrum(ppm, sim_fid):
 
 
 input_parameters = {}
-input_parameters["input_mol_file_path"] = "bmse000001.mol"  # sys.argv[1]
+input_parameters["input_mol_file_path"] = "/Users/hesam/Dropbox (Partners HealthCare)/Desktop/Collaboration_exploring/GISSMO_ML/GISSMO_ML_codes/run_gissmo_trained_models/bmse000060.mol"
 input_parameters["numpoints"] = 32768  # sys.argv[2]
 input_parameters["field"] = 500  # sys.argv[3]
 input_parameters["line_width"] = 0.74  # sys.argv[4]
 input_parameters["lor_coeff"] = 1  # sys.argv[5]
 input_parameters["gau_coeff"] = 0  # sys.argv[6]
 
-input_parameters = load_spin_info(input_parameters)
-table_out_cs, proton_indices, proton_distances = model_prepare_input.parse_input_structure_file(input_parameters["input_mol_file_path"])
-spin_matrix = nns.run(table_out_cs, proton_distances)
 
+input_parameters = load_spin_info(input_parameters)
+table_out_cs, proton_indices, proton_distances = model_prepare_input.parse_input_structure_file(
+                input_parameters["input_mol_file_path"])
+
+spin_matrix = nns.run(table_out_cs, proton_distances)
+print(spin_matrix)
 input_parameters["spin_matrix"] = spin_matrix
 ppm, sim_fid = generate_spectra.calculate_spectrum(input_parameters)
 
-write_spectrum(ppm, sim_fid)
+# write_spectrum(ppm, sim_fid)
 
-write_spin_system(proton_indices, spin_matrix)
+# write_spin_system(proton_indices, spin_matrix)
 
-gissmo_folder = write_gissmo_input(proton_indices, spin_matrix, input_parameters["input_mol_file_path"],
-                                   input_parameters["field"])
+# gissmo_folder = write_gissmo_input(proton_indices, spin_matrix, input_parameters["input_mol_file_path"],
+#                                   input_parameters["field"])
 
-input_parameters["gissmo_folder"] = gissmo_folder
-json.dump(input_parameters, open("output.json", "w"))
-os.system("zip outputs.zip spectrum.csv output.json %s %s" % (input_parameters["input_mol_file_path"], gissmo_folder))
+#input_parameters["gissmo_folder"] = gissmo_folder
+#json.dump(input_parameters, open("output.json", "w"))
+# os.system("zip outputs.zip spectrum.csv output.json %s %s" % (input_parameters["input_mol_file_path"], gissmo_folder))
