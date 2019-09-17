@@ -216,7 +216,13 @@ def simulate():
             zip_file.write('params.json')
             zip_file.write('spectrum.csv')
             zip_file.write('spin_system.csv')
-            zipdir(zip_file, gissmo_folder, rel="")
+
+            gissmo_zip_fname = gissmo_folder+".zip"
+            gissmo_gui_zip = zipfile.ZipFile(gissmo_zip_fname, 'w', compression=zipfile.ZIP_DEFLATED, allowZip64=True)
+            zipdir(gissmo_gui_zip, gissmo_folder, rel="")
+            gissmo_gui_zip.close()
+
+            zip_file.write(gissmo_zip_fname)
             zip_file.close()
 
             return send_file(output_file.name)
