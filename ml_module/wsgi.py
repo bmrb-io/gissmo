@@ -67,7 +67,8 @@ def write_gissmo_input(proton_indices, spin_matrix, input_mol_path, field, inchi
     os.system("mkdir %s" % gissmo_folder)
     os.system("mkdir %s/1H" % gissmo_folder)
     os.system("cp %s %s/input.mol" % (input_mol_path, gissmo_folder))
-    fout = open(os.path.join(gissmo_folder, "spin_simulation.xml"), "w")
+    gissmo_spin_system_file = os.path.join(gissmo_folder, "spin_simulation.xml")
+    fout = open(gissmo_spin_system_file, "w")
     fout.write("<spin_simulation>\n")
     fout.write("	<version>2</version>\n")
     fout.write("	<name>GIISMOML_cmp</name>\n")
@@ -134,25 +135,8 @@ def write_gissmo_input(proton_indices, spin_matrix, input_mol_path, field, inchi
     fout.write("        </spectrum>\n")
     fout.write("    </coupling_matrix>\n")
     fout.write("</spin_simulation>\n")
-    return gissmo_folder
-
-
-def zipdir(ob, path, rel=""):
-    basename = os.path.basename(path)
-    if os.path.isdir(path):
-        if rel == "":
-            rel = basename
-        ob.write(path, os.path.join(rel))
-        for root, dirs, files in os.walk(path):
-            for d in dirs:
-                zipdir(ob, os.path.join(root, d), os.path.join(rel, d))
-            for f in files:
-                ob.write(os.path.join(root, f), os.path.join(rel, f))
-            break
-    elif os.path.isfile(path):
-        ob.write(path, os.path.join(rel, basename))
-    else:
-        pass
+    fout.close()
+    return gissmo_spin_system_file
 
 
 @application.route('/simulate')
@@ -199,10 +183,10 @@ def simulate():
             write_spectrum(ppm, sim_fid)
             write_spin_system(proton_indices, spin_matrix, input_parameters)
             input_parameters['spin_matrix'] = input_parameters['spin_matrix'].tolist()
-            gissmo_folder = write_gissmo_input(proton_indices, spin_matrix,
+            gissmo_spin_system_file_name = write_gissmo_input(proton_indices, spin_matrix,
                                                input_parameters["input_mol_file_path"], input_parameters["field"],
                                                inchi)
-            input_parameters["gissmo_folder"] = gissmo_folder
+            input_parameters["gissmo_spin_system_file_name"] = gissmo_spin_system_file_name
             input_parameters["inchi"] = inchi
         except Exception as exp:
             input_parameters["err"] = "Something went wrong: %s" % exp
@@ -215,7 +199,7 @@ def simulate():
             zip_file.write('params.json')
             zip_file.write('spectrum.csv')
             zip_file.write('spin_system.csv')
-            zipdir(zip_file, gissmo_folder, rel="")
+            zip_file.write(gissmo_spin_system_file_name)
             # zip_file.write(gissmo_folder)
             zip_file.close()
 
