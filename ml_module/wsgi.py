@@ -99,11 +99,11 @@ def simulate():
 
             write_spectrum(ppm, sim_fid)
             write_spin_system(proton_indices, spin_matrix, input_parameters)
+            input_parameters['spin_matrix'] = input_parameters['spin_matrix'].tolist()
         except:
             input_parameters["err"] = "Something went wrong!"
-        input_parameters['spin_matrix'] = input_parameters['spin_matrix'].tolist()
-        json.dump(input_parameters, open("params.json", "w"))
 
+        json.dump(input_parameters, open("params.json", "w"))
         os.system("zip --quiet outputs.zip params.json spectrum.csv spin_system.csv")
 
         return send_file("outputs.zip")

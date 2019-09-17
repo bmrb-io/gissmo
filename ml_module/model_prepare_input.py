@@ -6,7 +6,6 @@ import numpy as np
 List_of_atoms_to_consider = ['C', 'N', 'O', 'H', 'P']
 
 
-
 def parse_atom_nghs(mol, nghs, atoms_of_interest):
     nums = {}
     nghs_list = {}
