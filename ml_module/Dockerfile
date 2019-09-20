@@ -9,6 +9,11 @@ RUN apt-get update && \
 COPY ./requirements.txt /opt/wsgi/
 RUN pip3 install --no-cache-dir -r /opt/wsgi/requirements.txt
 
+COPY ./binary/MarvinBeans /opt/wsgi/MarvinBeans
+
+RUN apt install -y openjdk-8-jre-headless
+RUN echo "" >  /etc/java-8-openjdk/accessibility.properties
+
 COPY ./*py ./wsgi.conf ./*.h5 ./*pickle ./*csv /opt/wsgi/
 
 RUN cd /opt/ && chown -R uwsgi:uwsgi wsgi
