@@ -443,7 +443,7 @@ def get_gissmo_entries():
 
     cur = get_postgres_connection()[1]
     cur.execute('SELECT id FROM entries;')
-    return jsonify(cur.fetchall())
+    return jsonify([x[0] for x in cur.fetchall()])
 
 
 @application.route('/entry/<entry_id>/<simulation>/peaks/<frequency>')
