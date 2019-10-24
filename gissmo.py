@@ -437,6 +437,15 @@ def display_summary(entry_id):
     return render_template("simulations_list.html", data=data, name=name)
 
 
+@application.route('/entry/list')
+def get_gissmo_entries():
+    """ Returns a list of all entries currently in GISSMO. """
+
+    cur = get_postgres_connection()[1]
+    cur.execute('SELECT id FROM entries;')
+    return jsonify(cur.fetchall())
+
+
 @application.route('/entry/<entry_id>/<simulation>/peaks/<frequency>')
 def display_peaks(entry_id, simulation, frequency):
     # Get the chemical shifts from postgres
