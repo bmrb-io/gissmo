@@ -1,4 +1,4 @@
-FROM tensorflow/tensorflow:2.0.0b1-py3
+FROM tensorflow/tensorflow:2.0.0-py3
 EXPOSE 9000
 WORKDIR /opt/wsgi
 
