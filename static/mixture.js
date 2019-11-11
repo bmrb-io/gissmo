@@ -56,14 +56,14 @@ function reGraph() {
             {
                 name: 'Show Individual Compounds',
                 click: (gd) => {
-                    Plotly.restyle(gd, 'visible', true);
+                    Plotly.restyle(gd, 'visible', true).then();
                 },
                 icon: toggle_on_icon
             },
             {
                 name: 'Hide Individual Compounds',
                 click: (gd) => {
-                    Plotly.restyle(gd, 'visible', 'legendonly');
+                    Plotly.restyle(gd, 'visible', 'legendonly').then();
 
                     const turn_on = [];
                     for (const element of ['Mixture', 'Uploaded Spectra', 'Difference']){
@@ -71,8 +71,8 @@ function reGraph() {
                         if (tmp_index !== null) {
                             turn_on.push(tmp_index)
                         }
-                    };
-                    Plotly.restyle(gd, {'visible': true}, turn_on);
+                    }
+                    Plotly.restyle(gd, {'visible': true}, turn_on).then();
                 },
                 icon: toggle_off_icon
             }]
@@ -384,7 +384,7 @@ function addLoadedCompound(compound_name, concentration) {
 }
 
 
-function addCompound(selection) {
+function addCompound(selection, compoundSearchElement) {
     if (!selection) {
         alert("Please select a compound from one of the suggestions that will appear as you type.");
         return null;
@@ -402,7 +402,7 @@ function addCompound(selection) {
     row.append(control, compound_td, comp_id, concentration).insertBefore("#compound_anchor");
 
     // Reset the values
-    $("#compound_search").val('');
+    compoundSearchElement.value = '';
     bindData(selection.value);
 }
 
@@ -423,8 +423,10 @@ function processCompoundCSV(csvArray) {
     const compound_pos = findLowercaseArray('name', csvArray);
     const concentration_pos = findLowercaseArray('concentration', csvArray);
 
+    const messageElement = $("#message");
+
     if ((compound_pos < 0) || (concentration_pos < 0)) {
-        $("#message").html('The first row of the spreadsheet must have a column with the word "name" and a column with the word "concentration" in the cell in order to be properly detected.');
+        messageElement.html('The first row of the spreadsheet must have a column with the word "name" and a column with the word "concentration" in the cell in order to be properly detected.');
         return;
     }
 
@@ -433,7 +435,7 @@ function processCompoundCSV(csvArray) {
             addLoadedCompound(csvArray[i][compound_pos], csvArray[i][concentration_pos]);
         }
     }
-    $("#message").html('');
+    messageElement.html('');
 }
 
 function clearCompounds() {
@@ -524,7 +526,7 @@ $("#compound_search").autocomplete({
         $.getJSON("http://webapi.bmrb.wisc.edu/v2/instant", {database: "metabolomics", term: request.term},
             function (response_original) {
                 const response = [];
-                for (i = 0; i < response_original.length; i++) {
+                for (let i = 0; i < response_original.length; i++) {
                     if (valid_entries.indexOf(response_original[i].value) >= 0) {
                         response.push(response_original[i]);
                     }
@@ -536,7 +538,7 @@ $("#compound_search").autocomplete({
 
     },
     select: function (event, ui) {
-        addCompound(ui.item);
+        addCompound(ui.item, this);
         return false;
     }
 });
