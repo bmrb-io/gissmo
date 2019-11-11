@@ -63,7 +63,7 @@ def write_spectrum(ppm, sim_fid):
 
 def write_gissmo_input(proton_indices, spin_matrix, input_mol_path, field, inchi):
     temp_id = datetime.now().strftime('%Y%m%d%H%M%S')
-    gissmo_folder = temp_id
+    gissmo_folder = "/tmp/%s" % temp_id
     os.system("mkdir %s" % gissmo_folder)
     os.system("mkdir %s/1H" % gissmo_folder)
     os.system("cp %s %s/input.mol" % (input_mol_path, gissmo_folder))
