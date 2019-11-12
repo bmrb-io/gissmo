@@ -101,6 +101,26 @@ def get_aux_info(entry_id, simulation, aux_name):
         return results
 
 
+def get_sample_conditions(file_name):
+    # Get the NMR-STAR entry for sample info
+
+    star_entry = pynmrstar.Entry.from_file(file_name)
+    sample_conditions = star_entry.get_loops_by_category("_Sample_condition_variable")[0]
+    sample_conditions = sample_conditions.get_tag(["Type", "Val", "Val_units"])
+    sample_dict = {}
+    for record in sample_conditions:
+        if record[0] == "temperature":
+            sample_dict[record[0].lower()] = "%s %s" % (record[1], record[2])
+        else:
+            sample_dict[record[0].lower()] = record[1]
+
+    sample_mix = star_entry.get_loops_by_category("_Sample_component")[0]
+    sample_dict['sample'] = sample_mix.get_tag(["Mol_common_Name", "Isotopic_labeling", "Type", "Concentration_val",
+                                                "Concentration_val_units"])
+
+    return sample_dict
+
+
 # URI methods
 @application.route('/reload')
 def reload_db():
@@ -116,6 +136,8 @@ CREATE TABLE entries_tmp (
     name text,
     frequency float,
     simulation_id text,
+    temperature text,
+    ph text,
     inchi text);""")
 
     valid_entries = []
@@ -139,19 +161,28 @@ CREATE TABLE entries_tmp (
                 print(entry_id, e)
                 continue
 
+            sample_conditions = get_sample_conditions(os.path.join(entry_path, entry_id, sim, "%s-%s.str" %
+                                                                   (entry_id, sim)))
+
             # Check the entry is released
             status = get_tag_value(root, "status")
             if status.lower() in ["done", "approximately done"]:
                 sims.append([entry_id, get_tag_value(root, "name"),
-                             get_tag_value(root, "field_strength"), sim,
+                             get_tag_value(root, "field_strength"),
+                             sim,
+                             sample_conditions['temperature'],
+                             sample_conditions['ph'],
                              get_tag_value(root, "InChI")])
 
         if sims:
             valid_entries.extend(sims)
+    conn.commit()
+    import sys
+    sys.exit(0)
 
     # Sort by protein name
     valid_entries = sorted(valid_entries, key=lambda x: x[0][1].lower())
-    execute_values(cur, """INSERT INTO entries_tmp (id, name, frequency, simulation_id, inchi) VALUES %s;""",
+    execute_values(cur, """INSERT INTO entries_tmp (id, name, frequency, simulation_id, temperature, ph, inchi) VALUES %s;""",
                    valid_entries,
                    page_size=1000)
     cur.execute("""
@@ -562,18 +593,9 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict["pka"] = get_aux_info(entry_id, simulation, "pka")
 
     # Get the NMR-STAR entry for sample info
-    star_entry = pynmrstar.Entry.from_file(os.path.join(entry_path, entry_id, simulation, "%s-%s.str" % (entry_id, simulation)))
-    sample_conditions = star_entry.get_loops_by_category("_Sample_condition_variable")[0]
-    sample_conditions = sample_conditions.get_tag(["Type", "Val", "Val_units"])
-    for record in sample_conditions:
-        if record[0] == "temperature":
-            ent_dict[record[0].lower()] = "%s %s" % (record[1], record[2])
-        else:
-            ent_dict[record[0].lower()] = record[1]
-
-    sample_mix = star_entry.get_loops_by_category("_Sample_component")[0]
-    ent_dict['sample'] = sample_mix.get_tag(["Mol_common_Name", "Isotopic_labeling", "Type", "Concentration_val",
-                                            "Concentration_val_units"])
+    sample_conditions = get_sample_conditions(os.path.join(entry_path, entry_id, simulation, "%s-%s.str" %
+                                                           (entry_id, simulation)))
+    ent_dict.update(sample_conditions)
 
     # Get the spin matrix data only for the first coupling matrix
     coupling_matrix = root.getiterator("coupling_matrix").next()
