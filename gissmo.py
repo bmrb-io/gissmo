@@ -59,14 +59,18 @@ def get_title(entry_id):
     return title[entry_id]['_Assembly.Name'][0].title()
 
 
-def get_postgres_connection(user='web', database='webservers', host='pinzgau',
+def get_postgres_connection(user='web', database='webservers', host='pinzgau', port='5432',
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
+    if application.debug:
+        port = '5901'
+        host = 'localhost'
+
     if dictionary_cursor:
-        conn = psycopg2.connect(user=user, database=database, host=host, cursor_factory=DictCursor)
+        conn = psycopg2.connect(user=user, database=database, host=host, cursor_factory=DictCursor, port=port)
     else:
-        conn = psycopg2.connect(user=user, database=database, host=host)
+        conn = psycopg2.connect(user=user, database=database, host=host, port=port)
     cur = conn.cursor()
     cur.execute("SET search_path TO gissmo, public")
 
