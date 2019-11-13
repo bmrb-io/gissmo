@@ -72,7 +72,6 @@ def get_postgres_connection(user='web', database='webservers', host='pinzgau', p
     else:
         conn = psycopg2.connect(user=user, database=database, host=host, port=port)
     cur = conn.cursor()
-    cur.execute("SET search_path TO gissmo, public")
 
     return conn, cur
 
@@ -130,8 +129,8 @@ def reload_db():
 
     cur.execute("""
 -- Create terms table
-DROP TABLE IF EXISTS entries_tmp;
-CREATE TABLE entries_tmp (
+DROP TABLE IF EXISTS gissmo.entries_tmp;
+CREATE TABLE gissmo.entries_tmp (
     id text,
     name text,
     frequency float,
@@ -161,8 +160,11 @@ CREATE TABLE entries_tmp (
                 print(entry_id, e)
                 continue
 
-            sample_conditions = get_sample_conditions(os.path.join(entry_path, entry_id, sim, "%s-%s.str" %
-                                                                   (entry_id, sim)))
+            try:
+                sample_conditions = get_sample_conditions(os.path.join(entry_path, entry_id, sim, "%s-%s.str" %
+                                                                       (entry_id, sim)))
+            except IOError:
+                continue
 
             # Check the entry is released
             status = get_tag_value(root, "status")
@@ -176,46 +178,43 @@ CREATE TABLE entries_tmp (
 
         if sims:
             valid_entries.extend(sims)
-    conn.commit()
-    import sys
-    sys.exit(0)
 
     # Sort by protein name
     valid_entries = sorted(valid_entries, key=lambda x: x[0][1].lower())
-    execute_values(cur, """INSERT INTO entries_tmp (id, name, frequency, simulation_id, temperature, ph, inchi) VALUES %s;""",
+    execute_values(cur, """INSERT INTO gissmo.entries_tmp (id, name, frequency, simulation_id, temperature, ph, inchi) VALUES %s;""",
                    valid_entries,
                    page_size=1000)
     cur.execute("""
-CREATE INDEX ON entries_tmp (id);
-CREATE INDEX ON entries using gin(lower(name) gin_trgm_ops);
-
--- Move the new table into place
-ALTER TABLE IF EXISTS entries RENAME TO entries_old;
-ALTER TABLE entries_tmp RENAME TO entries;
-DROP TABLE IF EXISTS entries_old CASCADE;""")
+CREATE INDEX ON gissmo.entries_tmp (id);
+CREATE INDEX ON gissmo.entries_tmp using gin(lower(name) gin_trgm_ops);
+CREATE INDEX ON gissmo.entries_tmp (inchi);""")
 
     # Reload the chemical shifts
     cur.execute("""
     -- Create terms table
-    DROP TABLE IF EXISTS chemical_shifts_tmp;
-    CREATE TABLE chemical_shifts_tmp (
+    DROP TABLE IF EXISTS gissmo.chemical_shifts_tmp;
+    CREATE TABLE gissmo.chemical_shifts_tmp (
         bmrb_id text,
         simulation_ID text,
         frequency integer,
         peak_type text,
         ppm numeric,
         amplitude float);""")
-    cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
+    cur.copy_expert("""COPY gissmo.chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
                     open('%s/peak_list_GSD.csv' % entry_path, "rb"))
-    cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
+    cur.copy_expert("""COPY gissmo.chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
                     open('%s/peak_list_standard.csv' % entry_path, "rb"))
     cur.execute("""-- create index: potentially combine these two based on usage
-CREATE INDEX ON chemical_shifts_tmp (frequency, peak_type, ppm);
+CREATE INDEX ON gissmo.chemical_shifts_tmp (frequency, peak_type, ppm);
 
--- Move the new table into place
-ALTER TABLE IF EXISTS chemical_shifts RENAME TO chemical_shifts_old;
-ALTER TABLE chemical_shifts_tmp RENAME TO chemical_shifts;
-DROP TABLE IF EXISTS chemical_shifts_old;
+-- Move the new tables into place
+ALTER TABLE IF EXISTS gissmo.entries RENAME TO entries_old;
+ALTER TABLE gissmo.entries_tmp RENAME TO entries;
+DROP TABLE IF EXISTS gissmo.entries_old CASCADE;
+
+ALTER TABLE IF EXISTS gissmo.chemical_shifts RENAME TO chemical_shifts_old;
+ALTER TABLE gissmo.chemical_shifts_tmp RENAME TO chemical_shifts;
+DROP TABLE IF EXISTS gissmo.chemical_shifts_old;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA gissmo TO web;""")
     conn.commit()
@@ -234,7 +233,7 @@ SELECT set_limit(.75);
 SELECT * FROM gissmo.entries
   WHERE lower(%s) %% lower(name) OR inchi = %s OR inchi = %s''', [term, term, 'InChI=' + term])
     else:
-        cur.execute("SELECT * FROM entries ORDER BY id, simulation_ID")
+        cur.execute("SELECT * FROM gissmo.entries ORDER BY id, simulation_ID")
 
     entry_list = []
     last_entry = None
@@ -324,7 +323,7 @@ def peak_search():
 
     sql = '''
 SELECT bmrb_id,simulation_id,array_agg(DISTINCT ppm)
-FROM chemical_shifts'''
+FROM gissmo.chemical_shifts'''
     sql += ' WHERE ('
     terms = []
 
@@ -477,7 +476,7 @@ def get_gissmo_entries():
     """ Returns a list of all entries currently in GISSMO. """
 
     cur = get_postgres_connection()[1]
-    cur.execute('SELECT id FROM entries;')
+    cur.execute('SELECT id FROM gissmo.entries;')
     return jsonify([x[0] for x in cur.fetchall()])
 
 
@@ -486,9 +485,9 @@ def display_peaks(entry_id, simulation, frequency):
     # Get the chemical shifts from postgres
     cur = get_postgres_connection()[1]
     cur.execute('''
-SELECT frequency, ppm, amplitude FROM chemical_shifts
+SELECT frequency, ppm, amplitude FROM gissmo.chemical_shifts
   WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD'
-  ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
+  ORDER BY frequency, ppm''', [entry_id, simulation, frequency])
 
     if frequency == '0':
         frequency = 'Default'
@@ -643,7 +642,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Get the chemical shifts from postgres
     cur = get_postgres_connection()[1]
     cur.execute('''
-SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts
+SELECT frequency, ppm, amplitude, peak_type FROM gissmo.chemical_shifts
   WHERE bmrb_id=%s AND simulation_id=%s AND peak_type='standard'
   ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation])
     ent_dict['shifts'] = cur.fetchall()
