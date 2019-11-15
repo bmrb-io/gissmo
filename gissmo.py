@@ -230,10 +230,10 @@ def get_entry_list(term=None):
     if term:
         cur.execute('''
 SELECT set_limit(.75);
-SELECT * FROM gissmo.entries
+SELECT id,name,frequency,simulation_id,inchi FROM gissmo.entries
   WHERE lower(%s) %% lower(name) OR inchi = %s OR inchi = %s''', [term, term, 'InChI=' + term])
     else:
-        cur.execute("SELECT * FROM gissmo.entries ORDER BY id, simulation_ID")
+        cur.execute("SELECT id,name,frequency,simulation_id,inchi FROM gissmo.entries ORDER BY id, simulation_ID")
 
     entry_list = []
     last_entry = None
