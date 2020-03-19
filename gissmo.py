@@ -567,6 +567,17 @@ def display_entry(entry_id, simulation=None, some_file=None):
     tags_to_get = ["name", "InChI", "path_2D_image", "field_strength", "roi_rmsd"]
     ent_dict = dict_builder(root, tags_to_get)
     ent_dict['note'] = get_tag_value(root, 'note', all_=True)
+
+    # Map the student names
+    student_names = {'BA': 'Processed by Benjamin Albrecht (Univ. Cologne)',
+                     'KG': 'Processed by Kirsten Gasser',
+                     'MK': 'Processed by Michael Kuehne',
+                     'TL': 'Processed by Tevin Li',
+                     'LT': 'Processed by Lillie Talon'}
+    for pos, note in enumerate(ent_dict['note']):
+        if note in student_names:
+            ent_dict['note'][pos] = student_names[note]
+
     ent_dict['entry_id'] = entry_id
     ent_dict['simulation'] = simulation
 
