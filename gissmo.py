@@ -411,8 +411,9 @@ ORDER BY count(DISTINCT ppm) DESC;
                     m.append(sim)
             modified_entry_list.append(m)
 
-    if request.args.get('json', None) == 'true':
-        return jsonify(modified_entry_list)
+    use_json = request.args.get('json', None)
+    if use_json == 'true' or use_json == 'True' or use_json == True:
+        return jsonify(result)
 
     return render_template("search_result.html", entries={1: modified_entry_list},
                            base_url=request.path, frequency=frequency,
