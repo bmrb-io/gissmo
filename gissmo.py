@@ -411,6 +411,9 @@ ORDER BY count(DISTINCT ppm) DESC;
                     m.append(sim)
             modified_entry_list.append(m)
 
+    if request.args.get('json', None) == 'true':
+        return jsonify(modified_entry_list)
+
     return render_template("search_result.html", entries={1: modified_entry_list},
                            base_url=request.path, frequency=frequency,
                            peak_type=peak_type, raw_shift=raw_shift,
