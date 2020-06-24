@@ -63,9 +63,9 @@ def get_postgres_connection(user='web', database='webservers', host='pinzgau', p
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
-    if application.debug:
-        port = '5901'
-        host = 'localhost'
+    #if application.debug:
+    #    port = '5901'
+    #    host = 'localhost'
 
     if dictionary_cursor:
         conn = psycopg2.connect(user=user, database=database, host=host, cursor_factory=DictCursor, port=port)
@@ -668,3 +668,4 @@ SELECT frequency, ppm, amplitude, peak_type FROM gissmo.chemical_shifts
 
 if __name__ == "__main__":
     print("Called main.")
+    reload_db()
