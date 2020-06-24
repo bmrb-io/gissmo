@@ -59,16 +59,19 @@ def get_title(entry_id):
     return title[entry_id]['_Assembly.Name'][0].title()
 
 
-def get_postgres_connection(user='web', database='webservers', host='pinzgau',
+def get_postgres_connection(user='web', database='webservers', host='pinzgau', port='5432',
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
+    #if application.debug:
+    #    port = '5901'
+    #    host = 'localhost'
+
     if dictionary_cursor:
-        conn = psycopg2.connect(user=user, database=database, host=host, cursor_factory=DictCursor)
+        conn = psycopg2.connect(user=user, database=database, host=host, cursor_factory=DictCursor, port=port)
     else:
-        conn = psycopg2.connect(user=user, database=database, host=host)
+        conn = psycopg2.connect(user=user, database=database, host=host, port=port)
     cur = conn.cursor()
-    cur.execute("SET search_path TO gissmo, public")
 
     return conn, cur
 
@@ -97,6 +100,26 @@ def get_aux_info(entry_id, simulation, aux_name):
         return results
 
 
+def get_sample_conditions(file_name):
+    # Get the NMR-STAR entry for sample info
+
+    star_entry = pynmrstar.Entry.from_file(file_name)
+    sample_conditions = star_entry.get_loops_by_category("_Sample_condition_variable")[0]
+    sample_conditions = sample_conditions.get_tag(["Type", "Val", "Val_units"])
+    sample_dict = {}
+    for record in sample_conditions:
+        if record[0] == "temperature":
+            sample_dict[record[0].lower()] = "%s %s" % (record[1], record[2])
+        else:
+            sample_dict[record[0].lower()] = record[1]
+
+    sample_mix = star_entry.get_loops_by_category("_Sample_component")[0]
+    sample_dict['sample'] = sample_mix.get_tag(["Mol_common_Name", "Isotopic_labeling", "Type", "Concentration_val",
+                                                "Concentration_val_units"])
+
+    return sample_dict
+
+
 # URI methods
 @application.route('/reload')
 def reload_db():
@@ -106,12 +129,14 @@ def reload_db():
 
     cur.execute("""
 -- Create terms table
-DROP TABLE IF EXISTS entries_tmp;
-CREATE TABLE entries_tmp (
+DROP TABLE IF EXISTS gissmo.entries_tmp;
+CREATE TABLE gissmo.entries_tmp (
     id text,
     name text,
     frequency float,
     simulation_id text,
+    temperature text,
+    ph text,
     inchi text);""")
 
     valid_entries = []
@@ -135,11 +160,20 @@ CREATE TABLE entries_tmp (
                 print(entry_id, e)
                 continue
 
+            try:
+                sample_conditions = get_sample_conditions(os.path.join(entry_path, entry_id, sim, "%s-%s.str" %
+                                                                       (entry_id, sim)))
+            except IOError:
+                continue
+
             # Check the entry is released
             status = get_tag_value(root, "status")
             if status.lower() in ["done", "approximately done"]:
                 sims.append([entry_id, get_tag_value(root, "name"),
-                             get_tag_value(root, "field_strength"), sim,
+                             get_tag_value(root, "field_strength"),
+                             sim,
+                             sample_conditions['temperature'],
+                             sample_conditions['ph'],
                              get_tag_value(root, "InChI")])
 
         if sims:
@@ -147,40 +181,40 @@ CREATE TABLE entries_tmp (
 
     # Sort by protein name
     valid_entries = sorted(valid_entries, key=lambda x: x[0][1].lower())
-    execute_values(cur, """INSERT INTO entries_tmp (id, name, frequency, simulation_id, inchi) VALUES %s;""",
+    execute_values(cur, """INSERT INTO gissmo.entries_tmp (id, name, frequency, simulation_id, temperature, ph, inchi) VALUES %s;""",
                    valid_entries,
                    page_size=1000)
     cur.execute("""
-CREATE INDEX ON entries_tmp (id);
-CREATE INDEX ON entries using gin(lower(name) gin_trgm_ops);
-
--- Move the new table into place
-ALTER TABLE IF EXISTS entries RENAME TO entries_old;
-ALTER TABLE entries_tmp RENAME TO entries;
-DROP TABLE IF EXISTS entries_old CASCADE;""")
+CREATE INDEX ON gissmo.entries_tmp (id);
+CREATE INDEX ON gissmo.entries_tmp using gin(lower(name) gin_trgm_ops);
+CREATE INDEX ON gissmo.entries_tmp (inchi);""")
 
     # Reload the chemical shifts
     cur.execute("""
     -- Create terms table
-    DROP TABLE IF EXISTS chemical_shifts_tmp;
-    CREATE TABLE chemical_shifts_tmp (
+    DROP TABLE IF EXISTS gissmo.chemical_shifts_tmp;
+    CREATE TABLE gissmo.chemical_shifts_tmp (
         bmrb_id text,
         simulation_ID text,
         frequency integer,
         peak_type text,
         ppm numeric,
         amplitude float);""")
-    cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
+    cur.copy_expert("""COPY gissmo.chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
                     open('%s/peak_list_GSD.csv' % entry_path, "rb"))
-    cur.copy_expert("""COPY chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
+    cur.copy_expert("""COPY gissmo.chemical_shifts_tmp FROM STDIN WITH (FORMAT csv);""",
                     open('%s/peak_list_standard.csv' % entry_path, "rb"))
     cur.execute("""-- create index: potentially combine these two based on usage
-CREATE INDEX ON chemical_shifts_tmp (frequency, peak_type, ppm);
+CREATE INDEX ON gissmo.chemical_shifts_tmp (frequency, peak_type, ppm);
 
--- Move the new table into place
-ALTER TABLE IF EXISTS chemical_shifts RENAME TO chemical_shifts_old;
-ALTER TABLE chemical_shifts_tmp RENAME TO chemical_shifts;
-DROP TABLE IF EXISTS chemical_shifts_old;
+-- Move the new tables into place
+ALTER TABLE IF EXISTS gissmo.entries RENAME TO entries_old;
+ALTER TABLE gissmo.entries_tmp RENAME TO entries;
+DROP TABLE IF EXISTS gissmo.entries_old CASCADE;
+
+ALTER TABLE IF EXISTS gissmo.chemical_shifts RENAME TO chemical_shifts_old;
+ALTER TABLE gissmo.chemical_shifts_tmp RENAME TO chemical_shifts;
+DROP TABLE IF EXISTS gissmo.chemical_shifts_old;
 
 GRANT SELECT ON ALL TABLES IN SCHEMA gissmo TO web;""")
     conn.commit()
@@ -196,10 +230,10 @@ def get_entry_list(term=None):
     if term:
         cur.execute('''
 SELECT set_limit(.75);
-SELECT * FROM gissmo.entries
+SELECT id,name,frequency,simulation_id,inchi FROM gissmo.entries
   WHERE lower(%s) %% lower(name) OR inchi = %s OR inchi = %s''', [term, term, 'InChI=' + term])
     else:
-        cur.execute("SELECT * FROM entries ORDER BY id, simulation_ID")
+        cur.execute("SELECT id,name,frequency,simulation_id,inchi FROM gissmo.entries ORDER BY id, simulation_ID")
 
     entry_list = []
     last_entry = None
@@ -289,7 +323,7 @@ def peak_search():
 
     sql = '''
 SELECT bmrb_id,simulation_id,array_agg(DISTINCT ppm)
-FROM chemical_shifts'''
+FROM gissmo.chemical_shifts'''
     sql += ' WHERE ('
     terms = []
 
@@ -377,6 +411,10 @@ ORDER BY count(DISTINCT ppm) DESC;
                     m.append(sim)
             modified_entry_list.append(m)
 
+    use_json = request.args.get('json', None)
+    if use_json == 'true' or use_json == 'True' or use_json == True:
+        return jsonify(result)
+
     return render_template("search_result.html", entries={1: modified_entry_list},
                            base_url=request.path, frequency=frequency,
                            peak_type=peak_type, raw_shift=raw_shift,
@@ -437,14 +475,23 @@ def display_summary(entry_id):
     return render_template("simulations_list.html", data=data, name=name)
 
 
+@application.route('/entry/list')
+def get_gissmo_entries():
+    """ Returns a list of all entries currently in GISSMO. """
+
+    cur = get_postgres_connection()[1]
+    cur.execute('SELECT id FROM gissmo.entries;')
+    return jsonify([x[0] for x in cur.fetchall()])
+
+
 @application.route('/entry/<entry_id>/<simulation>/peaks/<frequency>')
 def display_peaks(entry_id, simulation, frequency):
     # Get the chemical shifts from postgres
     cur = get_postgres_connection()[1]
     cur.execute('''
-SELECT frequency, ppm, amplitude FROM chemical_shifts
+SELECT frequency, ppm, amplitude FROM gissmo.chemical_shifts
   WHERE bmrb_id=%s AND simulation_id=%s AND frequency=%s AND peak_type = 'GSD'
-  ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation, frequency])
+  ORDER BY frequency, ppm''', [entry_id, simulation, frequency])
 
     if frequency == '0':
         frequency = 'Default'
@@ -524,6 +571,17 @@ def display_entry(entry_id, simulation=None, some_file=None):
     tags_to_get = ["name", "InChI", "path_2D_image", "field_strength", "roi_rmsd"]
     ent_dict = dict_builder(root, tags_to_get)
     ent_dict['note'] = get_tag_value(root, 'note', all_=True)
+
+    # Map the student names
+    student_names = {'BA': 'Processed by Benjamin Albrecht (Univ. Cologne)',
+                     'KG': 'Processed by Kirsten Gasser',
+                     'MK': 'Processed by Michael Kuehne',
+                     'TL': 'Processed by Tevin Li',
+                     'LT': 'Processed by Lillie Talon'}
+    for pos, note in enumerate(ent_dict['note']):
+        if note in student_names:
+            ent_dict['note'][pos] = student_names[note]
+
     ent_dict['entry_id'] = entry_id
     ent_dict['simulation'] = simulation
 
@@ -549,18 +607,9 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict["pka"] = get_aux_info(entry_id, simulation, "pka")
 
     # Get the NMR-STAR entry for sample info
-    star_entry = pynmrstar.Entry.from_file(os.path.join(entry_path, entry_id, simulation, "%s-%s.str" % (entry_id, simulation)))
-    sample_conditions = star_entry.get_loops_by_category("_Sample_condition_variable")[0]
-    sample_conditions = sample_conditions.get_tag(["Type", "Val", "Val_units"])
-    for record in sample_conditions:
-        if record[0] == "temperature":
-            ent_dict[record[0].lower()] = "%s %s" % (record[1], record[2])
-        else:
-            ent_dict[record[0].lower()] = record[1]
-
-    sample_mix = star_entry.get_loops_by_category("_Sample_component")[0]
-    ent_dict['sample'] = sample_mix.get_tag(["Mol_common_Name", "Isotopic_labeling", "Type", "Concentration_val",
-                                            "Concentration_val_units"])
+    sample_conditions = get_sample_conditions(os.path.join(entry_path, entry_id, simulation, "%s-%s.str" %
+                                                           (entry_id, simulation)))
+    ent_dict.update(sample_conditions)
 
     # Get the spin matrix data only for the first coupling matrix
     coupling_matrix = root.getiterator("coupling_matrix").next()
@@ -608,7 +657,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     # Get the chemical shifts from postgres
     cur = get_postgres_connection()[1]
     cur.execute('''
-SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts
+SELECT frequency, ppm, amplitude, peak_type FROM gissmo.chemical_shifts
   WHERE bmrb_id=%s AND simulation_id=%s AND peak_type='standard'
   ORDER BY frequency ASC, ppm ASC''', [entry_id, simulation])
     ent_dict['shifts'] = cur.fetchall()
@@ -619,3 +668,4 @@ SELECT frequency, ppm, amplitude, peak_type FROM chemical_shifts
 
 if __name__ == "__main__":
     print("Called main.")
+    reload_db()
