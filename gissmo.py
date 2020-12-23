@@ -60,7 +60,7 @@ def get_title(entry_id):
     return title[entry_id]['_Assembly.Name'][0].title()
 
 
-def get_postgres_connection(user='web', database='webservers', host='pinzgau', port='5432',
+def get_postgres_connection(user='web', database='webservers', host='localhost', port='5432',
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
