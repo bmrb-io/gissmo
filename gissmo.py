@@ -1,7 +1,5 @@
 #!/usr/bin/env python
 
-from __future__ import print_function
-
 import os
 import re
 
@@ -10,7 +8,7 @@ import xml.etree.cElementTree as ElementTree
 import time
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
-from typing import List, Union
+from typing import List
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 # Local virtualenv imports
