@@ -4,3 +4,4 @@ psycopg2-binary==2.8.6
 pynmrstar==3.0.8
 simplejson==3.17.2
 watchdog==1.0.2
+uwsgi==2.0.19.1
