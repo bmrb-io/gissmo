@@ -35,7 +35,7 @@ def get_tag_value(root, tag, all_=False):
         return [x.text for x in nodes]
     else:
         try:
-            return nodes.next().text
+            return next(nodes).text
         except StopIteration:
             return None
 
