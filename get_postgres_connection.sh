@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ssh wedel@nelore.nmrfam.wisc.edu -L 5901:pinzgau:5432
+ssh jwedell@gissmo.nmrbox.org -L 5902:lolcalhost:5432
