@@ -10,6 +10,7 @@ import xml.etree.cElementTree as ElementTree
 import time
 from decimal import Decimal, InvalidOperation
 from io import BytesIO
+from typing import List, Union
 from zipfile import ZipFile, ZIP_DEFLATED, ZipInfo
 
 # Local virtualenv imports
@@ -63,7 +64,7 @@ def get_postgres_connection(user='web', database='webservers', host='pinzgau', p
                             dictionary_cursor=False):
     """ Returns a connection to postgres and a cursor."""
 
-    #if application.debug:
+    # if application.debug:
     #    port = '5901'
     #    host = 'localhost'
 
@@ -181,7 +182,8 @@ CREATE TABLE gissmo.entries_tmp (
 
     # Sort by protein name
     valid_entries = sorted(valid_entries, key=lambda x: x[0][1].lower())
-    execute_values(cur, """INSERT INTO gissmo.entries_tmp (id, name, frequency, simulation_id, temperature, ph, inchi) VALUES %s;""",
+    execute_values(cur,
+                   """INSERT INTO gissmo.entries_tmp (id, name, frequency, simulation_id, temperature, ph, inchi) VALUES %s;""",
                    valid_entries,
                    page_size=1000)
     cur.execute("""
@@ -311,7 +313,7 @@ def peak_search():
     """ Returns a page with compounds that match the provided peaks. """
 
     raw_shift = request.args.get('rs', "")
-    peaks = re.split('[\s\n\t,;]+', raw_shift)
+    peaks = re.split(r'[\s\n\t,;]+', raw_shift)
     frequency = request.args.get('frequency', "800")
     peak_type = request.args.get('peak_type', "standard")
     threshold = request.args.get('threshold', ".01")
@@ -363,7 +365,7 @@ ORDER BY count(DISTINCT ppm) DESC;
                        'Val': entry[2]})
 
     # Convert the search to decimal
-    peaks = [Decimal(x) for x in peaks]
+    decimal_peaks: List[Decimal] = [Decimal(x) for x in peaks]
 
     def get_closest(collection, number):
         """ Returns the closest number from a list of numbers. """
@@ -377,7 +379,7 @@ ORDER BY count(DISTINCT ppm) DESC;
         # Determine how many of the queried peaks were matched
         num_match = 0
         matched_peaks = []
-        for tmp_peak in peaks:
+        for tmp_peak in decimal_peaks:
             closest = get_closest(res['Val'], tmp_peak)
             if abs(tmp_peak - closest) < threshold_dec:
                 num_match += 1
@@ -530,9 +532,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
                     np = os.path.join(root, _file)
                     np = np[np.index(entry_id):]
                     data = ZipInfo(np)
-                    data.external_attr = 0666 << 16L  # Give all relevant permissions to downloaded file
-                    # Python 3.7 fix for the above line:
-                    # data.external_attr = 0o0666 << 16  # Give all relevant permissions to downloaded file
+                    data.external_attr = 0o666 << 16  # Give all relevant permissions to downloaded file
                     data.compress_type = ZIP_DEFLATED
                     data.date_time = time.strptime(time.ctime(os.path.getmtime(fn)))
                     zf.writestr(data, open(fn, "r").read())
@@ -612,7 +612,7 @@ def display_entry(entry_id, simulation=None, some_file=None):
     ent_dict.update(sample_conditions)
 
     # Get the spin matrix data only for the first coupling matrix
-    coupling_matrix = root.getiterator("coupling_matrix").next()
+    coupling_matrix = next(root.getiterator("coupling_matrix"))
 
     column_names = [x.attrib['name'] for x in coupling_matrix.getiterator("spin")]
 
