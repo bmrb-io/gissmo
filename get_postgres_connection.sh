@@ -1,3 +1,3 @@
 #!/bin/bash
 
-ssh jwedell@gissmo.nmrbox.org -L 5902:lolcalhost:5432
+ssh jwedell@gissmo.nmrbox.org -L 5902:localhost:5432
