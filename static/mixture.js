@@ -551,7 +551,7 @@ function highlight_words(words, text) {
 
 // Used to fetch spectra off the server
 const getJSON = function (url, callback) {
-    url = "http://gissmo.nmrfam.wisc.edu" + url;
+    url = "https://gissmo.bmrb.io" + url;
     const xhr = new XMLHttpRequest();
     xhr.open('GET', url, true);
     xhr.responseType = 'json';
