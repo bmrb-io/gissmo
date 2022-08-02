@@ -313,7 +313,7 @@ function addLoadedCompound(compound_name, concentration) {
     // Query the API
     $.ajax({
         dataType: "json",
-        url: "http://api.bmrb.io/v2/instant",
+        url: "https://api.bmrb.io/v2/instant",
         data: {database: "metabolomics", term: compound_name},
         beforeSend: function (request) {
             request.setRequestHeader("Application", 'GISSMO Mixtures');
@@ -523,7 +523,7 @@ $("#compound_search").autocomplete({
     delay: 0,
     source: function (request, response_callback) {
         // Filter the results based on what GISSMO has available
-        $.getJSON("http://api.bmrb.io/v2/instant", {database: "metabolomics", term: request.term},
+        $.getJSON("https://api.bmrb.io/v2/instant", {database: "metabolomics", term: request.term},
             function (response_original) {
                 const response = [];
                 for (let i = 0; i < response_original.length; i++) {
